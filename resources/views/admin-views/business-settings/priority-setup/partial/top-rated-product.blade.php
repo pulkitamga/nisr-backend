@@ -71,7 +71,7 @@
                                         <input type="radio" class="show" name="minimum_rating_point" id="top-rated-product-minimum-rating-0" value="default"
                                             {{ isset($topRatedProductListPriority?->minimum_rating_point) ? ($topRatedProductListPriority?->minimum_rating_point == 'default' ? 'checked' : '') : 'checked' }}>
                                         <label class="mb-0" for="top-rated-product-minimum-rating-0">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -123,7 +123,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="top-rated-product" id="top-rated-product-stock-out-default"
                                             {{isset($topRatedProductListPriority?->out_of_stock_product) ? ($topRatedProductListPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0" for="top-rated-product-stock-out-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -148,7 +148,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="top-rated-product" id="top-rated-product-temporary-close-default"
                                             {{isset($topRatedProductListPriority?->temporary_close_sorting) ?($topRatedProductListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="top-rated-product-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -156,7 +156,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

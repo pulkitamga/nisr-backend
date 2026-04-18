@@ -2,13 +2,13 @@
     <table class="table table-hover align-middle mb-0 bg-white shadow-sm rounded">
         <thead class="bg-light text-muted border-bottom">
             <tr class="text-nowrap">
-                <th class="fw-semibold">{{ translate('sl') }}</th>
-                <th class="fw-semibold">{{ translate('date') }}</th>
-                <th class="fw-semibold">{{ translate('product_name') }}</th>
-                <th class="fw-semibold">{{ translate('variation') }}</th>
+                <th class="fw-semibold">{{ translate('SL') }}</th>
+                <th class="fw-semibold">{{ translate('DATE') }}</th>
+                <th class="fw-semibold">{{ translate('Product_name') }}</th>
+                <th class="fw-semibold">{{ translate('Variation') }}</th>
                 <th class="fw-semibold">{{ translate('requested_qty') }}</th>
                 <th class="fw-semibold">{{ translate('qty_sent') }}</th>
-                <th class="fw-semibold">{{ translate('remaining') }}</th>
+                <th class="fw-semibold">{{ translate('Remaining') }}</th>
 
             </tr>
         </thead>
@@ -18,7 +18,7 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</span></td>
                                     <td>{{ $delivery->product->getTranslatedField('name') ?? __('N/A') }}</td>
-                                    <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
+                                    <td>{{ $delivery->product_variation_type ?? __('no_variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
                                     <td>{{ $delivery->quantity_sent }}</td>
                                     <td>{{ $delivery->remaining }}</td>
@@ -36,14 +36,14 @@
     <table class="table table-hover align-middle mb-0">
         <thead class="bg-light text-muted">
             <tr class="text-nowrap">
-               <th class="fw-semibold">{{ translate('sl') }}</th>
-                        <th class="fw-semibold">{{ translate('date') }}</th>
-                        <th class="fw-semibold">{{ translate('product') }}</th>
-                        <th class="fw-semibold">{{ translate('variation') }}</th>
+               <th class="fw-semibold">{{ translate('SL') }}</th>
+                        <th class="fw-semibold">{{ translate('DATE') }}</th>
+                        <th class="fw-semibold">{{ translate('Product') }}</th>
+                        <th class="fw-semibold">{{ translate('Variation') }}</th>
                         <th class="fw-semibold">{{ translate('qty_sent') }}</th>
-                        <th class="fw-semibold">{{ translate('branch') }}</th>
-                        <th class="fw-semibold">{{ translate('note') }}</th>
-                        <th class="fw-semibold text-center">{{ translate('Csv') }}</th>
+                        <th class="fw-semibold">{{ translate('Branch') }}</th>
+                        <th class="fw-semibold">{{ translate('Note') }}</th>
+                        <th class="fw-semibold text-center">{{ translate('CSV') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -52,7 +52,7 @@
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</span></td>
                         <td>{{ $log->product->getTranslatedField('name') ?? __('N/A') }}</td>
-                        <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
+                        <td>{{ $log->product_variation_type ?? __('no_variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
                         <td>{{ $log->branch->branch_name ?? __('N/A') }}</td>
                         <td>{{ $log->note ?? '-' }}</td>

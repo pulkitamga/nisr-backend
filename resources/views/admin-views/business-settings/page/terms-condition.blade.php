@@ -25,7 +25,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" alt="">
-            {{translate('pages')}}
+            {{translate('Pages')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -43,11 +43,11 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                data-toggle-id="terms-condition-status"
                                data-on-image=""
                                data-off-image=""
-                               data-on-title="{{ translate('want_to_Turn_ON').' '.translate('terms_and_condition').' '.translate('status') }}"
-                               data-off-title="{{ translate('want_to_Turn_OFF').' '.translate('terms_and_condition').' '.translate('status') }}"
+                               data-on-title="{{ translate('Want_to_Turn_ON').' '.translate('terms_and_condition').' '.translate('Status') }}"
+                               data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate('terms_and_condition').' '.translate('Status') }}"
                                data-on-message="<p>{{ translate('if_you_enable_this_option_terms_and_condition_page_will_be_shown_in_the_user_app_and_website') }}</p>"
                                data-off-message="<p>{{ translate('if_you_disable_this_option_terms_and_condition_page_will_not_be_shown_in_the_user_app_and_website') }}</p>">
-                            <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                            <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                     </label>
                 </div>
                     <div class="card-body">
@@ -86,7 +86,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             @endforeach
                         </div>
                         <div class="form-group">
-                            <input class="form-control btn--primary" type="submit" value="{{translate('submit')}}" name="btn">
+                            <input class="form-control btn--primary" type="submit" value="{{translate('Submit')}}" name="btn">
                         </div>
                     </div>
                 </form>

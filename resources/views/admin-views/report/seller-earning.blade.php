@@ -1,12 +1,12 @@
 @extends('layouts.back-end.app')
-@section('title', translate('earning_Reports'))
+@section('title', translate('Earning_Reports'))
 
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/earning_report.png')}}" alt="">
-                {{translate('earning_Reports')}}
+                {{translate('Earning_Reports')}}
             </h2>
         </div>
         @include('admin-views.report.earning-report-inline-menu')
@@ -27,18 +27,18 @@
                         <div class="col-sm-6 col-md-3" id="from_div">
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{ $from }}" id="from_date" class="form-control">
-                                <label>{{ translate('start Date')}}</label>
+                                <label>{{ translate('Start_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{ $to }}" name="to" id="to_date" class="form-control">
-                                <label>{{ translate('end Date')}}</label>
+                                <label>{{ translate('End_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <button type="submit" class="btn btn--primary px-4 w-100">
-                                {{ translate('filter')}}
+                                {{ translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                     <div class="coupon__discount w-100 text-end d-flex flex-wrap justify-content-between g-1">
                         <div class="text-center">
                             <strong class="text-danger">{{ $data['rejected_product'] }}</strong>
-                            <div>{{ translate('denied')}}</div>
+                            <div>{{ translate('Denied')}}</div>
                         </div>
                         <div class="text-center">
                             <strong class="text-primary">{{ $data['pending_product'] }}</strong>
@@ -72,7 +72,7 @@
                         </div>
                         <div class="text-center">
                             <strong class="text-success">{{ $data['active_product'] }}</strong>
-                            <div>{{ translate('approved')}}</div>
+                            <div>{{ translate('Approved')}}</div>
                         </div>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                         <th>{{translate('vendor_Info')}}</th>
                         <th>{{translate('earn_From_Order')}}</th>
                         <th>{{translate('earn_From_Shipping')}}</th>
-                        <th>{{translate('deliveryman_incentive')}}</th>
+                        <th>{{translate('delivery_man_incentive')}}</th>
                         <th>{{translate('commission_Given')}}</th>
                         <th>{{translate('discount_Given')}}</th>
                         <th>{{translate('tax_Collected')}}</th>

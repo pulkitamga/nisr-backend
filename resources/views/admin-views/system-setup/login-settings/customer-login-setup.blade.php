@@ -247,7 +247,7 @@
     <span id="customer-login-setup-validation-msg"
           data-title="{{ translate("no_login_option_selected") }}!"
           data-text="{{ translate("please_select_at_least_one_login_option.") }}"
-          data-ok="{{ translate("ok") }}"
+          data-ok="{{ translate("OK") }}"
     ></span>
     <span class="select-google-or-facebook"
           data-text="{{ translate("please_select_at_least_one_between_Google_or_Facebook.") }}"

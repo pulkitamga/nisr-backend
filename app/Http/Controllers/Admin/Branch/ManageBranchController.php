@@ -68,19 +68,19 @@ class ManageBranchController extends Controller
         return Excel::download(
             new FormattedTableExport(
                 rows: $rows,
-                headings: [translate('Vendor'), translate('email'), translate('Phone'), translate('Status')],
-                title: translate('vendor'),
+                headings: [translate('Vendor'), translate('Email'), translate('Phone'), translate('Status')],
+                title: translate('Vendor'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                 columnWidths: ['A' => 28, 'B' => 28, 'C' => 18, 'D' => 16],
                 centerColumns: ['D']
             ),
-            LocalizedExport::fileName(translate('vendor'))
+            LocalizedExport::fileName(translate('Vendor'))
         );
     }
 

@@ -15,13 +15,13 @@
             <div class="mb-4">
 
                 <div class="mb-3">
-                    <label for="order_no" class="form-label fw-semibold">{{ translate('Purchase Order No') }}:</label>
+                    <label for="order_no" class="form-label fw-semibold">{{ translate('Purchase_Order_No') }}:</label>
                     <input type="text" name="order_no" value="{{ $order->purchase_order_no }}" readonly
                         class="form-control w-auto d-inline-block" required>
                 </div>
 
                 <div class="mb-3">
-                    <label for="quotation_no" class="form-label fw-semibold">{{ translate('Quotation No') }}:</label>
+                    <label for="quotation_no" class="form-label fw-semibold">{{ translate('Quotation_No') }}:</label>
                     <input type="text" name="quotation_no" id="quotation_no_input" oninput="checkQuotationNo(this.value)"
                         value="{{ $quotation->quotation_no }}" readonly
                         class="form-control w-auto d-inline-block">
@@ -53,11 +53,11 @@
                 <table class="table table-bordered table-striped">
                     <thead class="table-light">
                         <tr>
-                            <th>{{ translate('Product Name') }}</th>
-                            <th>{{ translate('Requested Qty') }}</th>
+                            <th>{{ translate('Product_name') }}</th>
+                            <th>{{ translate('requested_qty') }}</th>
                             <th>{{ translate('Base Price') }}</th>
                             <th>{{ translate('Tax') }}</th>
-                            <th>{{ translate('Final Price') }}</th>
+                            <th>{{ translate('Final_price') }}</th>
                         </tr>
                     </thead>
 
@@ -74,7 +74,7 @@
 
                         <tr data-product-id="{{ $item->product_id }}">
 
-                            <td>{{ $item->product->getTranslatedField('name') }}  ({{ $item->product_variation_type ?? __('No Variation') }})</td>
+                            <td>{{ $item->product->getTranslatedField('name') }}  ({{ $item->product_variation_type ?? __('no_variation') }})</td>
 
                             <td>
                                 <input type="number" name="products[{{ $item->product_id }}][approved_quantity]"

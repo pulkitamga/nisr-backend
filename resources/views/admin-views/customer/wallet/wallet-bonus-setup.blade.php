@@ -7,7 +7,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/admin-wallet.png')}}" alt="">
-                {{translate('wallet_bonus_setup')}}
+                {{translate('wallet_Bonus_Setup')}}
             </h2>
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder">
                 {{translate('how_it_works')}}
@@ -50,7 +50,7 @@
                                 <label for="bonus_title"
                                        class="title-color text-capitalize d-flex">{{translate('bonus_title')}}</label>
                                 <input type="text" name="title" class="form-control" id="bonus_title"
-                                       placeholder="{{translate('ex').':'.translate('EID_Dhamaka')}}" required>
+                                       placeholder="{{translate('Ex').':'.translate('EID_Dhamaka')}}" required>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-6">
@@ -58,7 +58,7 @@
                                 <label for="short_desc"
                                        class="title-color text-capitalize d-flex">{{translate('short_description')}}</label>
                                 <input type="text" name="description" class="form-control" id="short_desc"
-                                       placeholder="{{translate('ex').':'.translate('EID_Dhamaka')}}">
+                                       placeholder="{{translate('Ex').':'.translate('EID_Dhamaka')}}">
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-6 col-lg-4">
@@ -78,7 +78,7 @@
                                         {{translate('bonus_amount')}} (<span id="bonus-title-percent">{{translate('%')}}</span>)
                                 </label>
                                 <input type="number" name="bonus_amount" min="0" class="form-control" value="0"
-                                       id="bonus_amount" placeholder="{{translate('ex').':'.'5'}}">
+                                       id="bonus_amount" placeholder="{{translate('Ex').':'.'5'}}">
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-6 col-lg-4">
@@ -87,7 +87,7 @@
                                        class="title-color text-capitalize d-flex">{{translate('minimum_add_amount')}}
                                     ({{ getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default')) }})</label>
                                 <input type="number" name="min_add_money_amount" min="0" class="form-control"
-                                       id="min_add_money_amount" value="0" placeholder="{{translate('ex').':'.'100'}}"
+                                       id="min_add_money_amount" value="0" placeholder="{{translate('Ex').':'.'100'}}"
                                        required>
                             </div>
                         </div>
@@ -98,13 +98,13 @@
                                        class="title-color text-capitalize d-flex">{{translate('maximum_bonus')}}
                                     ({{ getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default')) }})</label>
                                 <input type="number" min="0" name="max_bonus_amount" value="0" class="form-control"
-                                       id="max_bonus_amount" placeholder="{{translate('ex').':'.'5000'}}">
+                                       id="max_bonus_amount" placeholder="{{translate('Ex').':'.'5000'}}">
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <div class="form-group">
                                 <label for="start-date-time"
-                                       class="title-color text-capitalize d-flex">{{translate('start_date')}}</label>
+                                       class="title-color text-capitalize d-flex">{{translate('Start_Date')}}</label>
                                 <input type="date" name="start_date_time" id="start-date-time" class="form-control"
                                        required>
                             </div>
@@ -112,15 +112,15 @@
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <div class="form-group">
                                 <label for="end-date-time"
-                                       class="title-color text-capitalize d-flex">{{translate('end_date')}}</label>
+                                       class="title-color text-capitalize d-flex">{{translate('End_Date')}}</label>
                                 <input type="date" name="end_date_time" id="end-date-time" class="form-control">
                             </div>
                         </div>
 
                         <div class="col-12">
                             <div class="d-flex gap-3 justify-content-end">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                             </div>
                         </div>
                     </div>
@@ -147,8 +147,8 @@
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
                                        placeholder="{{translate('search_by_bonus_title')}}"
                                        value="{{ request('search') }}"
-                                       aria-label="{{ translate('Search orders') }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                       aria-label="{{ translate('search_orders') }}">
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                     </div>
@@ -165,8 +165,8 @@
                         <th class="text-center">{{translate('bonus_amount')}}</th>
                         <th class="text-center">{{translate('started_on')}}</th>
                         <th class="text-center">{{translate('expires_on')}}</th>
-                        <th>{{translate('status')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('Status')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -208,12 +208,12 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
-                                    <a title="{{translate('edit')}}"
+                                    <a title="{{translate('Edit')}}"
                                        type="button" class="btn btn-outline--primary btn-sm btn-xs edit"
                                        href="{{ route('admin.customer.wallet.bonus-setup-edit', ['id'=>$item->id]) }}">
                                         <i class="tio-edit"></i>
                                     </a>
-                                    <a title="{{translate('delete')}}" class="btn btn-outline-danger btn-sm btn-xs delete-data"
+                                    <a title="{{translate('Delete')}}" class="btn btn-outline-danger btn-sm btn-xs delete-data"
                                        data-id="wallet-bonus-{{$item['id']}}">
                                         <i class="tio-delete"></i>
                                     </a>

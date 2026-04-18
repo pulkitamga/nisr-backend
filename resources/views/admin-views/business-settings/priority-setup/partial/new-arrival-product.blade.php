@@ -52,7 +52,7 @@
                                         {{ translate('if_it_is_added_with_in').' X '.translate('Days').'/'.translate('months)') }}
                                     </p>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" name="duration" min="1" placeholder="{{ translate('ex').': 5' }}" value="{{ isset($newArrivalProductListPriority?->duration) ? $newArrivalProductListPriority->duration : 1 }}" required>
+                                        <input type="number" class="form-control" name="duration" min="1" placeholder="{{ translate('Ex').': 5' }}" value="{{ isset($newArrivalProductListPriority?->duration) ? $newArrivalProductListPriority->duration : 1 }}" required>
                                         <div class="input-group-append">
                                             <select class="form-control outline-0 px-5 border-radius-end-top-bottom" name="duration_type">
                                                 <option value="days" {{isset($newArrivalProductListPriority?->duration_type) && $newArrivalProductListPriority?->duration_type == 'days' ? 'selected' : ''}}>{{ translate('Days') }}</option>
@@ -92,7 +92,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="new-arrival-product-alphabetic-order"
                                             {{isset($newArrivalProductListPriority?->sort_by) && $newArrivalProductListPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="new-arrival-product-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -100,7 +100,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="new-arrival-product-alphabetic-order-reverse"
                                             {{isset($newArrivalProductListPriority?->sort_by) && $newArrivalProductListPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="new-arrival-product-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -124,7 +124,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="new-arrival-product" id="new-arrival-product-stock-out-default"
                                             {{isset($newArrivalProductListPriority?->out_of_stock_product) ? ($newArrivalProductListPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0" for="new-arrival-product-stock-out-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="new-arrival-product" id="new-arrival-product-temporary-close-default"
                                             {{isset($newArrivalProductListPriority?->temporary_close_sorting) ?($newArrivalProductListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="new-arrival-product-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -158,7 +158,7 @@
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="submit" class="btn btn-primary px-5">
-                            {{ translate('save') }}
+                            {{ translate('Save') }}
                         </button>
                     </div>
                 </form>

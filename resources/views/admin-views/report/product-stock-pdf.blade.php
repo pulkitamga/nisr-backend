@@ -133,8 +133,8 @@
     <div class="header-content">
         <h2>{{ translate('product_stock_analytics_report') }}</h2>
         <p>
-            {{ translate('from') }}: {{ $filters['from'] }} -
-            {{ translate('to') }}: {{ $filters['to'] }}
+            {{ translate('From') }}: {{ $filters['from'] }} -
+            {{ translate('To') }}: {{ $filters['to'] }}
         </p>
     </div>
 
@@ -227,8 +227,8 @@
         <thead>
         <tr>
             <th>#</th>
-            <th>{{ translate('product') }}</th>
-            <th>{{ translate('current_stock') }}</th>
+            <th>{{ translate('Product') }}</th>
+            <th>{{ translate('Current_Stock') }}</th>
             <th>{{ translate('stock_in') }}</th>
             <th>{{ translate('stock_out') }}</th>
             <th>{{ translate('net') }}</th>
@@ -258,9 +258,9 @@
         <thead>
         <tr>
             <th>#</th>
-            <th>{{ translate('branch') }}</th>
-            <th>{{ translate('current_stock') }}</th>
-            <th>{{ translate('products') }}</th>
+            <th>{{ translate('Branch') }}</th>
+            <th>{{ translate('Current_Stock') }}</th>
+            <th>{{ translate('Products') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -285,11 +285,11 @@
         <thead>
         <tr>
             <th>#</th>
-            <th>{{ translate('date') }}</th>
-            <th>{{ translate('product') }}</th>
-            <th>{{ translate('branch') }}</th>
-            <th>{{ translate('type') }}</th>
-            <th>{{ translate('qty') }}</th>
+            <th>{{ translate('DATE') }}</th>
+            <th>{{ translate('Product') }}</th>
+            <th>{{ translate('Branch') }}</th>
+            <th>{{ translate('Type') }}</th>
+            <th>{{ translate('QTY') }}</th>
         </tr>
         </thead>
         <tbody>

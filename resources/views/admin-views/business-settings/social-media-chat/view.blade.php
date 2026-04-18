@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -41,13 +41,13 @@
                             <span class="ms-2" data-toggle="tooltip" data-placement="top" title="{{translate('provide_a_WhatsApp_number_without_country_code')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="img">
                             </span>
-                            <input type="text" class="form-control form-ellipsis" name="phone" value="{{ $whatsapp['phone'] }}" placeholder="{{translate('ex').':'.'1234567890'}}">
+                            <input type="text" class="form-control form-ellipsis" name="phone" value="{{ $whatsapp['phone'] }}" placeholder="{{translate('Ex').':'.'1234567890'}}">
                         </div>
                         <div class="d-flex justify-content-end flex-wrap gap-3">
-                            <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                            <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                             <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                     class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? '' : 'call-demo'}}"
-                            >{{translate('save')}}</button>
+                            >{{translate('Save')}}</button>
                         </div>
                     @else
                         <div class="mt-3 d-flex flex-wrap justify-content-center gap-10">

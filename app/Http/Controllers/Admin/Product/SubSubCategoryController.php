@@ -125,7 +125,7 @@ class SubSubCategoryController extends BaseController
     public function delete(Request $request): JsonResponse
     {
         $this->categoryRepo->delete(params: ['id' => $request['id']]);
-        return response()->json(['message' => translate('deleted_successfully')]);
+        return response()->json(['message' => translate('Deleted_successfully')]);
     }
 
     public function getSubCategory(Request $request, CategoryService $categoryService): JsonResponse

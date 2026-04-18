@@ -1,12 +1,12 @@
 @php use Illuminate\Support\Facades\Session; @endphp
 @extends('layouts.back-end.app')
-@section('title', translate('payment_Method'))
+@section('title', translate('Payment_Method'))
 @section('content')
     <div class="content container-fluid">
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-payment-method-menu')
@@ -53,11 +53,11 @@
                                                data-toggle-id = "{{$gateway->key_name}}"
                                                data-on-image = "{{ $img_path }}"
                                                data-off-image = "{{ $img_path }}"
-                                               data-on-title = "{{translate('want_to_Turn_ON_')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
-                                               data-off-title = "{{translate('want_to_Turn_OFF_')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
+                                               data-on-title = "{{translate('Want_to_Turn_ON')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
+                                               data-off-title = "{{translate('Want_to_Turn_OFF')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
                                                data-on-message = "<p>{{translate('if_enabled_customers_can_use_this_payment_method')}}</p>"
                                                data-off-message = "<p>{{translate('if_disabled_this_payment_method_will_be_hidden_from_the_checkout_page')}}</p>">
-                                        <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                                        <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                                     </label>
                                 @else
                                     <label class="switcher" data-toggle="modal" data-target="#gateway-modal-{{ $gateway['key_name'] }}">
@@ -67,11 +67,11 @@
                                                data-toggle-id = "{{$gateway->key_name}}"
                                                data-on-image = "{{ $img_path }}"
                                                data-off-image = "{{ $img_path }}"
-                                               data-on-title = "{{translate('want_to_Turn_ON_')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
-                                               data-off-title = "{{translate('want_to_Turn_OFF_')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
+                                               data-on-title = "{{translate('Want_to_Turn_ON')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
+                                               data-off-title = "{{translate('Want_to_Turn_OFF')}}{{str_replace('_',' ',strtoupper($gateway->key_name))}}{{translate('_as_the_Digital_Payment_method').'?'}}"
                                                data-on-message = "<p>{{translate('if_enabled_customers_can_use_this_payment_method')}}</p>"
                                                data-off-message = "<p>{{translate('if_disabled_this_payment_method_will_be_hidden_from_the_checkout_page')}}</p>">
-                                        <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                                        <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                                     </label>
                                 @endif
                             </div>
@@ -122,7 +122,7 @@
                                     <input type="file" class="form-control image-input" name="gateway_image" accept=".jpg, .png, .jpeg|image/*" data-image-id="gateway-image-{{$gateway->key_name}}" >
                                 </div>
                                 <div class="text-end mb-20px">
-                                    <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
+                                    <button type="submit" class="btn btn-primary px-5">{{translate('Save')}}</button>
                                 </div>
                             </div>
                         </form>
@@ -162,10 +162,10 @@
                                     </div>
                                     <div class="d-flex justify-content-center gap-3 mt-3">
                                         <button type="button" class="btn btn--primary min-w-120" data-dismiss="modal">
-                                            {{ translate('ok') }}
+                                            {{ translate('OK') }}
                                         </button>
                                         <button type="button" class="btn btn-danger-light min-w-120" data-dismiss="modal">
-                                            {{ translate('cancel') }}
+                                            {{ translate('Cancel') }}
                                         </button>
                                     </div>
                                 </div>

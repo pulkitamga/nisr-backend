@@ -39,11 +39,11 @@
                                         <input type="text" name="deal_type" value="feature_deal" class="d-none">
                                         <div class="col-md-12">
                                             <label for="name"
-                                                   class="title-color text-capitalize">{{ translate('title')}}
+                                                   class="title-color text-capitalize">{{ translate('Title')}}
                                                 ({{strtoupper($lang)}})</label>
                                             <input type="text" name="title[]" class="form-control" id="title"
                                                    value="{{$lang==$defaultLanguage ? $deal->getRawOriginal('title') : $deal->getTranslatedField('title', $lang, '')}}"
-                                                   placeholder="{{translate('ex').':'.translate('LUX')}}"
+                                                   placeholder="{{translate('Ex').':'.translate('LUX')}}"
                                                     {{$lang == $defaultLanguage? 'required':''}}>
                                         </div>
                                     </div>
@@ -52,14 +52,14 @@
                                 <div class="row">
                                     <div class="col-md-6 mt-3">
                                         <label for="name"
-                                               class="title-color text-capitalize">{{ translate('start_date')}}</label>
+                                               class="title-color text-capitalize">{{ translate('Start_Date')}}</label>
                                         <input type="date" value="{{date('Y-m-d',strtotime($deal['start_date']))}}"
                                                name="start_date" required id="start-date-time"
                                                class="form-control">
                                     </div>
                                     <div class="col-md-6 mt-3">
                                         <label for="name"
-                                               class="title-color text-capitalize">{{ translate('end_date')}}</label>
+                                               class="title-color text-capitalize">{{ translate('End_Date')}}</label>
                                         <input type="date" value="{{date('Y-m-d', strtotime($deal['end_date']))}}"
                                                name="end_date" required id="end-date-time"
                                                class="form-control">
@@ -68,8 +68,8 @@
                             </div>
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary">{{ translate('update')}}</button>
+                                        class="btn btn-secondary">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Update')}}</button>
                             </div>
                         </form>
                     </div>

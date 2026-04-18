@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('add_new_Vendor'))
+@section('title', translate('add_New_Vendor'))
 @push('css_or_js')
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/css/intlTelInput.css') }}">
 @endpush
@@ -9,7 +9,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" class="mb-1" alt="">
-            {{ translate('add_new_Vendor') }}
+            {{ translate('add_New_Vendor') }}
         </h2>
     </div>
     <form class="user" action="{{route('admin.vendors.add')}}" method="post" enctype="multipart/form-data" id="add-vendor-form">
@@ -19,20 +19,20 @@
                 <input type="hidden" name="status" value="approved">
                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
-                    {{ translate('vendor_information') }}
+                    {{ translate('vendor_Information') }}
                 </h5>
                 <div class="row align-items-center">
                     <div class="col-lg-6 mb-4 mb-lg-0">
                         <div class="form-group">
-                            <label for="exampleFirstName" class="title-color d-flex gap-1 align-items-center">{{translate('first_name')}}</label>
-                            <input type="text" class="form-control form-control-user" id="exampleFirstName" name="f_name" value="{{old('f_name')}}" placeholder="{{translate('ex')}}: Jhone" required>
+                            <label for="exampleFirstName" class="title-color d-flex gap-1 align-items-center">{{translate('first_Name')}}</label>
+                            <input type="text" class="form-control form-control-user" id="exampleFirstName" name="f_name" value="{{old('f_name')}}" placeholder="{{translate('Ex')}}: Jhone" required>
                         </div>
                         <div class="form-group">
-                            <label for="exampleLastName" class="title-color d-flex gap-1 align-items-center">{{translate('last_name')}}</label>
-                            <input type="text" class="form-control form-control-user" id="exampleLastName" name="l_name" value="{{old('l_name')}}" placeholder="{{translate('ex')}}: Doe" required>
+                            <label for="exampleLastName" class="title-color d-flex gap-1 align-items-center">{{translate('last_Name')}}</label>
+                            <input type="text" class="form-control form-control-user" id="exampleLastName" name="l_name" value="{{old('l_name')}}" placeholder="{{translate('Ex')}}: Doe" required>
                         </div>
                         <div class="form-group">
-                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                             <div class="mb-3">
                                 <input class="form-control form-control-user phone-input-with-country-picker"
                                        type="tel" id="exampleInputPhone" value="{{old('phone')}}"
@@ -56,7 +56,7 @@
                                 <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                        data-image-id="viewer"
                                     accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                <label class="custom-file-label" for="custom-file-upload">{{translate('upload_image')}}</label>
+                                <label class="custom-file-label" for="custom-file-upload">{{translate('Upload_Image')}}</label>
                             </div>
                         </div>
                     </div>
@@ -68,12 +68,12 @@
                 <input type="hidden" name="status" value="approved">
                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
-                    {{translate('account_information')}}
+                    {{translate('account_Information')}}
                 </h5>
                 <div class="row">
                     <div class="col-lg-4 form-group">
-                        <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('email')}}</label>
-                        <input type="email" class="form-control form-control-user" id="exampleInputEmail" name="email" value="{{old('email')}}" placeholder="{{translate('ex').':'.'Jhone@company.com'}}" required>
+                        <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('Email')}}</label>
+                        <input type="email" class="form-control form-control-user" id="exampleInputEmail" name="email" value="{{old('email')}}" placeholder="{{translate('Ex').':'.'Jhone@company.com'}}" required>
                     </div>
                     <div class="col-lg-4 form-group">
                         <label for="user_password" class="title-color d-flex gap-1 align-items-center">
@@ -128,17 +128,17 @@
             <div class="card-body">
                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" class="mb-1" alt="">
-                    {{translate('shop_information')}}
+                    {{translate('shop_Information')}}
                 </h5>
 
                 <div class="row">
                     <div class="col-lg-6 form-group">
-                        <label for="shop_name" class="title-color d-flex gap-1 align-items-center">{{translate('shop_name')}}</label>
-                        <input type="text" class="form-control form-control-user" id="shop_name" name="shop_name" placeholder="{{translate('ex').':'.translate('Jhon')}}" value="{{old('shop_name')}}" required>
+                        <label for="shop_name" class="title-color d-flex gap-1 align-items-center">{{translate('Shop_Name')}}</label>
+                        <input type="text" class="form-control form-control-user" id="shop_name" name="shop_name" placeholder="{{translate('Ex').':'.translate('Jhon')}}" value="{{old('shop_name')}}" required>
                     </div>
                     <div class="col-lg-6 form-group">
-                        <label for="shop_address" class="title-color d-flex gap-1 align-items-center">{{translate('shop_address')}}</label>
-                        <textarea name="shop_address" class="form-control text-area-max" id="shop_address" rows="1" placeholder="{{translate('ex').':'.translate('doe')}}">{{old('shop_address')}}</textarea>
+                        <label for="shop_address" class="title-color d-flex gap-1 align-items-center">{{translate('shop_Address')}}</label>
+                        <textarea name="shop_address" class="form-control text-area-max" id="shop_address" rows="1" placeholder="{{translate('Ex').':'.translate('doe')}}">{{old('shop_address')}}</textarea>
                     </div>
                     <div class="col-lg-6 form-group">
                         <div class="d-flex justify-content-center">
@@ -207,9 +207,9 @@
 
                 <div class="d-flex align-items-center justify-content-end gap-10">
                     <input type="hidden" name="from_submit" value="admin">
-                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-vendor-form" data-redirect-route="{{route('admin.vendors.vendor-list')}}"
-                            data-message="{{translate('want_to_add_this_vendor').'?'}}">{{translate('submit')}}</button>
+                            data-message="{{translate('want_to_add_this_vendor').'?'}}">{{translate('Submit')}}</button>
                 </div>
             </div>
         </div>

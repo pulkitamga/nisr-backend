@@ -265,7 +265,7 @@ class DashboardController extends BaseController
 
             $restockProduct = [
                 'title' => $latestRestockProduct?->product?->name ?? '',
-                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('restock_request') : translate('This_product_has') . ' 99+ ' . translate('restock_request'),
+                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('Restock_Request') : translate('This_product_has') . ' 99+ ' . translate('Restock_Request'),
                 'image' => getStorageImages(path: $latestRestockProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
                 'route' => route('admin.products.request-restock-list')
             ];

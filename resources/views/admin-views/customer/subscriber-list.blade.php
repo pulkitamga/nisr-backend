@@ -1,14 +1,14 @@
 @php use Carbon\Carbon; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('subscriber_list'))
+@section('title', translate('subscriber_List'))
 
 @section('content')
 <div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/subscribers.png')}}" width="20" alt="">
-            {{translate('subscriber_list')}}
+            {{translate('subscriber_List')}}
             <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $totalSubscribers }}</span>
         </h2>
     </div>
@@ -27,8 +27,8 @@
                         <label class="form-label">{{translate('Sort_By')}}</label>
                         <select class="form-control js-select2-custom" name="sort_by">
                             <option disabled {{ is_null(request('sort_by')) ? 'selected' : '' }}>{{ translate('select_mail_sorting_order') }}</option>
-                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{ translate('Sort_by_oldest') }}</option>
-                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{ translate('Sort_by_newest') }}</option>
+                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{ translate('Sort_By_Oldest') }}</option>
+                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{ translate('Sort_By_Newest') }}</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -39,7 +39,7 @@
                 <div class="btn--container justify-content-end mt-3">
                     <a href="{{ route('admin.customer.subscriber-list') }}"
                        class="btn btn-secondary px-5">
-                        {{ translate('reset') }}
+                        {{ translate('Reset') }}
                     </a>
                     <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
                 </div>
@@ -51,7 +51,7 @@
             <div class="card">
                 <div class="card-header gap-3 align-items-center">
                     <h5 class="mb-0 me-auto">
-                        {{translate('subscriber_list')}}
+                        {{translate('subscriber_List')}}
                         <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $subscriberList->total() }}</span>
                     </h5>
 
@@ -66,8 +66,8 @@
                                 </div>
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                placeholder="{{ translate('search_by_email')}}"  aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                            <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
+                                placeholder="{{ translate('search_by_email')}}"  aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                            <button type="submit" class="btn btn--primary">{{ translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -85,9 +85,9 @@
                         <tr>
                             <th>{{ translate('SL')}}</th>
                             <th scope="col">
-                                {{ translate('email')}}
+                                {{ translate('Email')}}
                             </th>
-                            <th>{{ translate('subscription_date')}}</th>
+                            <th>{{ translate('Subscription_Date')}}</th>
                         </tr>
                         </thead>
                         <tbody>

@@ -435,14 +435,14 @@ class CrmCaseController extends Controller
         $statusKey = $this->normalizeStatusKey($statusName);
 
         return match ($statusKey) {
-            'new' => translate('new'),
+            'new' => translate('New'),
             'open', 'opened' => translate('open'),
             'processing' => translate('processing'),
-            'in_progress' => translate('in_progress'),
+            'in_progress' => translate('in_Progress'),
             'assigned' => translate('assigned'),
-            'waiting', 'pending' => translate('pending'),
+            'waiting', 'pending' => translate('Pending'),
             'hold', 'on_hold' => translate('hold'),
-            'closed', 'close' => translate('closed'),
+            'closed', 'close' => translate('Closed'),
             'resolved' => translate('resolved'),
             'completed', 'complete' => translate('completed'),
             default => Str::of($statusName)

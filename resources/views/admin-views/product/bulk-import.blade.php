@@ -15,7 +15,7 @@
         <div class="row text-start">
             <div class="col-12">
                 <div class="card card-body">
-                    <h1 class="display-5">{{translate('instructions')}} : </h1>
+                    <h1 class="display-5">{{translate('Instructions')}} : </h1>
                     <p>{{ translate('1') }}. {{translate('download_the_format_file_and_fill_it_with_proper_data.')}}</p>
 
                     <p>{{ translate('2') }}. {{translate('you_can_download_the_example_file_to_understand_how_the_data_must_be_filled.')}}</p>
@@ -55,8 +55,8 @@
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-10 align-items-center justify-content-end">
-                                <button type="reset" class="btn btn-secondary px-4 action-onclick-reload-page">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                <button type="reset" class="btn btn-secondary px-4 action-onclick-reload-page">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Submit')}}</button>
                             </div>
                         </div>
                     </div>

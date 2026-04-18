@@ -21,7 +21,7 @@
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="mb-2">
-                                    <label for="name" class="title-color font-weight-medium">{{ translate('products') }}</label>
+                                    <label for="name" class="title-color font-weight-medium">{{ translate('Products') }}</label>
                                     <select
                                         class="js-example-basic-multiple js-states js-example-responsive form-control"
                                         name="product_id">
@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="form-group md-2">
                                     <label for="name" class="title-color font-weight-medium">
-                                        {{ translate('banner') }}
+                                        {{ translate('Banner') }}
                                     </label>
                                     <span class="text-info ms-1">
                                         ( {{ translate('ratio') }} {{ translate('4') }}:{{ translate('1') }} )
@@ -63,8 +63,8 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{ translate('reset') }}</button>
-                            <button type="submit" class="btn btn--primary px-4">{{ translate('submit') }}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{ translate('Reset') }}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{ translate('Submit') }}</button>
                         </div>
                     </form>
                 </div>
@@ -96,10 +96,10 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control" value="{{ request('searchValue') }}"
-                                               placeholder="{{ translate('search_by_product_name') }}"
-                                               aria-label="{{ translate('Search orders') }}" >
+                                               placeholder="{{ translate('search_by_Product_Name') }}"
+                                               aria-label="{{ translate('search_orders') }}" >
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -114,10 +114,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="ps-xl-5">{{ translate('SL') }}</th>
-                                <th>{{ translate('banner') }}</th>
-                                <th>{{ translate('product') }}</th>
+                                <th>{{ translate('Banner') }}</th>
+                                <th>{{ translate('Product') }}</th>
                                 <th class="text-center">{{ translate('published') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -132,7 +132,7 @@
                                         @if(isset($mostDemanded->product->name))
                                             {{ $mostDemanded->product->name }}
                                         @else
-                                            {{ translate('no_product_found') }}
+                                            {{ translate('No_Product_Found') }}
                                         @endif
                                     </td>
                                     <td class="d-flex justify-content-center">
@@ -165,12 +165,12 @@
                                     <td>
                                         <div class="d-flex gap-10 justify-content-center">
                                             <a class="btn btn-outline--primary btn-sm cursor-pointer edit"
-                                            title="{{ translate('edit') }}"
+                                            title="{{ translate('Edit') }}"
                                             href="{{route('admin.most-demanded.edit',[$mostDemanded['id']]) }}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <a class="btn btn-outline-danger btn-sm cursor-pointer most-demanded-product-delete-button"
-                                            title="{{ translate('delete') }}"
+                                            title="{{ translate('Delete') }}"
                                                data-warning-text ="{{ translate('are_you_sure_delete_this_most_demanded_product') }}"
                                                data-text ="{{ translate('you_will_not_be_able_to_revert_this') }}"
                                             id="{{ $mostDemanded['id'] }}">

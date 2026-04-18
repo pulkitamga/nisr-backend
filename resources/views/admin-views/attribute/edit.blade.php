@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('attribute'))
+@section('title', translate('Attribute'))
 
 @section('content')
     <div class="content container-fluid">
@@ -49,8 +49,8 @@
                                 <input type="hidden" name="lang[]" value="{{$lang}}" id="lang">
                             @endforeach
                             <div class="d-flex justify-content-end gap-3">
-                                <button type="reset" class="btn px-4 btn-secondary">{{ translate('reset') }}</button>
-                                <button type="submit" class="btn px-4 btn--primary">{{ translate('update') }}</button>
+                                <button type="reset" class="btn px-4 btn-secondary">{{ translate('Reset') }}</button>
+                                <button type="submit" class="btn px-4 btn--primary">{{ translate('Update') }}</button>
                             </div>
                         </form>
                     </div>

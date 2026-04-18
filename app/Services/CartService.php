@@ -156,7 +156,7 @@ class CartService
             'discount' => usdToDefaultCurrency($discount),
             'discount_amount' => $discount,
             'discount_type' => $discountType,
-            'discount_text' => $discountType == 'flat' ? translate('save') .' '. usdToDefaultCurrency($discount) : getProductPriceByType(product: $product, type: 'discount', result: 'value').'% '. translate('off'),
+            'discount_text' => $discountType == 'flat' ? translate('Save') .' '. usdToDefaultCurrency($discount) : getProductPriceByType(product: $product, type: 'discount', result: 'value').'% '. translate('OFF'),
             'tax' => $product->tax_model == 'exclude' ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $tax * $requestQuantity), currencyCode: getCurrencyCode()) : 'incl.',
             'quantity' => $product['product_type'] == 'physical' ? $quantity : 100,
             'inCartStatus' => $inCartStatus,

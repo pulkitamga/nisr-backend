@@ -22,7 +22,7 @@
                                     </div>
                                 </div>
                                 <input id="" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_by_question_&_answer')}}" value="{{ request('searchValue') }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                         <button type="button" class="btn btn--primary" data-toggle="modal" data-target="#faqAddModal">
@@ -39,11 +39,11 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('question')}}</th>
-                            <th>{{translate('answer')}}</th>
-                            <th class="text-center">{{translate('priority')}}</th>
-                            <th class="text-center">{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th>{{translate('Question')}}</th>
+                            <th>{{translate('Answer')}}</th>
+                            <th class="text-center">{{translate('Priority')}}</th>
+                            <th class="text-center">{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,12 +79,12 @@
                             <td>
                                 <div class="d-flex justify-content-center gap-10">
                                     <a class="btn btn-outline--primary btn-sm edit"
-                                       title="{{ translate('edit')}}"
+                                       title="{{ translate('Edit')}}"
                                        data-id="{{ route('admin.helpTopic.update', ['id'=>$help['id']]) }}">
                                         <i class="tio-edit"></i>
                                     </a>
                                     <a class="btn btn-outline-danger btn-sm delete-data-without-form"
-                                       title="{{ translate('delete')}}"
+                                       title="{{ translate('Delete')}}"
                                        data-action="{{route('admin.helpTopic.delete')}}"
                                        data-id="{{$help['id']}}">
                                         <i class="tio-delete"></i>
@@ -121,15 +121,15 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="title-color">{{translate('question')}}</label>
+                            <label class="title-color">{{translate('Question')}}</label>
                             <input type="text" name="question" class="form-control" placeholder="{{translate('enter_question')}}" required="">
                         </div>
                         <div class="form-group">
-                            <label class="title-color">{{translate('answer')}}</label>
+                            <label class="title-color">{{translate('Answer')}}</label>
                             <textarea class="form-control" name="answer" rows="4" placeholder="{{translate('write_answer').'....'}}"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="title-color">{{translate('priority')}}</label>
+                            <label class="title-color">{{translate('Priority')}}</label>
                             <select name="ranking" class="form-control">
                                 @for($index = 1; $index <= 15; $index++)
                                     <option value="{{ $index }}">{{ $index }}</option>
@@ -140,7 +140,7 @@
                             <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                                 <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
                                 <div class="d-flex gap-2 align-items-center">
-                                    <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                    <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" name="status" value="1">
                                         <span class="switcher_control"></span>
@@ -149,8 +149,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-3 mt-4">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                            <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                         </div>
                     </div>
                 </form>
@@ -172,15 +172,15 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="title-color">{{translate('question')}}</label>
+                            <label class="title-color">{{translate('Question')}}</label>
                             <input type="text" name="question" class="form-control" id="question-filed" placeholder="{{translate('enter_question')}}" required="">
                         </div>
                         <div class="form-group">
-                            <label class="title-color">{{translate('answer')}}</label>
+                            <label class="title-color">{{translate('Answer')}}</label>
                             <textarea class="form-control" name="answer" rows="4" id="answer-field" placeholder="{{translate('write_answer').'....'}}"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="title-color">{{translate('priority')}}</label>
+                            <label class="title-color">{{translate('Priority')}}</label>
                             <select name="ranking" class="form-control" id="ranking-field">
                                 @for($index = 1; $index <= 15; $index++)
                                     <option value="{{ $index }}">{{ $index }}</option>
@@ -191,7 +191,7 @@
                             <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                                 <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
                                 <div class="d-flex gap-2 align-items-center">
-                                    <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                    <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                     <label class="switcher">
                                         <input type="checkbox" class="switcher_input" id="check-status" name="status" value="1" checked>
                                         <span class="switcher_control"></span>
@@ -200,8 +200,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-3 mt-4">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                            <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                         </div>
                     </div>
                 </form>

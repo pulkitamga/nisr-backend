@@ -10,7 +10,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('earning_statement')}}
+                {{translate('earning_Statement')}}
             </h2>
         </div>
         @include('admin-views.delivery-man.pages-inline-menu')
@@ -29,7 +29,7 @@
                         <div class="card h-100 d-flex justify-content-center align-items-center py-xl-4">
                             <div class="card-body d-flex flex-column gap-10 align-items-center justify-content-center">
                                 <img src="{{ dynamicAsset('public/assets/back-end/img/aw.png') }}" width="48" class="mb-2" alt="">
-                                <h5 class="text-capitalize mb-2">{{ translate('total_earning') }}</h5>
+                                <h5 class="text-capitalize mb-2">{{ translate('total_Earning') }}</h5>
                                 <h2 class="business-analytics__title">{{ $totalEarn ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $totalEarn), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) }}</h2>
                             </div>
                         </div>
@@ -41,7 +41,7 @@
                             </span>
                             <div class="card-body d-flex flex-column gap-10 align-items-center justify-content-center">
                                 <img src="{{ dynamicAsset('public/assets/back-end/img/pw.png') }}" width="40" class="mb-2" alt="">
-                                <h5 class="text-capitalize mb-2">{{ translate('withdrawable_balance') }}</h5>
+                                <h5 class="text-capitalize mb-2">{{ translate('withdrawable_Balance') }}</h5>
                                 <h2 class="business-analytics__title">{{ $withdrawalableBalance <= 0 ? setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawalableBalance), currencyCode: getCurrencyCode()) }}</h2>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                             </span>
                             <div class="card-body d-flex flex-column gap-10 align-items-center justify-content-center">
                                 <img src="{{ dynamicAsset('public/assets/back-end/img/withdraw.png') }}" width="40" class="mb-2" alt="">
-                                <h5 class="text-capitalize mb-2">{{ translate('already_withdrawn') }}</h5>
+                                <h5 class="text-capitalize mb-2">{{ translate('already_Withdrawn') }}</h5>
                                 <h2 class="business-analytics__title">{{ $deliveryMan->wallet? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $deliveryMan->wallet->total_withdraw), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) }}</h2>
                             </div>
                         </div>
@@ -93,9 +93,9 @@
                                                 <i class="tio-search"></i>
                                             </div>
                                         </div>
-                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -112,12 +112,12 @@
                                         <ul class="nav nav-tabs gap-3 border-0 mb-4">
                                             <li class="nav-item">
                                                 <a href="#status" data-toggle="tab" class="nav-link py-2 px-0 active">
-                                                    {{translate('status')}}
+                                                    {{translate('Status')}}
                                                 </a>
                                             </li>
                                             <li class="nav-item">
                                                 <a href="#payment" data-toggle="tab" class="nav-link py-2 px-0 text-capitalize">
-                                                    {{translate('payment_method')}}
+                                                    {{translate('Payment_Method')}}
                                                 </a>
                                             </li>
                                         </ul>
@@ -127,7 +127,7 @@
                                                     <li>
                                                         <label class="custom-control-group">
                                                             <input type="checkbox" class="input" value="pending">
-                                                            <span class="label">{{translate('pending')}}</span>
+                                                            <span class="label">{{translate('Pending')}}</span>
                                                         </label>
                                                     </li>
                                                     <li>
@@ -145,19 +145,19 @@
                                                     <li>
                                                         <label class="custom-control-group">
                                                             <input type="checkbox" class="input" value="out_for_delivery">
-                                                            <span class="label text-capitalize">{{translate('out_for_delivery')}}</span>
+                                                            <span class="label text-capitalize">{{translate('out_For_Delivery')}}</span>
                                                         </label>
                                                     </li>
                                                     <li>
                                                         <label class="custom-control-group">
                                                             <input type="checkbox" class="input" value="delivered">
-                                                            <span class="label text-capitalize">{{translate('delivered')}}</span>
+                                                            <span class="label text-capitalize">{{translate('Delivered')}}</span>
                                                         </label>
                                                     </li>
                                                     <li>
                                                         <label class="custom-control-group">
                                                             <input type="checkbox" class="input" value="cancel">
-                                                            <span class="label">{{translate('cancel')}}</span>
+                                                            <span class="label">{{translate('Cancel')}}</span>
                                                         </label>
                                                     </li>
                                                 </ul>
@@ -167,7 +167,7 @@
                                                     <li>
                                                         <label class="custom-control-group">
                                                             <input type="checkbox" class="input" value="paid">
-                                                            <span class="label">{{translate('received')}}</span>
+                                                            <span class="label">{{translate('Received')}}</span>
                                                         </label>
                                                     </li>
                                                     <li>

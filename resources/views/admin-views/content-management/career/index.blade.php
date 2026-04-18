@@ -10,7 +10,7 @@
     @php
     $sections = [
     'current_openings' => translate('current_openings'),
-    'why_join_us' => translate('why_join_us'),
+    'why_join_us' => translate('Why_Join_Us'),
     'perks' => translate('perks_and_benefits'),
     ];
     $current = request('section') ?? 'current_openings';
@@ -86,8 +86,8 @@
                         @case('hero')
                         <th>{{ translate('Title') }}</th>
                         <th>{{ translate('Description') }}</th>
-                        <th>{{ translate('Button Text') }}</th>
-                        <th>{{ translate('Button Link') }}</th>
+                        <th>{{ translate('Button_Text') }}</th>
+                        <th>{{ translate('button_link') }}</th>
                         <th>{{ translate('Image') }}</th>
                         @break
                         @endswitch

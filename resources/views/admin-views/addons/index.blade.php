@@ -13,7 +13,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/system-setup.png')}}" alt="">
-                {{translate('system_setup')}}
+                {{translate('system_Setup')}}
             </h2>
 
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder text-capitalize">
@@ -113,7 +113,7 @@
 
                         <div class="col-sm-6 col-lg-5 col-xl-4 col-xxl-9">
                             <div class="ps-sm-5">
-                                <h5 class="mb-3 d-flex">{{ translate('instructions') }}</h5>
+                                <h5 class="mb-3 d-flex">{{ translate('Instructions') }}</h5>
                                 <ul class="ps-3 d-flex flex-column gap-2 instructions-list">
                                     <li>
                                         {{ translate('please_make_sure').','.translate('your_server_php').'"'.translate('upload_max_filesize').'"'.translate('value_is_grater_or_equal_to_20MB').'.'.translate('current_value_is').'-'.ini_get('upload_max_filesize').'B' }}
@@ -130,7 +130,7 @@
                                 <div class="d-flex justify-content-end">
                                     <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                             class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}"
-                                            id="upload-theme">{{translate('upload')}}</button>
+                                            id="upload-theme">{{translate('Upload')}}</button>
                                 </div>
                             </div>
                         @else
@@ -151,7 +151,7 @@
                                     <button type="button"
                                             onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
                                             class="btn btn--primary px-5"
-                                            id="update-button-message">{{translate('upload')}}
+                                            id="update-button-message">{{translate('Upload')}}
                                     </button>
                                 </div>
                             </div>
@@ -201,11 +201,11 @@
 
                                                     <div class="d-flex justify-content-center gap-3 mb-3">
                                                         <button type="button" class="fs-16 btn btn-secondary px-sm-5"
-                                                                data-dismiss="modal">{{ translate('cancel') }}</button>
+                                                                data-dismiss="modal">{{ translate('Cancel') }}</button>
                                                         <button type="submit" class="fs-16 btn btn-danger px-sm-5"
                                                                 data-dismiss="modal"
                                                                 data-path="{{$addon}}"
-                                                                id="theme-delete">{{ translate('delete') }}
+                                                                id="theme-delete">{{ translate('Delete') }}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -238,7 +238,7 @@
                                                          src="{{dynamicAsset(path: 'public/assets/back-end/img/shift.png')}}"
                                                          alt="">
                                                 </div>
-                                                <h3>{{ translate('are_you_sure').'?'}}</h3>
+                                                <h3>{{ translate('Are_you_sure').'?'}}</h3>
                                                 @if ($data['is_published'])
                                                     <p class="mb-5">{{ translate('want_to_inactive_this') .' '. $data['name'] }}</p>
                                                 @else
@@ -246,12 +246,12 @@
                                                 @endif
                                                 <div class="d-flex justify-content-center gap-3 mb-3">
                                                     <button type="button" class="fs-16 btn btn-secondary px-sm-5"
-                                                            data-dismiss="modal">{{ translate('no') }}
+                                                            data-dismiss="modal">{{ translate('No') }}
                                                     </button>
                                                     <button type="button" class="fs-16 btn btn--primary px-sm-5"
                                                             data-dismiss="modal"
                                                             data-path="{{ $addon }}"
-                                                            id="publish-addon">{{ translate('yes') }}
+                                                            id="publish-addon">{{ translate('Yes') }}
                                                     </button>
                                                 </div>
                                             </div>

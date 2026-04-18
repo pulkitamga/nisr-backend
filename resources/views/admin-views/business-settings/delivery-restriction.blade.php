@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('delivery_Restriction'))
+@section('title', translate('Delivery_restriction'))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.css')}}" />
@@ -13,7 +13,7 @@
     <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-            {{translate('business_setup')}}
+            {{translate('business_Setup')}}
         </h2>
         <div class="btn-group">
             <div class="ripple-animation" data-toggle="modal" data-target="#getInformationModal">
@@ -28,7 +28,7 @@
         <div class="card-header">
             <h5 class="mb-0 text-capitalize d-flex gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/delivery2.png')}}" alt="">
-                {{translate('delivery')}}
+                {{translate('Delivery')}}
             </h5>
         </div>
         <div class="card-body">
@@ -36,7 +36,7 @@
                 <div class="col-md-4">
                     <div class="d-flex justify-content-between align-items-center gap-10 form-control h-auto min-form-control-height mt-2" id="customer_wallet_section">
                         <span class="title-color">
-                            {{translate('delivery_available_country')}}
+                            {{translate('Delivery_Available_Country')}}
                             <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{translate('if_enabled,_you_can_choose_one_or_multiple_countries_for_product_delivery').'.' }}">
                                 <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                             </span>
@@ -137,7 +137,7 @@
                 <div class="col-md-4">
                     <div class="d-flex justify-content-between align-items-center gap-10 form-control h-auto min-form-control-height mt-2" id="customer_wallet_section">
                         <span class="title-color">
-                            {{translate('delivery_available_zip_code_area')}}
+                            {{translate('Delivery_Available_Zip_Code_Area')}}
                             <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{translate('if_enabled,_the_zip_code_areas_will_be_available_for_delivery').'. '.translate('Please_Note').' : '.translate('If_you_don’t_enter_a_specific_zip_code_from_a_country,_that_area_won’t_be_available_for_delivery').'.'}}">
                                 <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                             </span>
@@ -172,7 +172,7 @@
                         method="post">
                         @csrf
                         <div class="form-group">
-                            <label class="title-color d-flex font-weight-bold">{{translate('country')}} </label>
+                            <label class="title-color d-flex font-weight-bold">{{translate('Country')}} </label>
                             <div class="d-flex gap-2">
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control"
                                     name="country_code[]" id="choice_attributes" multiple="multiple">
@@ -182,7 +182,7 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </form>
@@ -192,9 +192,9 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{translate('sl')}}</th>
+                                        <th>{{translate('SL')}}</th>
                                         <th class="text-center">{{translate('country_name')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -209,7 +209,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                    href="javascript:" title="{{translate('delete')}}" data-id="country-{{$store->id}}">
+                                                    href="javascript:" title="{{translate('Delete')}}" data-id="country-{{$store->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form
@@ -253,7 +253,7 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </form>
@@ -263,9 +263,9 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{translate('sl')}}</th>
+                                        <th>{{translate('SL')}}</th>
                                         <th class="text-center">{{translate('state_name')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -276,7 +276,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                    href="javascript:" title="{{translate('delete')}}" data-id="state-{{$store->id}}">
+                                                    href="javascript:" title="{{translate('Delete')}}" data-id="state-{{$store->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form
@@ -320,7 +320,7 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </form>
@@ -330,9 +330,9 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{translate('sl')}}</th>
+                                        <th>{{translate('SL')}}</th>
                                         <th class="text-center">{{translate('city_name')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -343,7 +343,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                    href="javascript:" title="{{translate('delete')}}" data-id="city-{{$store->id}}">
+                                                    href="javascript:" title="{{translate('Delete')}}" data-id="city-{{$store->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form
@@ -376,10 +376,10 @@
                     <form action="{{ route('admin.business-settings.delivery-restriction.add-zip-code') }}"
                         method="post">
                         @csrf
-                        <label class="title-color d-flex font-weight-bold"> {{translate('zip_code')}} </label>
+                        <label class="title-color d-flex font-weight-bold"> {{translate('Zipcode')}} </label>
                         <div class="d-flex gap-2">
-                            <input type="text" class="form-control bootstrap-tags-input" name="zipcode" placeholder="{{ translate('enter_zip_code') }}" data-role="tagsinput" required>
-                            <button type="submit" class="btn btn--primary px-4 zip_code">{{translate('save')}}</button>
+                            <input type="text" class="form-control bootstrap-tags-input" name="zipcode" placeholder="{{ translate('Enter_Zip_Code') }}" data-role="tagsinput" required>
+                            <button type="submit" class="btn btn--primary px-4 zip_code">{{translate('Save')}}</button>
                         </div>
                         <p class="mt-2">* {{translate('multiple_zip_codes_can_be_inputted_by_comma_separating_or_pressing_enter_button')}}</p>
                     </form>
@@ -389,9 +389,9 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{translate('sl')}}</th>
-                                        <th class="text-center">{{translate('zip_code')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th>{{translate('SL')}}</th>
+                                        <th class="text-center">{{translate('Zipcode')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -402,7 +402,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data" href="javascript:"
-                                                    title="{{translate('delete')}}" data-id="zip-{{$zip->id}}">
+                                                    title="{{translate('Delete')}}" data-id="zip-{{$zip->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form
@@ -446,7 +446,7 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </form>
@@ -456,9 +456,9 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{translate('sl')}}</th>
-                                        <th class="text-center">{{translate('area')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th>{{translate('SL')}}</th>
+                                        <th class="text-center">{{translate('Area')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -470,7 +470,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data" href="javascript:"
-                                                    title="{{translate('delete')}}" data-id="area-{{$area->id}}">
+                                                    title="{{translate('Delete')}}" data-id="area-{{$area->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form
@@ -515,7 +515,7 @@
                                 <img width="80" class="mb-3"
                                     src="{{dynamicAsset(path: 'public/assets/back-end/img/delivery-restriction.png')}}" loading="lazy"
                                     alt="">
-                                <h4 class="lh-md mb-3 text-capitalize">{{translate('delivery_restriction')}}</h4>
+                                <h4 class="lh-md mb-3 text-capitalize">{{translate('Delivery_restriction')}}</h4>
                                 <ul class="d-flex flex-column px-4 gap-2 mb-4">
                                     <li>
                                         {{translate('run_eCommerce_business_in_your_country_and_beyond').'.'}}

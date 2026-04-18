@@ -36,7 +36,7 @@
 </div>
 <span id="earn-statistics" data-action="{{ route('admin.dashboard.earning-statistics') }}"></span>
 <span id="earn-statistics-data"
-      data-inhouse-text="{{ translate('inhouse') }}"
+      data-inhouse-text="{{ translate('in_House') }}"
       data-inhouse-earn="{{ json_encode($inHouseEarning) }}"
       data-label="{{ json_encode($label) }}">
 </span>

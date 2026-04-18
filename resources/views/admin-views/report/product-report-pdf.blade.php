@@ -116,7 +116,7 @@
         <tr>
             <td class="text-start">
                 <h2>{{ translate('product_Report') }}</h2>
-                <p>{{ translate('date') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
+                <p>{{ translate('DATE') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
             </td>
             <td class="text-end">
                 @php
@@ -142,7 +142,7 @@
         <tr>
             <td>
                 <table>
-                    <tr><th class="text-start">{{ translate('duration') }}</th><td>: {{ str_replace('_',' ', $data['date_type']) }}</td></tr>
+                    <tr><th class="text-start">{{ translate('Duration') }}</th><td>: {{ str_replace('_',' ', $data['date_type']) }}</td></tr>
                     <tr><th class="text-start">{{ translate('vendor_Info') }}</th><td>: 
                         @if(is_object($data['seller']))
                             {{ $data['seller']->f_name ?? '' }} {{ $data['seller']->l_name ?? '' }}
@@ -156,7 +156,7 @@
                 <table>
                     <tr><th class="text-start">{{ translate('total_Products') }}</th><td>: {{ count($data['products']) }}</td></tr>
                     @if($data['search'])
-                    <tr><th class="text-start">{{ translate('search') }}</th><td>: {{ $data['search'] }}</td></tr>
+                    <tr><th class="text-start">{{ translate('Search') }}</th><td>: {{ $data['search'] }}</td></tr>
                     @endif
                 </table>
             </td>
@@ -193,12 +193,12 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>{{ translate('product_Name') }}</th>
-                    <th>{{ translate('unit_Price') }}</th>
+                    <th>{{ translate('Product_name') }}</th>
+                    <th>{{ translate('Unit_Price') }}</th>
                     <th>{{ translate('total_Sold_Amount') }}</th>
                     <th>{{ translate('total_Quantity_Sold') }}</th>
                     <th>{{ translate('avg_Value') }}</th>
-                    <th>{{ translate('current_Stock') }}</th>
+                    <th>{{ translate('Current_Stock') }}</th>
                     <th>{{ translate('avg_Rating') }}</th>
                 </tr>
             </thead>
@@ -219,7 +219,7 @@
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $avgValue), currencyCode: getCurrencyCode()) }}
                     </td>
                     <td>
-                        {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('available') : translate('not_available')) : ($product->current_stock ?? 0) }}
+                        {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('Available') : translate('not_available')) : ($product->current_stock ?? 0) }}
                     </td>
                     <td>
                         @php
@@ -238,8 +238,8 @@
             <tr>
                 <td class="content-position-y bg-light py-4 footer" style="background-color: #F7F7F7; padding: 24px 40px;">
                     <div class="d-flex justify-content-center gap-2">
-                        <div><i class="fa fa-phone"></i> {{ translate('phone') }} : {{ $data['company_phone'] ?? '' }}</div>
-                        <div><i class="fa fa-envelope"></i> {{ translate('email') }} : {{ $data['company_email'] ?? '' }}</div>
+                        <div><i class="fa fa-phone"></i> {{ translate('Phone') }} : {{ $data['company_phone'] ?? '' }}</div>
+                        <div><i class="fa fa-envelope"></i> {{ translate('Email') }} : {{ $data['company_email'] ?? '' }}</div>
                     </div>
                     <div class="text-center">{{ url('/') }}</div>
                     <div class="text-center">{{ translate('all_copy_right_reserved_©_'.date('Y').'_').($data['company_name'] ?? '') }}</div>

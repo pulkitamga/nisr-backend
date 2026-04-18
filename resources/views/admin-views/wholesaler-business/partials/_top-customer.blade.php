@@ -22,7 +22,7 @@
                             </div>
                             <h5 class="mb-0">{{ $item->wholeseller->f_name ?? translate('not_found') }}</h5>
                             <div class="orders-count d-flex gap-1">
-                                <div>{{ translate('orders') }} :</div>
+                                <div>{{ translate('Orders') }} :</div>
                                 <div>{{ $item->count }}</div>
                             </div>
                         </div>

@@ -23,7 +23,7 @@ class DeliveryCountryCodeAddRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'country_code.required' => translate('the_country_code_field_is_required'),
+            'country_code.required' => translate('The_country_code_field_is_required'),
         ];
     }
 

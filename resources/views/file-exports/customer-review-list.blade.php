@@ -12,31 +12,31 @@
                     {{translate('search_Bar_Content').' '.'-'.' '.!empty($data['key']) ?  ucwords($data['key']) : 'N/A'}}
                     @if(isset($data['vendor']))
                         <br>
-                        {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                        {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
                     @endif
                     <br>
-                        {{translate('product').' '.'-'.' '.ucwords($data['product_name'] == 'all_products' ? translate('all_Products') : $data['product_name'])}}
+                        {{translate('Product').' '.'-'.' '.ucwords($data['product_name'] == 'all_products' ? translate('all_Products') : $data['product_name'])}}
                     <br>
-                        {{translate('customer').' '.'-'.' '.ucwords($data['customer_name'] == 'all_customers' ? translate('all_Customers') : $data['customer_name']['f_name'].' '.$data['customer_name']['l_name'])}}
+                        {{translate('Customer').' '.'-'.' '.ucwords($data['customer_name'] == 'all_customers' ? translate('all_Customers') : $data['customer_name']['f_name'].' '.$data['customer_name']['l_name'])}}
                     <br>
-                         {{translate('status').' '.'-'.' '.translate(!is_null($data['status']) ? ($data['status'] == 1 ? 'active' : 'inactive') : 'all_status')}}
+                         {{translate('Status').' '.'-'.' '.translate(!is_null($data['status']) ? ($data['status'] == 1 ? 'active' : 'inactive') : 'all_status')}}
                     <br>
-                        {{translate('from').' '.'-'.' '.($data['from'] ?   date('d M, Y',strtotime($data['from'])) : '') }}
+                        {{translate('From').' '.'-'.' '.($data['from'] ?   date('d M, Y',strtotime($data['from'])) : '') }}
                     <br>
-                        {{translate('to').' '.'-'.' '. ($data['to'] ? date('d M, Y',strtotime($data['to'])) : '')}}
+                        {{translate('To').' '.'-'.' '. ($data['to'] ? date('d M, Y',strtotime($data['to'])) : '')}}
                     <br>
                 </th>
             </tr>
             <tr>
                 <td> {{translate('SL')}}	</td>
-                <td> {{translate('product_Name')}}	</td>
-                <td> {{translate('customer_Name')}}	</td>
+                <td> {{translate('Product_name')}}	</td>
+                <td> {{translate('Customer_Name')}}	</td>
                 @if($showStoreColumn)
-                <td> {{translate('store_Name')}}	</td>
+                <td> {{translate('Store_Name')}}	</td>
                 @endif
-                <td> {{translate('item_Price')}}	</td>
-                <td> {{translate('rating')}}</td>
-                <td> {{translate('review')}}</td>
+                <td> {{translate('Item_Price')}}	</td>
+                <td> {{translate('Rating')}}</td>
+                <td> {{translate('Review')}}</td>
             </tr>
             @foreach ($data['reviews'] as $key=>$item)
                 <tr >
@@ -44,7 +44,7 @@
                     <td> {{$item?->product?->name ?? translate('product_not_found')}}	</td>
                     <td>{{ucwords(($item->customer?->f_name ?? translate('customer_not_found')).' '.$item->customer?->l_name)}}</td>
                     @if($showStoreColumn)
-                    <td> {{ucwords($item?->product?->seller?->shop->name ?? translate('store_not_found'))}}	</td>
+                    <td> {{ucwords($item?->product?->seller?->shop->name ?? translate('Store_not_found'))}}	</td>
                     @endif
                     <td> {{$item?->product ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $item?->product->unit_price ?? 0)) : translate('not_found')}}</td>
                     <td> {{$item?->rating}}</td>

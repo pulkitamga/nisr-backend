@@ -31,15 +31,15 @@
     <thead class="bg-light">
          <tr>
             <th>{{ translate('SL') }}</th>
-            <th>{{ __('Date') }}</th>
-            <th class="text-nowrap">{{ __('Purchase Order No') }}</th>
-            <th class="text-nowrap">{{ __('Quotation No') }}</th>
+            <th>{{ __('DATE') }}</th>
+            <th class="text-nowrap">{{ __('Purchase_Order_No') }}</th>
+            <th class="text-nowrap">{{ __('Quotation_No') }}</th>
             <th class="text-nowrap">{{ __('Confirm Order No') }}</th>
-            <th class="text-nowrap">{{ __('Invoice No') }}</th>
+            <th class="text-nowrap">{{ __('Invoice NO') }}</th>
             <th>{{ __('Total') }}</th>
             <th>{{ __('Status') }}</th>
-            <th class="text-nowrap">{{ __('Delivery Status') }}</th>
-            <th class="text-nowrap">{{ __('Payment Status') }}</th>
+            <th class="text-nowrap">{{ __('Delivery_Status') }}</th>
+            <th class="text-nowrap">{{ __('Payment_Status') }}</th>
             <th>{{ __('Action') }}</th>
         </tr>
     </thead>
@@ -92,7 +92,7 @@
  <td>
                                         <div class="d-flex align-items-center gap-2 position-relative">
                                             {{-- View Invoice --}}
-                                            <a title="{{ translate('View Details') }}"
+                                            <a title="{{ translate('view_details') }}"
                                                 class="btn btn-outline-info btn-sm square-btn"
                                                 href="{{ route('admin.wholesale.business.orders.invoice', $c->id) }}">
                                                 <i class="tio-invisible"></i>
@@ -111,7 +111,7 @@
                                                 @if (!$c->invoice_no)
                                                 <a href="javascript:void(0)" class="dropdown-item text-dark py-1 px-2"
                                                     onclick="openInvoicePopup({{ $c->id }})">
-                                                    <i class="tio-edit"></i> {{ translate('Invoice No') }}
+                                                    <i class="tio-edit"></i> {{ translate('Invoice NO') }}
                                                 </a>
                                                 @endif
 

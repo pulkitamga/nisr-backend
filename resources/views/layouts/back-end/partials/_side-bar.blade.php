@@ -170,10 +170,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/dashboard' . Dashboard::VIEW[URI]) ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                    title="{{ translate('dashboard') }}" href="{{ route('admin.dashboard.index') }}">
+                                    title="{{ translate('Dashboard') }}" href="{{ route('admin.dashboard.index') }}">
                                     <i class="tio-home-vs-1-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('dashboard') }}
+                                        {{ translate('Dashboard') }}
                                     </span>
                                 </a>
                             </li>
@@ -197,7 +197,7 @@
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select Branch') }}</h5>
+                                        <h5 class="modal-title" id="branchSelectModalLabel">{{ translate('Select_Branch') }}</h5>
                                         <button type="button" class="close custom-close" data-dismiss="modal"
                                             aria-label="Close">
                                             &times;
@@ -211,7 +211,7 @@
                                                 <select class="js-select2-custom form-control form-select"
                                                     id="posBranchId" name="branch_id" required>
                                                     <option value="0" selected disabled>
-                                                        {{ translate('select_branch') }}
+                                                        {{ translate('Select_Branch') }}
                                                     </option>
                                                     @foreach ($branches as $branch)
                                                         <option value="{{ $branch->id }}">{{ $branch->branch_name }}
@@ -237,10 +237,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/orders*') ? (Request::is('admin/orders/details/*') && request()->has('vendor-order-list') ? '' : 'active') : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('orders') }}">
+                                    href="javascript:" title="{{ translate('Orders') }}">
                                     <i class="tio-shopping-cart-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('orders') }}
+                                        {{ translate('Orders') }}
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -248,10 +248,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/all') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.orders.list', ['all']) }}"
-                                            title="{{ translate('all') }}">
+                                            title="{{ translate('All') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('all') }}
+                                                {{ translate('All') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Order::count() }}
                                                 </span>
@@ -261,10 +261,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/pending') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.orders.list', ['pending']) }}"
-                                            title="{{ translate('pending') }}">
+                                            title="{{ translate('Pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('pending') }}
+                                                {{ translate('Pending') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'pending'])->count() }}
                                                 </span>
@@ -287,10 +287,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/processing') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.orders.list', ['processing']) }}"
-                                            title="{{ translate('packaging') }}">
+                                            title="{{ translate('Packaging') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('packaging') }}
+                                                {{ translate('Packaging') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'processing'])->count() }}
                                                 </span>
@@ -301,10 +301,10 @@
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/out_for_delivery') ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.orders.list', ['out_for_delivery']) }}"
-                                            title="{{ translate('out_for_delivery') }}">
+                                            title="{{ translate('out_For_Delivery') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('out_for_delivery') }}
+                                                {{ translate('out_For_Delivery') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'out_for_delivery'])->count() }}
                                                 </span>
@@ -314,10 +314,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/delivered') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.orders.list', ['delivered']) }}"
-                                            title="{{ translate('delivered') }}">
+                                            title="{{ translate('Delivered') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('delivered') }}
+                                                {{ translate('Delivered') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'delivered'])->count() }}
                                                 </span>
@@ -327,10 +327,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/returned') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.orders.list', ['returned']) }}"
-                                            title="{{ translate('returned') }}">
+                                            title="{{ translate('Returned') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('returned') }}
+                                                {{ translate('Returned') }}
                                                 <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\Order::where('order_status', 'returned')->count() }}
                                                 </span>
@@ -340,10 +340,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/failed') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.orders.list', ['failed']) }}"
-                                            title="{{ translate('failed') }}">
+                                            title="{{ translate('Failed') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('failed_to_Deliver') }}
+                                                {{ translate('Failed_to_Deliver') }}
                                                 <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\Order::where(['order_status' => 'failed'])->count() }}
                                                 </span>
@@ -382,10 +382,10 @@
                                         class="nav-item {{ Request::is('admin/refund-section/refund/' . RefundRequest::LIST[URI] . '/pending') ? 'active' : '' }}">
                                         <a class="nav-link"
                                             href="{{ route('admin.refund-section.refund.list', ['pending']) }}"
-                                            title="{{ translate('pending') }}">
+                                            title="{{ translate('Pending') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('pending') }}
+                                                {{ translate('Pending') }}
                                                 <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'pending')->count() }}
                                                 </span>
@@ -397,10 +397,10 @@
                                         class="nav-item {{ Request::is('admin/refund-section/refund/' . RefundRequest::LIST[URI] . '/approved') ? 'active' : '' }}">
                                         <a class="nav-link"
                                             href="{{ route('admin.refund-section.refund.list', ['approved']) }}"
-                                            title="{{ translate('approved') }}">
+                                            title="{{ translate('Approved') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('approved') }}
+                                                {{ translate('Approved') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\RefundRequest::where('status', 'approved')->count() }}
                                                 </span>
@@ -494,17 +494,17 @@
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                         style="display: {{ Request::is('admin/brand*') ? 'block' : 'none' }}">
                                         <li class="nav-item {{ Request::is('admin/brand/' . Brand::ADD[URI]) ? 'active' : '' }}"
-                                            title="{{ translate('add_new') }}">
+                                            title="{{ translate('add_New') }}">
                                             <a class="nav-link " href="{{ route('admin.brand.add-new') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">{{ translate('add_new') }}</span>
+                                                <span class="text-truncate">{{ translate('add_New') }}</span>
                                             </a>
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/brand/' . Brand::LIST[URI]) ? 'active' : '' }}"
-                                            title="{{ translate('list') }}">
+                                            title="{{ translate('List') }}">
                                             <a class="nav-link " href="{{ route('admin.brand.list') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">{{ translate('list') }}</span>
+                                                <span class="text-truncate">{{ translate('List') }}</span>
                                             </a>
                                         </li>
                                     </ul>
@@ -535,7 +535,7 @@
                                     href="javascript:" title="{{ translate('in-House_Products') }}">
                                     <i class="tio-shop nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        <span class="text-truncate">{{ translate('in-house_Products') }}</span>
+                                        <span class="text-truncate">{{ translate('in-House_Products') }}</span>
                                     </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -563,9 +563,9 @@
                                     <li
                                         class="nav-item d-none {{ Request::is('admin/products/' . Product::BULK_IMPORT[URI]) ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.products.bulk-import') }}"
-                                            title="{{ translate('bulk_import') }}">
+                                            title="{{ translate('bulk_Import') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('bulk_import') }}</span>
+                                            <span class="text-truncate">{{ translate('bulk_Import') }}</span>
                                         </a>
                                     </li>
 
@@ -748,9 +748,9 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/warranty/activation/list') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.activation.list') }}"
-                                            title="{{ translate('all') }}">
+                                            title="{{ translate('All') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('all') }}
+                                            <span class="text-truncate">{{ translate('All') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\Warranty::count() }}
                                                 </span>
@@ -811,10 +811,10 @@
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/warranty/serial-transaction*') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                     href="{{ route('admin.warranty.serial-transaction.list') }}"
-                                    title="{{ translate('serial_transaction_history') }}">
+                                    title="{{ translate('Serial_Transaction_History') }}">
                                     <i class="tio-history nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('serial_transaction_history') }}
+                                        {{ translate('Serial_Transaction_History') }}
                                         <span class="badge badge-soft-info badge-pill ms-1">
                                             {{ \App\Models\SerialTransferHistory::count() }}
                                         </span>
@@ -833,9 +833,9 @@
                                     style="display: {{ Request::is('admin/warranty/claim*') ? 'block' : 'none' }}">
                                     <li class="nav-item {{ Request::is('admin/warranty/claim/all') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.all') }}"
-                                            title="{{ translate('all') }}">
+                                            title="{{ translate('All') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('all') }}
+                                            <span class="text-truncate">{{ translate('All') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::count() }}
                                                 </span>
@@ -844,9 +844,9 @@
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/warranty/claim/new') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.new') }}"
-                                            title="{{ translate('new') }}">
+                                            title="{{ translate('New') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('new') }}
+                                            <span class="text-truncate">{{ translate('New') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'new')->count() }}
                                                 </span>
@@ -866,9 +866,9 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/warranty/claim/approved') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.approved') }}"
-                                            title="{{ translate('approved') }}">
+                                            title="{{ translate('Approved') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('approved') }}
+                                            <span class="text-truncate">{{ translate('Approved') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'approved')->count() }}
                                                 </span>
@@ -890,9 +890,9 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/warranty/claim/received') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.received') }}"
-                                            title="{{ translate('received') }}">
+                                            title="{{ translate('Received') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('received') }}
+                                            <span class="text-truncate">{{ translate('Received') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'received')->count() }}
                                                 </span>
@@ -1015,9 +1015,9 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/warranty/claim/closed') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.warranty.claim.closed') }}"
-                                            title="{{ translate('closed') }}">
+                                            title="{{ translate('Closed') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('closed') }}
+                                            <span class="text-truncate">{{ translate('Closed') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WarrantyClaim::where('status', 'closed')->count() }}
                                                 </span>
@@ -1091,11 +1091,11 @@
                                         class="navbar-vertical-aside-has-menu {{ Request::is('admin/deal/' . DealOfTheDay::LIST[URI]) || Request::is('admin/deal/' . DealOfTheDay::UPDATE[URI] . '*') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
                                             href="{{ route('admin.deal.day') }}"
-                                            title="{{ translate('deal_of_the_day') }}">
+                                            title="{{ translate('deal_Of_The_Day') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                                {{ translate('deal_of_the_day') }}
+                                                {{ translate('deal_Of_The_Day') }}
                                             </span>
                                         </a>
                                     </li>
@@ -1130,10 +1130,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/notification*') || Request::is('admin/push-notification/*') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('notifications') }}">
+                                    href="javascript:" title="{{ translate('Notifications') }}">
                                     <i class="tio-users-switch nav-icon"></i>
                                     <span
-                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('notifications') }}</span>
+                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('Notifications') }}</span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                     style="display: {{ Request::is('admin/notification*') || Request::is('admin/push-notification/*') ? 'block' : 'none' }}">
@@ -1143,13 +1143,13 @@
                                         class="navbar-vertical-aside-has-menu {{ !Request::is('admin/notification/push') && Request::is('admin/notification/*') ? 'active' : '' }}">
                                         <a class="js-navbar-vertical-aside-menu-link nav-link"
                                             href="{{ route('admin.notification.index') }}"
-                                            title="{{ translate('send_notification') }}">
+                                            title="{{ translate('send_Notification') }}">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/send-notification.svg') }}"
                                                 alt="{{ translate('send_notification_svg') }}" width="15"
                                                 class="me-2">
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate text-capitalize">
-                                                {{ translate('send_notification') }}
+                                                {{ translate('send_Notification') }}
                                             </span>
                                         </a>
                                     </li>
@@ -1341,9 +1341,9 @@
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::STOCK_REPORT[URI] . '*') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.products.stock-report') }}"
-                                            title="{{ translate('product_stock') }}">
+                                            title="{{ translate('product_Stock') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('product_stock') }}</span>
+                                            <span class="text-truncate">{{ translate('product_Stock') }}</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/products/' . Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
@@ -1371,10 +1371,10 @@
                                         style="display: {{ Request::is('admin/reports/unified') || Request::is('admin/branch/sales*') || Request::is('admin/stock/transfer-report*') ? 'block' : 'none' }}">
                                         <li class="nav-item {{ Request::is('admin/reports/unified') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.reports.unified') }}"
-                                                title="{{ translate('reports_&_analysis') }}">
+                                                title="{{ translate('reports_&_Analysis') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
                                                 <span class="text-truncate">
-                                                    {{ translate('reports_&_analysis') }}
+                                                    {{ translate('reports_&_Analysis') }}
                                                 </span>
                                             </a>
                                         </li>
@@ -1422,9 +1422,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/crm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.crm.insights-report') }}"
-                                                    title="{{ translate('CRM Insights Report') }}">
+                                                    title="{{ translate('crm_insights_report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">{{ translate('CRM Insights Report') }}</span>
+                                                    <span class="text-truncate">{{ translate('crm_insights_report') }}</span>
                                                 </a>
                                             </li>
                                             <li
@@ -1465,9 +1465,9 @@
                                             </li>
                                             <li class="nav-item {{ Request::is('admin/ucm/insights-report') ? 'active' : '' }}">
                                                 <a class="nav-link" href="{{ route('admin.ucm.insights-report') }}"
-                                                    title="{{ translate('VOIP Insights Report') }}">
+                                                    title="{{ translate('voip_insights_report') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
-                                                    <span class="text-truncate">{{ translate('VOIP Insights Report') }}</span>
+                                                    <span class="text-truncate">{{ translate('voip_insights_report') }}</span>
                                                 </a>
                                             </li>
                                         @endif
@@ -1511,9 +1511,9 @@
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/report/analytics') ? 'active' : '' }}">
                                             <a class="nav-link" href="{{ route('admin.warranty.report.analytics') }}"
-                                                title="{{ translate('Warranty Analytics Report') }}">
+                                                title="{{ translate('warranty_analytics_report') }}">
                                                 <span class="tio-circle nav-indicator-icon"></span>
-                                                <span class="text-truncate">{{ translate('Warranty Analytics Report') }}</span>
+                                                <span class="text-truncate">{{ translate('warranty_analytics_report') }}</span>
                                             </a>
                                         </li>
                                         <li class="nav-item {{ Request::is('admin/warranty/claim-chart') ? 'active' : '' }}">
@@ -1531,10 +1531,10 @@
                                 <li
                                     class="navbar-vertical-aside-has-menu {{ Request::is('admin/wholesale/dashboard/reports/*') ? 'active' : '' }}">
                                     <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                        href="javascript:" title="{{ translate('wholesale') }}">
+                                        href="javascript:" title="{{ translate('Wholesale') }}">
                                         <i class="tio-chart-bar-4 nav-icon"></i>
                                         <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                            {{ translate('wholesale') }}
+                                            {{ translate('Wholesale') }}
                                         </span>
                                     </a>
                                     <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -1570,10 +1570,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/branch*') || Request::is('admin/branch/withdraw-method/*') || (Request::is('admin/orders/details/*') && request()->has('vendor-order-list')) ? 'active' : '' }} ">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('branch') }}">
+                                    href="javascript:" title="{{ translate('Branch') }}">
                                     <i class="tio-users-switch nav-icon"></i>
                                     <span
-                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('branch') }}</span>
+                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('Branch') }}</span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                     style="display: {{ Request::is('admin/branch*') || Request::is('admin/orders/details/*') ? 'block' : 'none' }}">
@@ -1589,11 +1589,11 @@
                                     </li>
                                     <li
                                         class="nav-item {{ Request::is('admin/branch/' . Branch::LIST[URI]) || Request::is('admin/branch/' . Branch::VIEW[URI] . '*') ? 'active' : '' }}">
-                                        <a class="nav-link" title="{{ translate('vendor_List') }}"
+                                        <a class="nav-link" title="{{ translate('Vendor_List') }}"
                                             href="{{ route('admin.branch.branch-list') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('branch_List') }}
+                                                {{ translate('Branch_List') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\Branch::count() }}
                                                 </span>
@@ -1668,7 +1668,7 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/stock-request/' . StockRequest::ADD[URI]) ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.stock-request.add') }}"
-                                            title="{{ translate('add-stock-request') }}">
+                                            title="{{ translate('Add_Stock_Request') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span
                                                 class="text-truncate">{{ translate('Add_New_Stock_Request') }}</span>
@@ -1742,7 +1742,7 @@
                                         <a class="nav-link " href="{{ route('admin.customer.list') }}"
                                             title="{{ translate('Customer_List') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('customer_List') }} </span>
+                                            <span class="text-truncate">{{ translate('Customer_List') }} </span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ Request::is('admin/reviews*') ? 'active' : '' }}">
@@ -1810,11 +1810,11 @@
                                     </li>
                                     <li
                                         class="nav-item {{ Request::is('admin/vendors/' . Vendor::LIST[URI]) || Request::is('admin/vendors/' . Vendor::VIEW[URI] . '*') ? 'active' : '' }}">
-                                        <a class="nav-link" title="{{ translate('vendor_List') }}"
+                                        <a class="nav-link" title="{{ translate('Vendor_List') }}"
                                             href="{{ route('admin.vendors.vendor-list') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('vendor_List') }}
+                                                {{ translate('Vendor_List') }}
                                             </span>
                                         </a>
                                     </li>
@@ -1830,9 +1830,9 @@
                                         class="nav-item {{ Request::is('admin/vendors/withdraw-method/*') ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.vendors.withdraw-method.list') }}"
-                                            title="{{ translate('withdrawal_Methods') }}">
+                                            title="{{ translate('Withdrawal_Methods') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('withdrawal_Methods') }}</span>
+                                            <span class="text-truncate">{{ translate('Withdrawal_Methods') }}</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -1853,17 +1853,17 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/delivery-man/' . DeliveryMan::ADD[URI]) ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.delivery-man.add') }}"
-                                            title="{{ translate('add_new') }}">
+                                            title="{{ translate('add_New') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('add_new') }}</span>
+                                            <span class="text-truncate">{{ translate('add_New') }}</span>
                                         </a>
                                     </li>
                                     <li
                                         class="nav-item {{ Request::is('admin/delivery-man/' . DeliveryMan::LIST[URI]) || Request::is('admin/delivery-man/' . DeliveryMan::UPDATE[URI] . '*') || Request::is('admin/delivery-man/' . DeliveryMan::EARNING_STATEMENT_OVERVIEW[URI] . '*') || Request::is('admin/delivery-man/' . DeliveryMan::ORDER_HISTORY_LOG[URI] . '*') || Request::is('admin/delivery-man/' . DeliveryMan::EARNING_OVERVIEW[URI] . '*') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.delivery-man.list') }}"
-                                            title="{{ translate('list') }}">
+                                            title="{{ translate('List') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{ translate('list') }}</span>
+                                            <span class="text-truncate">{{ translate('List') }}</span>
                                         </a>
                                     </li>
                                     <li
@@ -1879,7 +1879,7 @@
                                         class="nav-item {{ Request::is('admin/delivery-man/emergency-contact') ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.delivery-man.emergency-contact.index') }}"
-                                            title="{{ translate('emergency_contact') }}">
+                                            title="{{ translate('Emergency_Contact') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">{{ translate('Emergency_Contact') }}</span>
                                         </a>
@@ -1939,10 +1939,10 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/department*') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle"
-                                    href="javascript:" title="{{ translate('department') }}">
+                                    href="javascript:" title="{{ translate('Department') }}">
                                     <i class="tio-users-switch nav-icon"></i>
                                     <span
-                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('department') }}</span>
+                                        class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('Department') }}</span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
                                     style="display: {{ Request::is('admin/department*') ? 'block' : 'none' }}">
@@ -1958,7 +1958,7 @@
                                     </li>
                                     <li
                                         class="nav-item {{ Request::is('admin/department/' . Department::LIST[URI]) || Request::is('admin/department/' . Department::USER_VIEW[URI] . '*') ? 'active' : '' }}">
-                                        <a class="nav-link" title="{{ translate('department_List') }}"
+                                        <a class="nav-link" title="{{ translate('Department_List') }}"
                                             href="{{ route('admin.department.list') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
@@ -1987,32 +1987,32 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/dashboard*') ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                    title="{{ translate('dashboard') }}"
+                                    title="{{ translate('Dashboard') }}"
                                     href="{{ route('admin.crm.dashboard') }}">
                                     <i class="tio-home-vs-1-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('dashboard') }}
+                                        {{ translate('Dashboard') }}
                                     </span>
                                 </a>
                             </li>
 
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/index') ? 'active' : '' }}">
-                                <a class="nav-link" title="{{ translate('inbox') }}"
+                                <a class="nav-link" title="{{ translate('Inbox') }}"
                                     href="{{ route('admin.crm.index') }}">
                                     <i class="tio-chat nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('inbox') }}
+                                        {{ translate('Inbox') }}
                                     </span>
                                 </a>
                             </li>
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/crm/lead*') ? 'active' : '' }}">
-                                <a class="nav-link" title="{{ translate('leads') }}"
+                                <a class="nav-link" title="{{ translate('Leads') }}"
                                     href="{{ route('admin.crm.lead.index') }}">
                                     <i class="tio-chat nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('leads') }}
+                                        {{ translate('Leads') }}
                                     </span>
                                 </a>
                             </li>
@@ -2066,10 +2066,10 @@
                                     <!-- <li
                                     class="nav-item {{ Request::is('admin/orders/' . Order::LIST[URI] . '/all') ? 'active' : '' }}">
                                     <a class="nav-link" href="{{ route('admin.support-ticket.view', ['all']) }}"
-                                        title="{{ translate('all') }}">
+                                        title="{{ translate('All') }}">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{ translate('all') }}
+                                            {{ translate('All') }}
                                             <span class="badge badge-soft-info badge-pill ms-1">
                                                 {{ \App\Models\SupportTicket::count() }}
                                             </span>
@@ -2080,10 +2080,10 @@
                                         class="nav-item {{ Request::is('admin/support-ticket/view/' . SupportTicket::SUPPORT[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.support-ticket.view', ['support']) }}"
-                                            title="{{ translate('support') }}">
+                                            title="{{ translate('Support') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('support') }}
+                                                {{ translate('Support') }}
                                                 <span class="badge badge-soft-info badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'support', 'status' => 1])->count() }}
                                                 </span>
@@ -2094,10 +2094,10 @@
                                         class="nav-item {{ Request::is('admin/support-ticket/view/' . SupportTicket::COMPLAINT[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.support-ticket.view', ['complaint']) }}"
-                                            title="{{ translate('complaint') }}">
+                                            title="{{ translate('Complaint') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('complaint') }}
+                                                {{ translate('Complaint') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'complaint', 'status' => 36])->count() }}
                                                 </span>
@@ -2107,10 +2107,10 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/support-ticket/career') ? 'active' : '' }}">
                                         <a class="nav-link " href="{{ route('admin.support-ticket.career.index') }}"
-                                            title="{{ translate('career') }}">
+                                            title="{{ translate('Career') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('career') }}
+                                                {{ translate('Career') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'career', 'status' => 27])->count() }}
                                                 </span>
@@ -2121,10 +2121,10 @@
                                         class="nav-item {{ Request::is('admin/support-ticket/view/' . SupportTicket::SERVICE[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.support-ticket.view', ['service']) }}"
-                                            title="{{ translate('service') }}">
+                                            title="{{ translate('Service') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('service') }}
+                                                {{ translate('Service') }}
                                                 <span class="badge badge-soft-warning badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'service', 'status' => 20])->count() }}
                                                 </span>
@@ -2135,10 +2135,10 @@
                                         class="nav-item {{ Request::is('admin/support-ticket/view/' . SupportTicket::RETAIL[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.support-ticket.view', ['retail']) }}"
-                                            title="{{ translate('retail') }}">
+                                            title="{{ translate('Retail') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('retail') }}
+                                                {{ translate('Retail') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'retail', 'status' => 43])->count() }}
                                                 </span>
@@ -2149,10 +2149,10 @@
                                         class="nav-item {{ Request::is('admin/support-ticket/view/' . SupportTicket::WHOLESALE[URI]) ? 'active' : '' }}">
                                         <a class="nav-link "
                                             href="{{ route('admin.support-ticket.view', ['wholesale']) }}"
-                                            title="{{ translate('wholesale') }}">
+                                            title="{{ translate('Wholesale') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('wholesale') }}
+                                                {{ translate('Wholesale') }}
                                                 <span class="badge badge-soft-danger badge-pill ms-1">
                                                     {{ \App\Models\SupportTicket::where(['type' => 'wholesale', 'status' => 56])->count() }}
                                                 </span>
@@ -2200,7 +2200,7 @@
                         <li
                             class="navbar-vertical-aside-has-menu {{ auth('admin')->id() == 1 ? 'd-none' : '' }} {{ Request::is('admin/notifications/list') ? 'active' : '' }}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                title="{{ translate('notifications') }}"
+                                title="{{ translate('Notifications') }}"
                                 href="{{ route('admin.notifications.list') }}">
                                 <span class="nav-icon">
                                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
@@ -2220,7 +2220,7 @@
                                     </svg>
                                 </span>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{ translate('notifications') }}
+                                    {{ translate('Notifications') }}
                                 </span>
                             </a>
                         </li>
@@ -2233,11 +2233,11 @@
                             <li
                                 class="navbar-vertical-aside-has-menu {{ Request::is('admin/wholesale/dashboard' . WholeSaler::DASHBOARD[URI]) ? 'active' : '' }}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                    title="{{ translate('dashboard') }}"
+                                    title="{{ translate('Dashboard') }}"
                                     href="{{ route('admin.wholesale.dashboard.index') }}">
                                     <i class="tio-home-vs-1-outlined nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{ translate('dashboard') }}
+                                        {{ translate('Dashboard') }}
                                     </span>
                                 </a>
                             </li>
@@ -2288,11 +2288,11 @@
                                     <li
                                         class="nav-item {{ Request::is('admin/wholesale/business/list') ? 'active' : '' }}">
                                         <a class="nav-link" href="{{ route('admin.wholesale.business.list') }}"
-                                            title="{{ translate('Wholesalers') }}">
+                                            title="{{ translate('WholeSalers') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span
                                                 class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                                {{ translate('Wholesalers') }}
+                                                {{ translate('WholeSalers') }}
                                                 <span class="badge badge-soft-success badge-pill ms-1">
                                                     {{ \App\Models\WholeSalerBusiness::whereHas('wholesaler', function ($query) {
                                                         $query->where('user_type', 1)->where('wholesaler_status', '!=', 0);
@@ -2587,10 +2587,10 @@
                                             : '' }}">
                                         <a class="nav-link"
                                             href="{{ route('admin.system-setup.login-settings.customer-login-setup') }}"
-                                            title="{{ translate('login_Settings') }}">
+                                            title="{{ translate('Login_Settings') }}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span class="text-truncate">
-                                                {{ translate('login_Settings') }}
+                                                {{ translate('Login_Settings') }}
                                             </span>
                                         </a>
                                     </li>
@@ -2794,10 +2794,10 @@
                                             class="navbar-vertical-aside-has-menu cms-sidebar-item {{ Request::is('admin/business-settings/vendor-registration-settings/*') ? 'active' : '' }}">
                                             <a class="js-navbar-vertical-aside-menu-link nav-link"
                                                 href="{{ route('admin.business-settings.vendor-registration-settings.index') }}"
-                                                title="{{ translate('vendor_Registration') }}">
+                                                title="{{ translate('Vendor_Registration') }}">
                                                 <i class="tio-shop-outlined cms-sidebar-item__icon"></i>
                                                 <span
-                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('vendor_Registration') }}</span>
+                                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate cms-sidebar-item__label">{{ translate('Vendor_Registration') }}</span>
                                             </a>
                                         </li>
                                     @endif
@@ -2844,7 +2844,7 @@
                                                     href="{{ route('admin.blog.add') }}">
                                                     <span class="tio-circle nav-indicator-icon"></span>
                                                     <span class="text-truncate">
-                                                        {{ translate('add_new') }}
+                                                        {{ translate('add_New') }}
                                                     </span>
                                                 </a>
                                             </li>

@@ -1,13 +1,13 @@
 @extends('layouts.back-end.app')
 
-@section('title', $seller?->shop->name ?? translate("shop_Name"))
+@section('title', $seller?->shop->name ?? translate("Shop_Name"))
 
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_details')}}
+                {{translate('Vendor_details')}}
             </h2>
         </div>
         <div class="page-header border-0 mb-4">
@@ -20,11 +20,11 @@
                     @if ($seller['status']!="pending")
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'order']) }}">{{translate('order')}}</a>
+                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'order']) }}">{{translate('Order')}}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'product']) }}">{{translate('product')}}</a>
+                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'product']) }}">{{translate('Product')}}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
@@ -40,7 +40,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'review']) }}">{{translate('review')}}</a>
+                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'review']) }}">{{translate('Review')}}</a>
                         </li>
                     @endif
                 </ul>
@@ -52,7 +52,7 @@
                     <div class="media flex-column flex-sm-row gap-3">
                         <img class="avatar avatar-170 rounded object-fit-cover"
                              src="{{ getStorageImages(path: $seller?->shop->image_full_url, type: 'backend-basic') }}"
-                             alt="{{translate('image')}}">
+                             alt="{{translate('Image')}}">
                         <div class="media-body">
                             @if($seller?->shop->temporary_close || ($seller?->shop->vacation_status && $current_date >= date('Y-m-d', strtotime($seller?->shop->vacation_start_date)) && $current_date <= date('Y-m-d', strtotime($seller?->shop->vacation_end_date))))
                                 <div class="d-flex justify-content-between gap-2 mb-4">
@@ -64,13 +64,13 @@
                                 </div>
                             @endif
                             <div class="d-block">
-                                <h2 class="mb-2 pb-1">{{ $seller->shop? $seller->shop->name : translate("shop_Name")." : ".translate("update_Please") }}</h2>
+                                <h2 class="mb-2 pb-1">{{ $seller->shop? $seller->shop->name : translate("Shop_Name")." : ".translate("update_Please") }}</h2>
                                 <div class="d-flex gap-3 flex-wrap mb-3 lh-1">
                                     <div class="review-hover position-relative cursor-pointer d-flex gap-2 align-items-center">
                                         <i class="tio-star"></i>
                                         <span>{{ round($seller->average_rating, 1) }}</span>
                                         <div class="review-details-popup">
-                                            <h6 class="mb-2">{{translate('rating')}}</h6>
+                                            <h6 class="mb-2">{{translate('Rating')}}</h6>
                                             <div class="">
                                                 <ul class="list-unstyled list-unstyled-py-2 mb-0">
                                                     <li class="d-flex align-items-center font-size-sm">
@@ -143,13 +143,13 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="rejected">
-                                <button type="button" class="btn btn-danger px-5 form-alert" data-message="{{translate('want_to_reject_this_vendor').'?'}}" data-id="reject-form">{{translate('reject')}}</button>
+                                <button type="button" class="btn btn-danger px-5 form-alert" data-message="{{translate('want_to_reject_this_vendor').'?'}}" data-id="reject-form">{{translate('Reject')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" id="approve-form" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="approved">
-                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_approve_this_vendor').'?'}}" data-id="approve-form">{{translate('approve')}}</button>
+                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_approve_this_vendor').'?'}}" data-id="approve-form">{{translate('Approve')}}</button>
                             </form>
                         </div>
                     @endif
@@ -169,7 +169,7 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="approved">
-                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_active_this_vendor').'?'}}" data-id="active-form">{{translate('active')}}</button>
+                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_active_this_vendor').'?'}}" data-id="active-form">{{translate('Active')}}</button>
                             </form>
                         </div>
                     @endif
@@ -178,67 +178,67 @@
                 <div class="d-flex gap-3 flex-wrap flex-lg-nowrap">
                     <div class="border p-3 w-170">
                         <div class="d-flex flex-column mb-1">
-                            <h6 class="font-weight-normal">{{translate('total_products')}} :</h6>
+                            <h6 class="font-weight-normal">{{translate('total_Products')}} :</h6>
                             <h3 class="text-primary fs-18">{{$seller->product_count}}</h3>
                         </div>
 
                         <div class="d-flex flex-column">
-                            <h6 class="font-weight-normal">{{translate('total_orders')}} :</h6>
+                            <h6 class="font-weight-normal">{{translate('total_Orders')}} :</h6>
                             <h3 class="text-primary fs-18">{{$seller->orders_count}}</h3>
                         </div>
                     </div>
                     <div class="row gy-3 flex-grow-1 w-100">
                         <div class="col-sm-6 col-xxl-3">
-                            <h4 class="mb-3 text-capitalize">{{translate('shop_information')}}</h4>
+                            <h4 class="mb-3 text-capitalize">{{translate('shop_Information')}}</h4>
 
                             <div class="pair-list">
                                 <div>
-                                    <span class="key text-nowrap">{{translate('shop_name')}}</span>
+                                    <span class="key text-nowrap">{{translate('Shop_Name')}}</span>
                                     <span>:</span>
                                     <span class="value ">{{$seller?->shop->name}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('phone')}}</span>
+                                    <span class="key">{{translate('Phone')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller?->shop->contact}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('address')}}</span>
+                                    <span class="key">{{translate('Address')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller?->shop->address}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('status')}}</span>
+                                    <span class="key">{{translate('Status')}}</span>
                                     <span>:</span>
                                     <span class="value">
                                         <span class="badge badge-{{$seller['status']=='approved'? 'info' :'danger'}}">
-                                            {{ $seller['status']=='approved'? translate('active') : translate('inactive') }}
+                                            {{ $seller['status']=='approved'? translate('Active') : translate('Inactive') }}
                                         </span>
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-sm-6 col-xxl-3">
-                            <h4 class="mb-3 text-capitalize">{{translate('vendor_information')}}</h4>
+                            <h4 class="mb-3 text-capitalize">{{translate('vendor_Information')}}</h4>
 
                             <div class="pair-list">
                                 <div>
-                                    <span class="key">{{translate('name')}}</span>
+                                    <span class="key">{{translate('Name')}}</span>
                                     <span>:</span>
                                     <span class="value text-capitalize">{{$seller['f_name'].' '.$seller['l_name']}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('email')}}</span>
+                                    <span class="key">{{translate('Email')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller['email']}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('phone')}}</span>
+                                    <span class="key">{{translate('Phone')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller['phone']}}</span>
                                 </div>
@@ -247,33 +247,33 @@
                         @if ($seller['status']!="pending")
                             <div class="col-xxl-6">
                                 <div class="bg-light p-3 border border-primary-light rounded">
-                                    <h4 class="mb-3 text-capitalize">{{translate('bank_information')}}</h4>
+                                    <h4 class="mb-3 text-capitalize">{{translate('bank_Information')}}</h4>
 
                                     <div class="d-flex gap-5">
                                         <div class="pair-list">
                                             <div>
-                                                <span class="key text-nowrap">{{translate('bank_name')}}</span>
+                                                <span class="key text-nowrap">{{translate('bank_Name')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value ">{{ $seller['bank_name'] ?? translate('no_data_found') }}</span>
+                                                <span class="value ">{{ $seller['bank_name'] ?? translate('no_Data_found') }}</span>
                                             </div>
 
                                             <div>
-                                                <span class="key text-nowrap">{{translate('branch')}}</span>
+                                                <span class="key text-nowrap">{{translate('Branch')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['branch'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['branch'] ?? translate('no_Data_found') }}</span>
                                             </div>
                                         </div>
                                         <div class="pair-list">
                                             <div>
-                                                <span class="key text-nowrap">{{translate('holder_name')}}</span>
+                                                <span class="key text-nowrap">{{translate('holder_Name')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['holder_name'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['holder_name'] ?? translate('no_Data_found') }}</span>
                                             </div>
 
                                             <div>
                                                 <span class="key text-nowrap">{{translate('A/C_No')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['account_no'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['account_no'] ?? translate('no_Data_found') }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -305,7 +305,7 @@
                                          src="{{dynamicAsset(path: 'public/assets/back-end/img/withdraw.png')}}" alt="">
                                     <h3 class="for-card-count mb-0 fz-24">{{ $seller->wallet ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $seller->wallet->total_earning)) : 0 }}</h3>
                                     <div class="font-weight-bold text-capitalize mb-30">
-                                        {{translate('withdrawable_balance')}}
+                                        {{translate('withdrawable_Balance')}}
                                     </div>
                                 </div>
                             </div>

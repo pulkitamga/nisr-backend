@@ -76,8 +76,8 @@
                             <div class="info-block">
                                 <h6 class="text-muted mb-3">{{ translate('Wholeseller Details') }}</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li class="mb-2"><strong>{{ translate('Tier') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->tier ?? translate('no_data_found') }}</span></li>
-                                    <li class="mb-2"><strong>{{ translate('Discount') }}:</strong> <span class="bidi-ltr">{{ $order->wholeseller->wholesaler_discount ?? translate('no_data_found') }}%</span></li>
+                                    <li class="mb-2"><strong>{{ translate('Tier') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->tier ?? translate('no_Data_found') }}</span></li>
+                                    <li class="mb-2"><strong>{{ translate('Discount') }}:</strong> <span class="bidi-ltr">{{ $order->wholeseller->wholesaler_discount ?? translate('no_Data_found') }}%</span></li>
                                     <li class="mb-2"><strong>{{ translate('MOQ Override') }}:</strong> <span class="bidi-auto">{{ $order->wholeseller->moq_override_enabled ? __('Yes') : __('No') }}</span></li>
                                 </ul>
 
@@ -128,7 +128,7 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('DATE') }}</th>
                                     <th>{{ __('Amount') }}</th>
                                     <th>{{ __('Method') }}</th>
                                     <th>{{ __('Reference') }}</th>
@@ -199,7 +199,7 @@
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">{{ translate('Date') }}</label>
+                                            <label class="form-label">{{ translate('DATE') }}</label>
                                             <input type="date" id="date" class="form-control" name="date">
                                         </div>
                                         <div class="mb-3">

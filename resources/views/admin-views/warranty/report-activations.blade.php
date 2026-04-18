@@ -120,15 +120,15 @@ $activationMethods[] = $filters['activation_method'];
                         <select class="form-control" name="date_type" id="date_type">
                             <option value="this_year"
                                 {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                {{ translate('this_year') }}
+                                {{ translate('this_Year') }}
                             </option>
                             <option value="this_month"
                                 {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                {{ translate('this_month') }}
+                                {{ translate('this_Month') }}
                             </option>
                             <option value="this_week"
                                 {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                {{ translate('this_week') }}
+                                {{ translate('this_Week') }}
                             </option>
                             <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                 {{ translate('today') }}
@@ -141,12 +141,12 @@ $activationMethods[] = $filters['activation_method'];
                     </div>
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('from') }}</label>
+                        <label class="form-label mb-1">{{ translate('From') }}</label>
                         <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                     </div>
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('to') }}</label>
+                        <label class="form-label mb-1">{{ translate('To') }}</label>
                         <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                     </div>
                     <div class="col-md-2">
@@ -155,20 +155,20 @@ $activationMethods[] = $filters['activation_method'];
                             @foreach ($activationMethods as $method)
                             <option value="{{ $method }}"
                                 {{ ($filters['activation_method'] ?? 'all') === $method ? 'selected' : '' }}>
-                                {{ $method === 'all' ? translate('all') : translate($method) }}
+                                {{ $method === 'all' ? translate('All') : translate($method) }}
                             </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label mb-1">{{ translate('search') }}</label>
+                        <label class="form-label mb-1">{{ translate('Search') }}</label>
                         <input type="text" class="form-control" name="search"
                             value="{{ $filters['search'] ?? '' }}" placeholder="{{ translate('search_by_serial') }}">
                     </div>
                     <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                        <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                         <a href="{{ route('admin.warranty.report.activations') }}"
-                            class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                         <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'excel'])) }}"
                             class="btn btn-outline-success"> <i class="tio-download-to me-1"></i> {{ translate('excel') }}</a>
                         <a href="{{ route('admin.warranty.report.activations', array_merge(request()->query(), ['download' => 'pdf'])) }}"
@@ -252,8 +252,8 @@ $activationMethods[] = $filters['activation_method'];
                     <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
                         <thead class="thead-light">
                             <tr>
-                                <th>{{ translate('method') }}</th>
-                                <th class="text-end">{{ translate('total') }}</th>
+                                <th>{{ translate('Method') }}</th>
+                                <th class="text-end">{{ translate('Total') }}</th>
                                 <th class="text-end">%</th>
                             </tr>
                         </thead>
@@ -267,7 +267,7 @@ $activationMethods[] = $filters['activation_method'];
                             @empty
                             <tr>
                                 <td colspan="3" class="text-center py-4 text-muted">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                             @endforelse
@@ -287,8 +287,8 @@ $activationMethods[] = $filters['activation_method'];
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>{{ translate('product') }}</th>
-                                <th class="text-end">{{ translate('total') }}</th>
+                                <th>{{ translate('Product') }}</th>
+                                <th class="text-end">{{ translate('Total') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -301,7 +301,7 @@ $activationMethods[] = $filters['activation_method'];
                             @empty
                             <tr>
                                 <td colspan="3" class="text-center py-4 text-muted">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                             @endforelse
@@ -323,13 +323,13 @@ $activationMethods[] = $filters['activation_method'];
                     <tr>
                         <th>#</th>
                         <th>{{ translate('serial') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('customer') }}</th>
-                        <th>{{ translate('branch') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Customer') }}</th>
+                        <th>{{ translate('Branch') }}</th>
                         <th>{{ translate('activation_method') }}</th>
                         <th>{{ translate('activation_date') }}</th>
                         <th>{{ translate('warranty_end') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th>{{ translate('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -361,7 +361,7 @@ $activationMethods[] = $filters['activation_method'];
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
+                        <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_Data_found') }}
                         </td>
                     </tr>
                     @endforelse

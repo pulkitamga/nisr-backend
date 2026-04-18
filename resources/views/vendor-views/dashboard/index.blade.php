@@ -1,5 +1,5 @@
 @extends('layouts.back-end.app-seller')
-@section('title', translate('dashboard'))
+@section('title', translate('Dashboard'))
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush
@@ -15,7 +15,7 @@
 
                 <div>
                     <a class="btn btn--primary" href="{{route('vendor.products.list',['type'=>'all'])}}">
-                        <i class="tio-premium-outlined me-1"></i> {{translate('products')}}
+                        <i class="tio-premium-outlined me-1"></i> {{translate('Products')}}
                     </a>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                             </div>
 
                             <div class="mt-1">
-                                <label for="recipient-name" class="col-form-label fz-16">{{translate('amount')}}
+                                <label for="recipient-name" class="col-form-label fz-16">{{translate('Amount')}}
                                     :</label>
                                 <input type="number" name="amount" step=".01"
                                        value="{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $dashboardData['totalEarning']), currencyCode: getCurrencyCode(type: 'default'))}}"
@@ -98,9 +98,9 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                    data-dismiss="modal">{{translate('close')}}</button>
+                                    data-dismiss="modal">{{translate('Close')}}</button>
                                 <button type="submit"
-                                        class="btn btn--primary">{{translate('request')}}</button>
+                                        class="btn btn--primary">{{translate('Request')}}</button>
                         </div>
                     </form>
                 </div>
@@ -132,13 +132,13 @@
     </div>
     <span id="withdraw-method-url" data-url="{{ route('vendor.dashboard.method-list') }}"></span>
     <span id="order-status-url" data-url="{{ route('vendor.dashboard.order-status', ['type' => ':type']) }}"></span>
-    <span id="seller-text" data-text="{{ translate('vendor')}}"></span>
-    <span id="in-house-text" data-text="{{ translate('In-house')}}"></span>
-    <span id="customer-text" data-text="{{ translate('customer')}}"></span>
+    <span id="seller-text" data-text="{{ translate('Vendor')}}"></span>
+    <span id="in-house-text" data-text="{{ translate('in_House')}}"></span>
+    <span id="customer-text" data-text="{{ translate('Customer')}}"></span>
     <span id="store-text" data-text="{{ translate('store')}}"></span>
-    <span id="product-text" data-text="{{ translate('product')}}"></span>
-    <span id="order-text" data-text="{{ translate('order')}}"></span>
-    <span id="brand-text" data-text="{{ translate('brand')}}"></span>
+    <span id="product-text" data-text="{{ translate('Product')}}"></span>
+    <span id="order-text" data-text="{{ translate('Order')}}"></span>
+    <span id="brand-text" data-text="{{ translate('Brand')}}"></span>
     <span id="business-text" data-text="{{ translate('business')}}"></span>
     <span id="customers-text" data-text="{{ $dashboardData['customers'] }}"></span>
     <span id="products-text" data-text="{{ $dashboardData['products'] }}"></span>

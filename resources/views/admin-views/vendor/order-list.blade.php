@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('order_List'))
+@section('title', translate('Order_List'))
 
 @section('content')
     <div class="content container-fluid">
@@ -9,7 +9,7 @@
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                 <h2 class="h1 mb-0">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/all-orders.png')}}" class="mb-1 me-1" alt="">
-                    {{translate('orders')}}
+                    {{translate('Orders')}}
                 </h2>
                 <span class="badge badge-soft-dark radius-50 fz-14">{{$orders->total()}}</span>
             </div>
@@ -22,7 +22,7 @@
                             <div class="row g-2 justify-content-between align-items-center">
                                 <div class="col-lg-4">
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <h5 class="m-0">{{translate('order_list')}}
+                                        <h5 class="m-0">{{translate('Order_List')}}
                                             <span class="badge badge-soft-dark ms-2">{{$orders->total()}}</span>
                                         </h5>
                                         <h5 class="mb-0 text-black-50">( {{translate('vendor_Name')}}
@@ -41,10 +41,10 @@
                                             <input id="datatableSearch_" type="search" name="searchValue"
                                                    class="form-control"
                                                    placeholder="{{translate('search_by_Order_ID')}}"
-                                                   aria-label="{{ translate('Search orders') }}"
+                                                   aria-label="{{ translate('search_orders') }}"
                                                    value="{{ request('searchValue') }}">
                                             <button type="submit"
-                                                    class="btn btn--primary">{{translate('search')}}</button>
+                                                    class="btn btn--primary">{{translate('Search')}}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -57,13 +57,13 @@
                                 <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
-                                    <th>{{translate('order_ID')}}</th>
-                                    <th>{{translate('order_Date')}}</th>
-                                    <th>{{translate('customer_Info')}}</th>
+                                    <th>{{translate('Order_ID')}}</th>
+                                    <th>{{translate('Order_Date')}}</th>
+                                    <th>{{translate('Customer_Info')}}</th>
                                     <th>{{translate('store')}}</th>
-                                    <th class="text-end">{{translate('total_Amount')}}</th>
-                                    <th class="text-center">{{translate('order_Status')}} </th>
-                                    <th class="text-center">{{translate('action')}}</th>
+                                    <th class="text-end">{{translate('Total_Amount')}}</th>
+                                    <th class="text-center">{{translate('Order_Status')}} </th>
+                                    <th class="text-center">{{translate('Action')}}</th>
                                 </tr>
                                 </thead>
 
@@ -134,7 +134,7 @@
 
                                             @elseif($order['order_status']=='processing' || $order['order_status']=='out_for_delivery')
                                                 <span class="badge badge-soft-warning fz-12">
-                                                    {{str_replace('_',' ',$order['order_status'] == 'processing' ? translate('packaging'):translate($order['order_status']))}}
+                                                    {{str_replace('_',' ',$order['order_status'] == 'processing' ? translate('Packaging'):translate($order['order_status']))}}
                                                 </span>
                                             @elseif($order['order_status']=='confirmed')
                                                 <span class="badge badge-soft-success fz-12">
@@ -142,7 +142,7 @@
                                                 </span>
                                             @elseif($order['order_status']=='failed')
                                                 <span class="badge badge-danger fz-12">
-                                                    {{translate('failed_to_deliver')}}
+                                                    {{translate('Failed_to_Deliver')}}
                                                 </span>
                                             @elseif($order['order_status']=='delivered')
                                                 <span class="badge badge-soft-success fz-12">
@@ -157,13 +157,13 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline--primary square-btn btn-sm me-1"
-                                                   title="{{translate('view')}}"
+                                                   title="{{translate('View')}}"
                                                    href="{{route('admin.vendors.order-details',[$order['id'],$seller['id']])}}">
                                                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/eye.svg')}}"
                                                          class="svg" alt="">
                                                 </a>
                                                 <a class="btn btn-outline-success square-btn btn-sm me-1"
-                                                   target="_blank" title="{{translate('invoice')}}"
+                                                   target="_blank" title="{{translate('Invoice')}}"
                                                    href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
                                                     <i class="tio-download-to"></i>
                                                 </a>

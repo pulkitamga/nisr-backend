@@ -118,10 +118,10 @@ class ForgotPasswordController extends BaseController
                         return response()->json([
                             'verificationBy' => 'phone',
                             'redirectRoute' => route('vendor.auth.forgot-password.otp-verification'),
-                            'success' => translate('Check_your_phone') . ', ' . translate('password_reset_otp_sent'),
+                            'success' => translate('Check_your_phone') . ', ' . translate('Password_reset_OTP_sent'),
                         ]);
                     }
-                    Toastr::success(translate('Check_your_phone') . ', ' . translate('password_reset_otp_sent'));
+                    Toastr::success(translate('Check_your_phone') . ', ' . translate('Password_reset_OTP_sent'));
                     return redirect()->route('vendor.auth.forgot-password.otp-verification');
                 }
 
@@ -131,7 +131,7 @@ class ForgotPasswordController extends BaseController
                             'error' => translate('something_went_wrong.') . ' ' . translate('please_try_again_after_sometime'),
                         ]);
                     }
-                    Toastr::error(translate('something_went_wrong'));
+                    Toastr::error(translate('Something_went_wrong'));
                     return back();
                 }
 
@@ -139,19 +139,19 @@ class ForgotPasswordController extends BaseController
                     return response()->json([
                         'verificationBy' => 'phone',
                         'redirectRoute' => route('vendor.auth.forgot-password.otp-verification'),
-                        'success' => translate('Check_your_phone') . ', ' . translate('password_reset_otp_sent'),
+                        'success' => translate('Check_your_phone') . ', ' . translate('Password_reset_OTP_sent'),
                     ]);
                 }
-                Toastr::success(translate('Check_your_phone') . ', ' . translate('password_reset_otp_sent'));
+                Toastr::success(translate('Check_your_phone') . ', ' . translate('Password_reset_OTP_sent'));
                 return redirect()->route('vendor.auth.forgot-password.otp-verification');
             }
         }
         if ($request->ajax()) {
             return response()->json([
-                'error' => translate('no_such_user_found') . '!!',
+                'error' => translate('No_such_user_found') . '!!',
             ]);
         }
-        Toastr::error(translate('no_such_user_found'));
+        Toastr::error(translate('No_such_user_found'));
         return back();
     }
 
@@ -175,7 +175,7 @@ class ForgotPasswordController extends BaseController
             $token = $request['otp'];
             return redirect()->route('vendor.auth.forgot-password.reset-password', ['token' => $token]);
         }
-        Toastr::error(translate('invalid_otp'));
+        Toastr::error(translate('invalid_OTP'));
         return redirect()->back();
     }
 

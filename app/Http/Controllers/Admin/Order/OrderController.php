@@ -279,7 +279,7 @@ class OrderController extends BaseController
                     : translate('guest_customer')),
                 ucwords($order?->seller_is == 'seller'
                     ? ($order?->seller?->shop->name ?? translate('not_found'))
-                    : translate('inhouse')),
+                    : translate('in_House')),
                 (int) ($orderTotalPriceSummary['totalItemQuantity'] ?? 0),
                 (float) usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemPrice'] ?? 0),
                 (float) usdToDefaultCurrency(amount: $order?->total_discount ?? 0),
@@ -308,13 +308,13 @@ class OrderController extends BaseController
                     translate('Coupon_Discount'),
                     translate('extra_Discount'),
                     translate('Discounted_Amount'),
-                    translate('Vat/Tax'),
+                    translate('VAT/TAX'),
                     translate('shipping'),
                     translate('Total_Amount'),
                     translate('Payment_Status'),
                     translate('Order_Status'),
                 ],
-                title: translate('order_List'),
+                title: translate('Order_List'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
@@ -322,18 +322,18 @@ class OrderController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('order_Status') . ': ' . ($status !== 'all' ? translate($status !== 'failed' ? $status : 'failed_to_deliver') : translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('Order_Status') . ': ' . ($status !== 'all' ? translate($status !== 'failed' ? $status : 'failed_to_deliver') : translate('All')),
                     translate('order_Type') . ': ' . translate($request['filter'] == 'admin' ? 'inhouse' : ($request['filter'] == 'default_type' ? 'website_order' : ($request['filter'] ?? 'all'))),
                     translate('date_type') . ': ' . translate(!empty($date_type) ? $date_type : 'all'),
-                    $date_type === 'custom_date' ? translate('from') . ': ' . ($from ?: '-') : null,
-                    $date_type === 'custom_date' ? translate('to') . ': ' . ($to ?: '-') : null,
+                    $date_type === 'custom_date' ? translate('From') . ': ' . ($from ?: '-') : null,
+                    $date_type === 'custom_date' ? translate('To') . ': ' . ($to ?: '-') : null,
                 ])),
                 columnWidths: ['A' => 12, 'B' => 18, 'C' => 24, 'D' => 24, 'E' => 12, 'F' => 14, 'G' => 14, 'H' => 16, 'I' => 16, 'J' => 18, 'K' => 14, 'L' => 14, 'M' => 16, 'N' => 16, 'O' => 16],
                 centerColumns: ['A', 'B', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'],
                 sumColumns: ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
             ),
-            LocalizedExport::fileName(translate('order_List'))
+            LocalizedExport::fileName(translate('Order_List'))
         );
     }
 
@@ -752,7 +752,7 @@ class OrderController extends BaseController
             OrderStatusEvent::dispatch('order_edit_message', 'delivery_man', $order);
         }
 
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return back();
     }
 
@@ -804,7 +804,7 @@ class OrderController extends BaseController
 
         $this->orderRepo->update(id: $order->id, data: $updateData);
 
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -817,7 +817,7 @@ class OrderController extends BaseController
         ];
         $this->orderRepo->update(id: $request['order_id'], data: $updateOrderData);
 
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 

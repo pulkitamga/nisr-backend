@@ -30,7 +30,7 @@
                         </div>
                         @if($h->stock_transfer_id)
                             <small class="d-block text-secondary mt-1">
-                                {{ translate('Stock Transfer') }} 
+                                {{ translate('Stock_Transfer') }} 
                             </small>
                         @elseif($h->wholesale_delivery_id)
                             <small class="d-block text-secondary mt-1">

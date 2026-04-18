@@ -381,12 +381,12 @@
                     <th>#</th>
                     <th>{{ translate('claim_number') }}</th>
                     <th>{{ translate('serial') }}</th>
-                    <th>{{ translate('product') }}</th>
-                    <th>{{ translate('customer') }}</th>
-                    <th>{{ translate('status') }}</th>
+                    <th>{{ translate('Product') }}</th>
+                    <th>{{ translate('Customer') }}</th>
+                    <th>{{ translate('Status') }}</th>
                     <th>{{ translate('submitted_at') }}</th>
                     <th>{{ translate('sla_due') }}</th>
-                    <th>{{ translate('branch') }}</th>
+                    <th>{{ translate('Branch') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -416,7 +416,7 @@
                 @empty
                     <tr>
                         <td colspan="9" style="text-align: center; padding: 15px;">
-                            {{ translate('no_data_found') }}
+                            {{ translate('no_Data_found') }}
                         </td>
                     </tr>
                 @endforelse

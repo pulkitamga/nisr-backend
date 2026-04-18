@@ -10,7 +10,7 @@
         {{-- Section Tabs --}}
         <div class="mb-4 d-flex flex-wrap gap-3">
             <a href="{{ route('admin.content-management.contact-us', ['section' => 'contact_us']) }}" 
-               class="btn btn-outline-primary {{ $currentSection == 'contact_us' ? 'active' : '' }}">{{ __('Contact Us') }}</a>
+               class="btn btn-outline-primary {{ $currentSection == 'contact_us' ? 'active' : '' }}">{{ __('Contact_Us') }}</a>
             <a href="{{ route('admin.content-management.contact-us', ['section' => 'banner']) }}" 
                class="btn btn-outline-primary {{ $currentSection == 'banner' ? 'active' : '' }}">{{ __('Banner') }}</a>
         </div>

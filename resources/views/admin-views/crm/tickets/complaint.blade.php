@@ -1,7 +1,7 @@
 @php use Carbon\Carbon; use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('complaint_ticket'))
+@section('title', translate('complaint_Ticket'))
 @push('css_or_js')
 <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/crm.css')}}">
 @endpush
@@ -19,7 +19,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_ticket_by_subject_or_status'),
             'aria_label' => translate('search_ticket_by_subject_or_status'),
@@ -69,7 +69,7 @@
     }
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -86,7 +86,7 @@
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
-            {{translate('complaint_ticket')}}
+            {{translate('complaint_Ticket')}}
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
@@ -99,7 +99,7 @@
     ])
     <div class="card">
         @include('admin-views.crm.partials._list-card-header', [
-            'listHeaderTitle' => translate('complaint_ticket'),
+            'listHeaderTitle' => translate('complaint_Ticket'),
             'listHeaderTotal' => $tickets->total(),
             'listHeaderActions' => $headerActions,
         ])
@@ -113,7 +113,7 @@
                         <th>{{translate('Priority')}}</th>
                         <th>{{translate('Status')}}</th>
                         <!-- <th>{{translate('Source ID')}}</th> -->
-                        <th>{{translate('Created At')}}</th>
+                        <th>{{translate('Created_At')}}</th>
                         <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
@@ -180,7 +180,7 @@
                             {{ $ticket->customer->f_name ?? '' }} {{ $ticket->customer->l_name ?? '' }}
                             <div class="fz-12 text-muted">{{ $ticket->customer->email ?? '' }}</div>
                             @else
-                            {{ translate('Customer Not Found') }}
+                            {{ translate('customer_not_found') }}
                             @endif
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
@@ -279,9 +279,9 @@
                     <div class="row mt-3">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" for="support-follow-up-status">{{ translate('Select Status') }}</label>
+                                <label class="control-label" for="support-follow-up-status">{{ translate('select_status') }}</label>
                                 <select class="js-select2-custom form-control" name="ticket-follow-up-status" id="complain-follow-up-status">
-                                    <option value="0" selected disabled>{{ translate('Select Status') }}</option>
+                                    <option value="0" selected disabled>{{ translate('select_status') }}</option>
                                     @foreach ([
                                     ['id' => 37, 'name' => 'Open'],
                                     ['id' => 38, 'name' => 'Assigned'],
@@ -308,7 +308,7 @@
                     <div class="row d-none" id="complain-ticket-next-follow-up-date-row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="control-label" for="complain-ticket-next-follow-up-date">{{ translate('Next Follow-Up Date') }}</label>
+                                <label class="control-label" for="complain-ticket-next-follow-up-date">{{ translate('Next_Follow_Up_Date') }}</label>
                                 <input type="date" name="ticket-next-follow-up-date" id="complain-ticket-next-follow-up-date" class="form-control">
                             </div>
                         </div>
@@ -317,7 +317,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="control-label" for="complain-follow-up-note">{{ translate('Note') }}</label>
-                                <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="complain-follow-up-note" placeholder="{{ translate('Enter follow-up note') }}"></textarea>
+                                <textarea rows="3" class="form-control" name="ticket-follow-up-note" id="complain-follow-up-note" placeholder="{{ translate('enter_follow_up_note') }}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -361,15 +361,15 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
-<span id="complaint-select-employee" data-text="{{ translate('Select Employee') }}"></span>
+<span id="complaint-select-employee" data-text="{{ translate('Select_Employee') }}"></span>
 <span id="complaint-loading" data-text="{{ translate('Loading...') }}"></span>
 <span id="complaint-department-updated" data-text="{{ translate('department_updated_successfully') }}"></span>
 <span id="complaint-employee-updated" data-text="{{ translate('ticket_assigned_successfully') }}"></span>
-<span id="complaint-follow-up-updated" data-text="{{ translate('updated successfully!') }}"></span>
-<span id="complaint-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="complaint-follow-up-updated" data-text="{{ translate('Updated successfully!') }}"></span>
+<span id="complaint-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 <span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
-<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 <span id="support-ticket-ticket-id-required" data-text="{{ translate('Ticket ID is required.') }}"></span>
 <span id="support-ticket-follow-up-date-required" data-text="{{ translate('follow_up_date_required_for_in_progress') }}"></span>
 @endsection

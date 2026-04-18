@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('all_Pages_Banner'))
+@section('title', translate('All_Pages_Banner'))
 
 @section('content')
 
@@ -40,7 +40,7 @@
                                             <option value="banner_privacy_policy">{{ translate('Privacy_Policy') }}</option>
                                             <option value="banner_refund_policy">{{ translate('Refund_Policy') }}</option>
                                             <option value="banner_return_policy">{{ translate('Return_Policy') }}</option>
-                                            <option value="banner_about_us">{{ translate('about_Us') }}</option>
+                                            <option value="banner_about_us">{{ translate('About_us') }}</option>
                                             <option value="banner_faq_page">{{ translate('FAQ') }}</option>
                                             <option value="banner_terms_conditions">{{ translate('Terms_and_Conditions') }}</option>
                                             <option value="banner_cancellation_policy">{{ translate('Cancellation_Policy') }}</option>
@@ -57,7 +57,7 @@
                                                 class="custom-file-input image-preview-before-upload"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                             <label class="custom-file-label title-color" for="banner-image">
-                                                {{ translate('choose') }} {{ translate('file') }}
+                                                {{ translate('choose') }} {{ translate('File') }}
                                             </label>
                                         </div>
                                     </div>
@@ -73,12 +73,12 @@
                                 </div>
                                 <div class="col-12 d-flex justify-content-end flex-wrap gap-10">
                                     <button class="btn btn-secondary cancel px-4" type="reset">
-                                        {{ translate('reset') }}
+                                        {{ translate('Reset') }}
                                     </button>
                                     <button id="add" type="submit"
-                                            class="btn btn--primary px-4">{{ translate('save') }}</button>
+                                            class="btn btn--primary px-4">{{ translate('Save') }}</button>
                                     <button id="update" class="btn btn--primary d--none text-white">
-                                        {{ translate('update') }}
+                                        {{ translate('Update') }}
                                     </button>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@
                                             <input id="datatableSearch_" type="search" name="searchValue"
                                                    class="form-control"
                                                    placeholder="{{ translate('Search_by_Banner_Type') }}"
-                                                   aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                                                   aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
                                             <button type="submit" class="btn btn--primary">
                                                 {{ translate('Search') }}
                                             </button>
@@ -138,10 +138,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="ps-xl-5">{{ translate('SL') }}</th>
-                                <th>{{ translate('image') }}</th>
+                                <th>{{ translate('Image') }}</th>
                                 <th>{{ translate('banner_type') }}</th>
                                 <th>{{ translate('published') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             @foreach($pageBanners as $key=>$banner)
@@ -164,8 +164,8 @@
                                                        data-toggle-id="banner-status{{ $banner['id'] }}"
                                                        data-on-image="banner-status-on.png"
                                                        data-off-image="banner-status-off.png"
-                                                       data-on-title="{{ translate('Want_to_Turn_ON').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('status') }}"
-                                                       data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('status') }}"
+                                                       data-on-title="{{ translate('Want_to_Turn_ON').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('Status') }}"
+                                                       data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('Status') }}"
                                                        data-on-message="<p>{{ translate('if_enabled_this_banner_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                        data-off-message="<p>{{ translate('if_disabled_this_banner_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                 <span class="switcher_control"></span>

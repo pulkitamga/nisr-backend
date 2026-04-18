@@ -47,13 +47,13 @@
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ translate('category') }}</label>
+                                <label for="name" class="title-color">{{ translate('Category') }}</label>
                                 <select class="js-select2-custom form-control action-get-request-onchange" name="category_id"
                                         data-url-prefix="{{ url('/admin/products/get-categories?parent_id=') }}"
                                         data-element-id="sub-category-select"
                                         data-element-type="select">
                                     <option value="{{ old('category_id') }}" selected
-                                            disabled>{{ translate('select_category') }}</option>
+                                            disabled>{{ translate('select_Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}"
                                             {{ request('category_id') == $category['id'] ? 'selected' : '' }}>
@@ -65,7 +65,7 @@
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ translate('sub_Category') }}</label>
+                                <label for="name" class="title-color">{{ translate('Sub_Category') }}</label>
                                 <select class="js-select2-custom form-control action-get-request-onchange" name="sub_category_id"
                                         id="sub-category-select"
                                         data-url-prefix="{{ url('/admin/products/get-categories?parent_id=') }}"
@@ -78,9 +78,9 @@
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label class="title-color" for="store">{{ translate('brand') }}</label>
+                                <label class="title-color" for="store">{{ translate('Brand') }}</label>
                                 <select name="brand_id" class="js-select2-custom form-control text-capitalize">
-                                    <option value="" selected>{{ translate('select_brand') }}</option>
+                                    <option value="" selected>{{ translate('select_Brand') }}</option>
                                     @foreach ($brands as $brand)
                                         <option value="{{ $brand->id}}" {{request('brand_id')==$brand->id ? 'selected' :''}}>{{ $brand->getTranslatedField('name') }}</option>
                                     @endforeach
@@ -91,7 +91,7 @@
                             <div class="d-flex gap-3 justify-content-end">
                                 <a href="{{ route('vendor.products.request-restock-list') }}"
                                    class="btn btn-secondary px-5">
-                                    {{ translate('reset') }}
+                                    {{ translate('Reset') }}
                                 </a>
                                 <button type="submit" class="btn btn--primary px-5 action-get-element-type">
                                     {{ translate('show_data') }}
@@ -125,7 +125,7 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                        placeholder="{{ translate('search_by_Product_Name')}}"  aria-label="Search orders" value="{{ request('searchValue') }}">
-                                <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Search')}}</button>
                             </div>
                         </form>
                         <div class="dropdown">
@@ -142,11 +142,11 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL') }}</th>
-                                <th>{{ translate('product_name') }}</th>
+                                <th>{{ translate('Product_name') }}</th>
                                 <th class="text-center">{{ translate('selling_price') }}</th>
                                 <th class="text-center">{{ translate('last_request_date') }}</th>
-                                <th class="text-center">{{ translate('number_of_request') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('number_of_Request') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -182,14 +182,14 @@
                                                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/restock_view.svg') }}" alt="">
                                             </a>
                                             <a class="btn btn-outline--primary btn-sm square-btn action-update-product-quantity"
-                                               title="{{ translate('edit') }}"
+                                               title="{{ translate('Edit') }}"
                                                id="{{ $restockProduct->product['id'] }}"
                                                data-url="{{ route('vendor.products.get-variations', ['id'=> $restockProduct->product['id'], 'restock_id' => $restockProduct->id]) }}"
                                                data-target="#update-stock">
                                                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/restock_update.svg') }}" alt="">
                                             </a>
                                             <span class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                  title="{{ translate('delete') }}"
+                                                  title="{{ translate('Delete') }}"
                                                   data-id="product-{{ $restockProduct->id}}">
                                                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/restock_delete.svg') }}" alt="">
                                             </span>
@@ -218,7 +218,7 @@
             </div>
         </div>
     </div>
-    <span id="message-select-word" data-text="{{ translate('select') }}"></span>
+    <span id="message-select-word" data-text="{{ translate('Select') }}"></span>
     <div class="modal fade update-stock-modal restock-stock-update" id="update-stock" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -228,10 +228,10 @@
                         <div class="rest-part-content"></div>
                         <div class="d-flex justify-content-end gap-10 flex-wrap align-items-center">
                             <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="Close">
-                                {{ translate('close') }}
+                                {{ translate('Close') }}
                             </button>
                             <button class="btn btn--primary" class="btn btn--primary px-4" type="submit">
-                                {{ translate('update') }}
+                                {{ translate('Update') }}
                             </button>
                         </div>
                     </div>

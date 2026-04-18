@@ -28,8 +28,8 @@
                             </div>
                             <div id="agentDropdown" class="dropdown-checkboxes" style="display: none;">
                                 <div class="dropdown-header p-2 border-bottom">
-                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllAgents(true)">{{ translate('Select All') }}</button>
-                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllAgents(false)">{{ translate('Clear All') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllAgents(true)">{{ translate('select_all') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllAgents(false)">{{ translate('clear_all') }}</button>
                                 </div>
                                 <div class="dropdown-content p-2" style="max-height: 200px; overflow-y: auto;">
                                     <div class="form-check mb-1">
@@ -59,15 +59,15 @@
 
                     <!-- Sales Type Filter -->
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('Sales Type') }}</label>
+                        <label class="form-label">{{ translate('sales_type') }}</label>
                         <div class="d-flex flex-column gap-2">
                             <div class="form-check">
                                 <input class="form-check-input salesType" type="checkbox" value="retail" checked name="sales_types[]" id="retailCheck">
-                                <label class="form-check-label" for="retailCheck">{{ translate('retail') }}</label>
+                                <label class="form-check-label" for="retailCheck">{{ translate('Retail') }}</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input salesType" type="checkbox" value="wholesale" checked name="sales_types[]" id="wholesaleCheck">
-                                <label class="form-check-label" for="wholesaleCheck">{{ translate('wholesale') }}</label>
+                                <label class="form-check-label" for="wholesaleCheck">{{ translate('Wholesale') }}</label>
                             </div>
                         </div>
                     </div>
@@ -84,8 +84,8 @@
                             </div>
                             <div id="monthDropdown" class="dropdown-checkboxes" style="display: none;">
                                 <div class="dropdown-header p-2 border-bottom">
-                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllMonths(true)">{{ translate('Select All') }}</button>
-                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllMonths(false)">{{ translate('Clear All') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 me-2" onclick="selectAllMonths(true)">{{ translate('select_all') }}</button>
+                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="selectAllMonths(false)">{{ translate('clear_all') }}</button>
                                 </div>
                                 <div class="dropdown-content p-2" style="max-height: 200px; overflow-y: auto;">
                                     <?php
@@ -119,7 +119,7 @@
                             <i class="tio-filter-list"></i> {{ translate('Generate Chart') }}
                         </button>
                         <button type="button" class="btn btn-secondary" id="resetFilters">
-                            <i class="tio-restore"></i> {{ translate('reset') }}
+                            <i class="tio-restore"></i> {{ translate('Reset') }}
                         </button>
                         <button type="button" class="btn btn-success" id="downloadChart">
                             <i class="tio-download-to"></i> {{ translate('Download Chart') }}
@@ -138,7 +138,7 @@
             <div class="d-flex align-items-center gap-2">
                 <span class="badge badge-secondary" id="filterStatus">{{ translate('All Agents') }} | {{ translate('All Months') }}</span>
                 <button type="button" class="btn btn-sm btn-outline-danger" id="clearAllFilters">
-                    <i class="tio-clear"></i> {{ translate('Clear All') }}
+                    <i class="tio-clear"></i> {{ translate('clear_all') }}
                 </button>
             </div>
         </div>
@@ -148,7 +148,7 @@
                 <div class="col-md-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body p-3">
-                            <h6 class="card-title">{{ translate('Total Sales') }}</h6>
+                            <h6 class="card-title">{{ translate('total_sales') }}</h6>
                             <h3 id="totalSales" class="mb-0">0</h3>
                             <small>{{ translate('Across all agents & months') }}</small>
                         </div>
@@ -263,10 +263,10 @@ const i18n = {
     chart: @json(translate('chart')),
     months: @json(translate('months')),
     salesAmount: @json(translate('Sales Amount')),
-    sales: @json(translate('sales')),
+    sales: @json(translate('Sales')),
     monthlySales: @json(translate('Monthly Sales')),
-    retail: @json(translate('retail')),
-    wholesale: @json(translate('wholesale')),
+    retail: @json(translate('Retail')),
+    wholesale: @json(translate('Wholesale')),
     chartDownloadedSuccessfully: @json(translate('Chart downloaded successfully!'))
 };
 const isRtl = @json($isRtl);

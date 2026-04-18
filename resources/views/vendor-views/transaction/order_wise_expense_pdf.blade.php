@@ -34,7 +34,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
+                        <b class="bold black">{{translate('DATE')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
                 </tr>
@@ -51,12 +51,12 @@
                     <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('transaction_date')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('transaction_Date')}}</th>
                                 <td class="p-0 p-3">
                                     : {{ date_format($transaction->orderTransaction->updated_at, 'd F Y') }}</td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('order_id')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Order_ID')}}</th>
                                 <td class="p-0 p-3">:
                                     {{ $transaction->id }}
                                 </td>
@@ -74,7 +74,7 @@
                                     : {{ ucfirst($transaction->orderTransaction->transaction_id) }}</td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start">{{translate('expense_type')}} </th>
+                                <th class="bold black p-0 text-start">{{translate('expense_Type')}} </th>
                                 <td class="p-0 p-3">:
                                     {{ $transaction->coupon_discount_bearer == 'seller'?(isset($transaction->coupon->coupon_type) ? ($transaction->coupon->coupon_type == 'free_delivery' ? 'Free Delivery Promotion':ucwords(str_replace('_', ' ', $transaction->coupon->coupon_type))) : ''):'' }}
                                     {{ $transaction->free_delivery_bearer == 'seller'?ucwords(str_replace('_', ' ', $transaction->extra_discount_type)):'' }}
@@ -96,9 +96,9 @@
                 <tr>
                     <td class="text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
-                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
+                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Details')}}</td>
                     <td class="text-end"
-                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
+                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
@@ -119,12 +119,12 @@
             <div class="d-flex justify-content-center gap-2">
                 <div class="mb-2">
                     <i class="fa fa-phone"></i>
-                    {{translate('phone')}}
+                    {{translate('Phone')}}
                     : {{ $company_phone }}
                 </div>
                 <div class="mb-2">
                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                    {{translate('email')}}
+                    {{translate('Email')}}
                     : {{ $company_email }}
                 </div>
             </div>

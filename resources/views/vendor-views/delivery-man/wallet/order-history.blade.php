@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app-seller')
 
-@section('title',translate('earning_statement'))
+@section('title',translate('earning_Statement'))
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -22,7 +22,7 @@
                         <div class="col-md-4 col-lg-6 mb-2 mb-md-0">
 
                             <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
-                                {{ translate('order_list') }}
+                                {{ translate('Order_List') }}
                                 <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{  $orders->total() }}</span>
                             </h4>
                         </div>
@@ -37,7 +37,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="search" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="Search orders" value="{{ $searchValue?? '' }}">
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -54,7 +54,7 @@
                                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                                     <tr>
                                         <th>{{ translate('SL') }}</th>
-                                        <th>{{ translate('order_no') }}</th>
+                                        <th>{{ translate('Order_No') }}</th>
                                         <th class="text-center">{{ translate('current_status') }}</th>
                                         <th>{{ translate('history') }}</th>
                                     </tr>

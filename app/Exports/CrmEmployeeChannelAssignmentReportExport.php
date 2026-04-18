@@ -22,14 +22,14 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
 
         $matrixHeadings = [translate('period')];
         foreach ($employees as $employee) {
-            $name = (string)($employee->name ?? translate('unassigned'));
+            $name = (string)($employee->name ?? translate('Unassigned'));
             foreach ($displayChannels as $channel) {
                 $matrixHeadings[] = $name . ' - ' . (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)));
             }
-            $matrixHeadings[] = $name . ' - ' . translate('total');
+            $matrixHeadings[] = $name . ' - ' . translate('Total');
         }
         foreach ($displayChannels as $channel) {
-            $matrixHeadings[] = (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)) . ' ' . translate('total'));
+            $matrixHeadings[] = (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)) . ' ' . translate('Total'));
         }
         $matrixHeadings[] = translate('total_interactions');
 
@@ -52,7 +52,7 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
             return $line;
         })->values()->all();
 
-        $summaryHeadings = [translate('employee')];
+        $summaryHeadings = [translate('Employee')];
         foreach ($displayChannels as $channel) {
             $summaryHeadings[] = (string)($channelLabels->get($channel) ?? ucwords(str_replace(['-', '_'], ' ', (string)$channel)));
         }
@@ -60,7 +60,7 @@ class CrmEmployeeChannelAssignmentReportExport implements WithMultipleSheets
 
         $summaryRows = $summaryPerEmployee->map(function ($row) use ($displayChannels) {
             $line = [
-                (string)data_get($row, 'employee_name', translate('unassigned')),
+                (string)data_get($row, 'employee_name', translate('Unassigned')),
             ];
 
             foreach ($displayChannels as $channel) {

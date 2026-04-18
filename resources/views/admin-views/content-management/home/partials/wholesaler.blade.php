@@ -40,13 +40,13 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                         <label class="form-label">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control" value="{{ $lang == $defaultLanguage ? ($jsonData['title']) :  ($translations[$lang]['title'] ?? '')  }}"
-                            placeholder="{{ translate('Enter Title') }}">
+                            placeholder="{{ translate('enter_title') }}">
                     </div>
                     <div class="col-lg-6">
-                        <label class="title-color">{{ translate('Button Text') }} ({{ strtoupper($lang) }})</label>
+                        <label class="title-color">{{ translate('Button_Text') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="button_text[]" class="form-control"
                             value="{{ $lang == $defaultLanguage ? ( $jsonData['button']['text']) :  ($translations[$lang]['button_text'] ?? '')  }}"
-                            placeholder="{{ translate('Enter Button Text') }}">
+                            placeholder="{{ translate('Enter_button_text') }}">
                     </div>
                     <div class="col-lg-12 mt-3">
                         <label class="title-color">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
@@ -68,7 +68,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                 <div class="col-lg-12">
                     <div class="form-group">
-                        <label class="title-color">{{ translate('Button Link') }}</label>
+                        <label class="title-color">{{ translate('button_link') }}</label>
                         <input type="text" name="button_link" class="form-control"
                             value="{{ $jsonData['button']['link'] ?? '' }}"
                             placeholder="{{ translate('Enter Button Link') }}">
@@ -102,14 +102,14 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <div class="d-flex flex-column justify-content-center align-items-center">
                             <img alt="" class="w-75"
                                 src="{{ dynamicAsset('public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                            <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                            <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                         </div>
                     </div>
                 </div>
 
                 <p class="text-muted text-center mt-2">
-                    {{ translate('Image format') }}: jpg, png, jpeg, webp<br>
-                    {{ translate('Image size') }}: {{ translate('Max') }} 2 MB
+                    {{ translate('image_format') }}: jpg, png, jpeg, webp<br>
+                    {{ translate('image_size') }}: {{ translate('Max') }} 2 MB
                 </p>
             </div>
         </div>

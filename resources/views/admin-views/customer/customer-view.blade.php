@@ -449,14 +449,14 @@
                     {{ translate('customer_details') }}
                 </h2>
                 <a href="{{ route('admin.customer.list') }}" class="btn btn-outline--primary btn-sm">
-                    <i class="{{ $direction === 'rtl' ? 'tio-arrow-forward' : 'tio-arrow-backward' }}"></i> {{ translate('back') }}
+                    <i class="{{ $direction === 'rtl' ? 'tio-arrow-forward' : 'tio-arrow-backward' }}"></i> {{ translate('Back') }}
                 </a>
             </div>
 
             <div class="hero-grid">
                 <div class="modern-card profile-card">
                     <img src="{{ getStorageImages(path: $customer->image_full_url, type: 'backend-profile') }}"
-                         alt="{{ translate('image') }}"
+                         alt="{{ translate('Image') }}"
                          class="avatar">
 
                     <div class="profile-body">
@@ -464,28 +464,28 @@
                             {{ $customer['f_name'].' '.$customer['l_name'] }}
                         </h4>
                         <p class="profile-subtitle">
-                            <span>{{ translate('customer') }}</span>
+                            <span>{{ translate('Customer') }}</span>
                             <span class="bidi-ltr">#{{ $customer['id'] }}</span>
                         </p>
 
                         <div class="kv">
                             <div class="kv-row">
-                                <span class="kv-key">{{ translate('contact') }}</span>
+                                <span class="kv-key">{{ translate('Contact') }}</span>
                                 <strong class="kv-value">
                                     @if($customer['phone'])
                                         <span class="bidi-ltr">{{ $customer['phone'] }}</span>
                                     @else
-                                        {{ translate('no_data_found') }}
+                                        {{ translate('no_Data_found') }}
                                     @endif
                                 </strong>
                             </div>
                             <div class="kv-row">
-                                <span class="kv-key">{{ translate('email') }}</span>
+                                <span class="kv-key">{{ translate('Email') }}</span>
                                 <strong class="kv-value line--limit-1">
                                     @if($customer['email'])
                                         <span class="bidi-ltr">{{ $customer['email'] }}</span>
                                     @else
-                                        {{ translate('no_data_found') }}
+                                        {{ translate('no_Data_found') }}
                                     @endif
                                 </strong>
                             </div>
@@ -505,7 +505,7 @@
                             <strong>{{ $customer->addresses->count() }}</strong>
                         </li>
                         <li>
-                            <span>{{ translate('total_orders') }}</span>
+                            <span>{{ translate('total_Orders') }}</span>
                             <strong>{{ $orderStatusArray['total_order'] }}</strong>
                         </li>
                         <li>
@@ -513,7 +513,7 @@
                             <strong>{{ $integrationData['crm']['overview_count'] }}</strong>
                         </li>
                         <li>
-                            <span>{{ translate('warranty') }}</span>
+                            <span>{{ translate('Warranty') }}</span>
                             <strong>{{ $integrationData['warranty']['overview_count'] }}</strong>
                         </li>
                         <li>
@@ -526,7 +526,7 @@
 
             <div class="kpi-grid">
                 <div class="kpi">
-                    <span class="kpi-label">{{ translate('total_orders') }}</span>
+                    <span class="kpi-label">{{ translate('total_Orders') }}</span>
                     <span class="kpi-value">{{ $orderStatusArray['total_order'] }}</span>
                 </div>
                 <div class="kpi">
@@ -542,7 +542,7 @@
                     <span class="kpi-value">{{ $orderStatusArray['canceled'] }}</span>
                 </div>
                 <div class="kpi">
-                    <span class="kpi-label">{{ translate('returned') }}</span>
+                    <span class="kpi-label">{{ translate('Returned') }}</span>
                     <span class="kpi-value">{{ $orderStatusArray['returned'] }}</span>
                 </div>
                 <div class="kpi">
@@ -554,7 +554,7 @@
                     <span class="kpi-value">{{ $integrationData['crm']['overview_count'] }}</span>
                 </div>
                 <div class="kpi">
-                    <span class="kpi-label">{{ translate('warranty_claims') }}</span>
+                    <span class="kpi-label">{{ translate('warranty_Claims') }}</span>
                     <span class="kpi-value">{{ $integrationData['warranty']['claims_count'] }}</span>
                 </div>
             </div>
@@ -568,30 +568,30 @@
                                 <h6>{{ translate($address['address_type']).' ( '.translate($address['is_billing'] == 0 ? 'shipping_address': 'billing_address').' )' }}</h6>
                                 <div class="field-list">
                                     <div class="field-row">
-                                        <strong class="field-label">{{ translate('name') }}:</strong>
-                                        <span class="field-value">{{ $address['contact_person_name'] ?: translate('no_data_found') }}</span>
+                                        <strong class="field-label">{{ translate('Name') }}:</strong>
+                                        <span class="field-value">{{ $address['contact_person_name'] ?: translate('no_Data_found') }}</span>
                                     </div>
                                     <div class="field-row">
-                                        <strong class="field-label">{{ translate('phone') }}:</strong>
+                                        <strong class="field-label">{{ translate('Phone') }}:</strong>
                                         <span class="field-value">
                                             @if($address['phone'])
                                                 <span class="bidi-ltr">{{ $address['phone'] }}</span>
                                             @else
-                                                {{ translate('no_data_found') }}
+                                                {{ translate('no_Data_found') }}
                                             @endif
                                         </span>
                                     </div>
                                     <div class="field-row">
-                                        <strong class="field-label">{{ translate('city') }}:</strong>
-                                        <span class="field-value">{{ $address['city'] ?: translate('no_data_found') }}</span>
+                                        <strong class="field-label">{{ translate('City') }}:</strong>
+                                        <span class="field-value">{{ $address['city'] ?: translate('no_Data_found') }}</span>
                                     </div>
                                     <div class="field-row">
-                                        <strong class="field-label">{{ translate('area') }}:</strong>
-                                        <span class="field-value">{{ $address['area'] ?: ($address['state'] ?: translate('no_data_found')) }}</span>
+                                        <strong class="field-label">{{ translate('Area') }}:</strong>
+                                        <span class="field-value">{{ $address['area'] ?: ($address['state'] ?: translate('no_Data_found')) }}</span>
                                     </div>
                                     <div class="field-row">
-                                        <strong class="field-label">{{ translate('address') }}:</strong>
-                                        <span class="field-value">{{ $address['address'] ?: translate('no_data_found') }}</span>
+                                        <strong class="field-label">{{ translate('Address') }}:</strong>
+                                        <span class="field-value">{{ $address['address'] ?: translate('no_Data_found') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -615,7 +615,7 @@
                             <strong>{{ $integrationData['crm']['messages_count'] }}</strong>
                         </div>
                         <div class="module-stat-row">
-                            <span>{{ translate('leads') }}</span>
+                            <span>{{ translate('Leads') }}</span>
                             <strong>{{ $integrationData['crm']['leads_count'] }}</strong>
                         </div>
                         <div class="module-stat-row">
@@ -649,14 +649,14 @@
                                 </li>
                             @endforeach
                         @else
-                            <li class="muted">{{ translate('no_data_found') }} ({{ translate('crm') }} {{ translate('messages') }})</li>
+                            <li class="muted">{{ translate('no_Data_found') }} ({{ translate('crm') }} {{ translate('messages') }})</li>
                         @endif
                     </ul>
                 </div>
 
                 <div class="modern-card module-card">
                     <div class="module-header">
-                        <h5 class="module-title">{{ translate('warranty') }}</h5>
+                        <h5 class="module-title">{{ translate('Warranty') }}</h5>
                         <a href="{{ route('admin.warranty.claim.all') }}" class="btn btn-outline--primary btn-xs">
                             {{ translate('view_all') }}
                         </a>
@@ -668,7 +668,7 @@
                             <strong>{{ $integrationData['warranty']['warranties_count'] }}</strong>
                         </div>
                         <div class="module-stat-row">
-                            <span>{{ translate('active') }}</span>
+                            <span>{{ translate('Active') }}</span>
                             <strong>{{ $integrationData['warranty']['active_warranties_count'] }}</strong>
                         </div>
                         <div class="module-stat-row">
@@ -686,7 +686,7 @@
                                 <span class="badge badge-soft-warning">{{ translate($claim->status) }}</span>
                             </li>
                         @empty
-                            <li class="muted">{{ translate('no_data_found') }} ({{ translate('warranty_claims') }})</li>
+                            <li class="muted">{{ translate('no_Data_found') }} ({{ translate('warranty_Claims') }})</li>
                         @endforelse
                     </ul>
                 </div>
@@ -701,7 +701,7 @@
 
                     <div class="module-stats">
                         <div class="module-stat-row">
-                            <span>{{ translate('total') }}</span>
+                            <span>{{ translate('Total') }}</span>
                             <strong>{{ $integrationData['calls']['calls_count'] }}</strong>
                         </div>
                         <div class="module-stat-row">
@@ -723,14 +723,14 @@
                                         @if($call->call_date)
                                             <span class="bidi-ltr">{{ $call->call_date->format('d M Y, h:i A') }}</span>
                                         @else
-                                            {{ translate('no_data_found') }}
+                                            {{ translate('no_Data_found') }}
                                         @endif
                                     </small>
                                 </span>
                                 <span class="badge badge-soft-success">{{ translate($call->status) }}</span>
                             </li>
                         @empty
-                            <li class="muted">{{ translate('no_data_found') }} ({{ translate('calls') }})</li>
+                            <li class="muted">{{ translate('no_Data_found') }} ({{ translate('calls') }})</li>
                         @endforelse
                     </ul>
                 </div>
@@ -739,7 +739,7 @@
             <div class="modern-card orders-card">
                 <div class="orders-head">
                     <h5 class="orders-title">
-                        {{ translate('orders') }}
+                        {{ translate('Orders') }}
                         <span class="badge badge-secondary">{{ $orders->total() }}</span>
                     </h5>
 
@@ -758,9 +758,9 @@
                                        aria-label="{{ translate('search_orders') }}"
                                        value="{{ $searchValue }}">
                             </div>
-                            <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                             @if(request()->filled('searchValue'))
-                                <a href="{{ url()->current() }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                <a href="{{ url()->current() }}" class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             @endif
                         </form>
 
@@ -776,11 +776,11 @@
                     <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 orders-table">
                         <thead class="thead-light thead-50 text-capitalize">
                         <tr>
-                            <th>{{ translate('sl') }}</th>
-                            <th>{{ translate('order_ID') }}</th>
-                            <th>{{ translate('total') }}</th>
-                            <th>{{ translate('order_Status') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th>{{ translate('SL') }}</th>
+                            <th>{{ translate('Order_ID') }}</th>
+                            <th>{{ translate('Total') }}</th>
+                            <th>{{ translate('Order_Status') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -808,12 +808,12 @@
                                         <span class="badge badge-soft-info fz-12">{{ translate($order['order_status']) }}</span>
                                     @elseif($order['order_status'] == 'processing' || $order['order_status'] == 'out_for_delivery')
                                         <span class="badge badge-soft-warning fz-12">
-                                            {{ str_replace('_',' ', $order['order_status'] == 'processing' ? translate('packaging') : translate($order['order_status'])) }}
+                                            {{ str_replace('_',' ', $order['order_status'] == 'processing' ? translate('Packaging') : translate($order['order_status'])) }}
                                         </span>
                                     @elseif($order['order_status'] == 'confirmed' || $order['order_status'] == 'delivered')
                                         <span class="badge badge-soft-success fz-12">{{ translate($order['order_status']) }}</span>
                                     @elseif($order['order_status'] == 'failed')
-                                        <span class="badge badge-soft-danger fz-12">{{ translate('failed_to_deliver') }}</span>
+                                        <span class="badge badge-soft-danger fz-12">{{ translate('Failed_to_Deliver') }}</span>
                                     @else
                                         <span class="badge badge-soft-danger fz-12">{{ translate($order['order_status']) }}</span>
                                     @endif
@@ -821,12 +821,12 @@
                                 <td class="text-center">
                                     <div class="table-actions">
                                         <a class="btn btn-outline--primary btn-sm square-btn"
-                                           title="{{ translate('view') }}"
+                                           title="{{ translate('View') }}"
                                            href="{{ route('admin.orders.details', ['id' => $order['id']]) }}">
                                             <i class="tio-invisible"></i>
                                         </a>
                                         <a class="btn btn-outline-info btn-sm square-btn"
-                                           title="{{ translate('invoice') }}"
+                                           title="{{ translate('Invoice') }}"
                                            target="_blank"
                                            href="{{ route('admin.orders.generate-invoice', [$order['id']]) }}">
                                             <i class="tio-download"></i>

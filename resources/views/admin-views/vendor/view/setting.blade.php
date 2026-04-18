@@ -11,7 +11,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_details')}}
+                {{translate('Vendor_details')}}
             </h2>
         </div>
         <div class="flex-between d-sm-flex row align-items-center justify-content-between mb-2 mx-1">
@@ -27,13 +27,13 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="approved">
-                                <button type="submit" class="btn btn--primary btn-sm">{{translate('approve')}}</button>
+                                <button type="submit" class="btn btn--primary btn-sm">{{translate('Approve')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="rejected">
-                                <button type="submit" class="btn btn-danger btn-sm">{{translate('reject')}}</button>
+                                <button type="submit" class="btn btn-danger btn-sm">{{translate('Reject')}}</button>
                             </form>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
         <div class="page-header">
             <div class="flex-between mx-1 row">
                 <div>
-                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("shop_Name")." : ".translate("update_Please") }}</h1>
+                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("Shop_Name")." : ".translate("update_Please") }}</h1>
                 </div>
             </div>
             <div class="js-nav-scroller hs-nav-scroller-horizontal">
@@ -53,11 +53,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link "
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('order')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('Order')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('Product')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
@@ -73,7 +73,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('review')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('Review')}}</a>
                     </li>
 
                 </ul>
@@ -110,7 +110,7 @@
                                 <input type="number" value="{{$seller['sales_commission_percentage']}}"
                                        class="form-control" name="commission">
                             </div>
-                            <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Update')}}</button>
                         </div>
                     </div>
                 </form>
@@ -144,7 +144,7 @@
                                 <input type="text" value="{{$seller['gst']}}"
                                        class="form-control" name="gst">
                             </div>
-                            <button type="submit" class="btn btn--primary">{{translate('update')}} </button>
+                            <button type="submit" class="btn btn--primary">{{translate('Update')}} </button>
                         </div>
                     </div>
                 </form>
@@ -182,7 +182,7 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                             </div>
                         </form>
                     </div>

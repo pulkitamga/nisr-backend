@@ -157,7 +157,7 @@
                                         <span class="fs-10">{{ $item->created_at->diffforHumans() }}</span>
                                         @if($item->notification_seen_by == null)
                                             <span
-                                                class="badge-soft-danger float-end small py-1 px-2 rounded notification_data_new_badge{{ $item->id }}">{{translate('new')}}</span>
+                                                class="badge-soft-danger float-end small py-1 px-2 rounded notification_data_new_badge{{ $item->id }}">{{translate('New')}}</span>
                                         @endif
                                     </button>
                                     <div class="dropdown-divider"></div>
@@ -202,7 +202,7 @@
                                 <a class="dropdown-item position-relative"
                                    href="{{route('vendor.messages.index', ['type' => 'customer'])}}">
                                     <span class="text-truncate pe-2"
-                                          title="Settings">{{translate('customer')}}</span>
+                                          title="Settings">{{translate('Customer')}}</span>
                                     @php($messageCustomer=\App\Models\Chatting::where(['seen_by_seller'=>0, 'seller_id'=>auth('seller')->id()])->whereNotNull(['user_id'])->count())
                                     @if($messageCustomer > 0)
                                         <span
@@ -213,7 +213,7 @@
                                 <a class="dropdown-item position-relative"
                                    href="{{route('vendor.messages.index', ['type' => 'delivery-man'])}}">
                                     <span class="text-truncate pe-2"
-                                          title="Settings">{{translate('delivery_man')}}</span>
+                                          title="Settings">{{translate('delivery_Man')}}</span>
                                     @php($messageDeliveryMan =\App\Models\Chatting::where(['seen_by_seller'=>0, 'seller_id'=>auth('seller')->id()])->whereNotNull(['delivery_man_id'])->count())
                                     @if($messageDeliveryMan > 0)
                                         <span
@@ -270,7 +270,7 @@
                                 <div class="avatar avatar-sm avatar-circle">
                                     <img class="avatar-img"
                                          src="{{getStorageImages(path:$vendor->image_full_url,type:'backend-profile')}}"
-                                         alt="{{translate('image_description')}}">
+                                         alt="{{translate('image_Description')}}">
                                     <span class="avatar-status avatar-sm-status avatar-status-success"></span>
                                 </div>
                             </a>
@@ -281,7 +281,7 @@
                                         <div class="avatar avatar-sm avatar-circle me-2">
                                             <img class="avatar-img"
                                                  src="{{getStorageImages(path:$vendor->image_full_url,type:'backend-profile')}}"
-                                                 alt="{{translate('image_description')}}">
+                                                 alt="{{translate('image_Description')}}">
                                         </div>
                                         <div class="media-body">
                                             <span class="card-title h5">{{$vendor->f_name}}</span>
@@ -379,7 +379,7 @@
                 <div class="bg-white p-1 rounded mt-2">
                     <a class="p-2  title-color"
                        href="{{route('vendor.messages.index', ['type' => 'customer'])}}"
-                       title="{{translate('message')}}" data-toggle="tooltip" data-custom-class="header-icon-title">
+                       title="{{translate('Message')}}" data-toggle="tooltip" data-custom-class="header-icon-title">
                         <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clip-path="url(#clip0_5926_1152)">
                                 <path
@@ -392,7 +392,7 @@
                                 </clipPath>
                             </defs>
                         </svg>
-                        {{translate('message')}}
+                        {{translate('Message')}}
                         @php($message=\App\Models\Chatting::where(['seen_by_seller'=>1,'seller_id'=>auth('seller')->id()])->count())
                         @if($message!=0)
                             <span>({{ $message }})</span>
@@ -421,7 +421,7 @@
                                 </clipPath>
                             </defs>
                         </svg>
-                        {{translate('order_list')}}
+                        {{translate('Order_List')}}
                     </a>
                 </div>
             </div>

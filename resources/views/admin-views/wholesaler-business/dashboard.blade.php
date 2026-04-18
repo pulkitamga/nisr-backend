@@ -30,7 +30,7 @@
                             <select class="custom-select w-auto" name="statistics_type" id="statistics_type">
                                 <option value="overall"
                                     {{ session()->has('statistics_type') && session('statistics_type') == 'overall' ? 'selected' : '' }}>
-                                    {{ translate('overall_statistics') }}
+                                    {{ translate('overall_Statistics') }}
                                 </option>
                                 <option value="today"
                                     {{ session()->has('statistics_type') && session('statistics_type') == 'today' ? 'selected' : '' }}>
@@ -73,7 +73,7 @@
             <div class="page-header">
                 <div class="row align-items-center">
                     <div class="col-12 mb-2 mb-sm-0">
-                        <h3 class="text-center">{{ translate('hi') }} {{ auth('admin')->user()->name }}
+                        <h3 class="text-center">{{ translate('Hi') }} {{ auth('admin')->user()->name }}
                             {{ ' , ' . translate('welcome_to_dashboard') }}.</h3>
                     </div>
                 </div>
@@ -83,14 +83,14 @@
 
     <span id="earning-statistics-url" data-url="{{ route('admin.dashboard.earning-statistics') }}"></span>
     <span id="order-status-url" data-url="{{ route('admin.dashboard.order-status') }}"></span>
-    <span id="seller-text" data-text="{{ translate('vendor') }}"></span>
+    <span id="seller-text" data-text="{{ translate('Vendor') }}"></span>
     <span id="message-commission-text" data-text="{{ translate('commission') }}"></span>
-    <span id="in-house-text" data-text="{{ translate('In-house') }}"></span>
-    <span id="customer-text" data-text="{{ translate('customer') }}"></span>
+    <span id="in-house-text" data-text="{{ translate('in_House') }}"></span>
+    <span id="customer-text" data-text="{{ translate('Customer') }}"></span>
     <span id="store-text" data-text="{{ translate('store') }}"></span>
-    <span id="product-text" data-text="{{ translate('product') }}"></span>
-    <span id="order-text" data-text="{{ translate('order') }}"></span>
-    <span id="brand-text" data-text="{{ translate('brand') }}"></span>
+    <span id="product-text" data-text="{{ translate('Product') }}"></span>
+    <span id="order-text" data-text="{{ translate('Order') }}"></span>
+    <span id="brand-text" data-text="{{ translate('Brand') }}"></span>
     <span id="business-text" data-text="{{ translate('business') }}"></span>
     <span id="orders-text" data-text="{{ $data['order'] }}"></span>
 @endsection

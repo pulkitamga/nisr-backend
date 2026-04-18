@@ -59,8 +59,8 @@
                 <table class="email-table">
                     <thead>
                         <tr>
-                            <th class="text-start">{{translate('product')}}</th>
-                            <th class="text-end">{{translate('price')}}</th>
+                            <th class="text-start">{{translate('Product')}}</th>
+                            <th class="text-end">{{translate('Price')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,24 +116,24 @@
                 </table>
                 <hr>
                 <dl class="email-dl">
-                    <dt class="flex-1">{{translate('item_price')}}</dt>
+                    <dt class="flex-1">{{translate('Item_Price')}}</dt>
                     <dd class="flex-1 text-end">
                         {{isset($itemPrice) ? webCurrencyConverter(amount: $itemPrice) :setCurrencySymbol(amount: usdToDefaultCurrency(amount: 500), currencyCode: getCurrencyCode())}}
                     </dd>
-                    <dt class="flex-1">{{translate('item_discount')}}</dt>
+                    <dt class="flex-1">{{translate('Item_Discount')}}</dt>
                     <dd class="flex-1 text-end">
                         - {{isset($discount) ? webCurrencyConverter(amount: $discount) :setCurrencySymbol(amount: usdToDefaultCurrency(amount: 50), currencyCode: getCurrencyCode())}}
                     </dd>
-                    <dt class="flex-1">{{translate('sub_total')}}</dt>
+                    <dt class="flex-1">{{translate('Subtotal')}}</dt>
                     <dd class="flex-1 text-end">
                         {{isset($total) ? webCurrencyConverter(amount: $total) :setCurrencySymbol(amount: usdToDefaultCurrency(amount: 450), currencyCode: getCurrencyCode())}}
                     </dd>
                     <dt class="flex-1">
-                        {{translate('coupon_discount')}}
+                        {{translate('Coupon_Discount')}}
                     </dt>
                     <dd class="flex-1 text-end">
                         - {{isset($couponDiscount) ? webCurrencyConverter(amount: $couponDiscount) :setCurrencySymbol(amount: usdToDefaultCurrency(amount: 0), currencyCode: getCurrencyCode())}}
-                    </dd>                    <dt class="flex-1">{{translate('vat/Tax')}}</dt>
+                    </dd>                    <dt class="flex-1">{{translate('VAT/TAX')}}</dt>
                     <dd class="flex-1 text-end">
                         {{isset($tax) ? webCurrencyConverter(amount: $tax) :setCurrencySymbol(amount: usdToDefaultCurrency(amount: 25), currencyCode: getCurrencyCode())}}
                     </dd>

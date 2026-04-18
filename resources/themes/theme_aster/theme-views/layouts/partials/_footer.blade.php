@@ -62,16 +62,18 @@
                         <p>{{ getWebConfig(name: 'shop_address')}}</p>
                         <a href="mailto:{{$web_config['email']}}">{{$web_config['email']}}</a>
 
+                        @php($android_app = is_array($web_config['android'] ?? null) ? $web_config['android'] : ['status' => 0, 'link' => ''])
+                        @php($ios_app = is_array($web_config['ios'] ?? null) ? $web_config['ios'] : ['status' => 0, 'link' => ''])
                         <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap mt-4">
-                            @if($web_config['android']['status'])
-                                <a href="{{ $web_config['android']['link'] }}">
+                            @if($android_app['status'])
+                                <a href="{{ $android_app['link'] }}">
                                     <img
                                         src="{{ theme_asset('assets/img/media/google-play.png') }}" loading="lazy"
                                         alt="{{translate('image')}}">
                                 </a>
                             @endif
-                            @if($web_config['ios']['status'])
-                                <a href="{{ $web_config['ios']['link'] }}">
+                            @if($ios_app['status'])
+                                <a href="{{ $ios_app['link'] }}">
                                     <img
                                         src="{{ theme_asset('assets/img/media/app-store.png') }}" loading="lazy"
                                         alt="{{translate('image')}}">

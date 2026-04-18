@@ -5,11 +5,11 @@
                 <thead class="thead-light thead-50 text-capitalize table-nowrap">
                 <tr>
                     <th>{{ translate('SL') }}</th>
-                    <th>{{ translate('order_no') }}</th>
+                    <th>{{ translate('Order_No') }}</th>
                     <th>{{ translate('earning') }}</th>
                     <th class="text-center text-capitalize">{{ translate('earning_status') }}</th>
-                    <th class="text-center text-capitalize">{{ translate('payment_method') }}</th>
-                    <th class="text-center">{{ translate('status') }}</th>
+                    <th class="text-center text-capitalize">{{ translate('Payment_Method') }}</th>
+                    <th class="text-center">{{ translate('Status') }}</th>
                 </tr>
                 </thead>
 
@@ -19,7 +19,7 @@
                         <td>{{ $orders->firstItem()+$key }}</td>
                         <td>
                             <div class="media align-items-center gap-10 flex-wrap">
-                                <a class="title-color" title="{{translate('order_details')}}"
+                                <a class="title-color" title="{{translate('Order_details')}}"
                                    href="{{route('admin.orders.details',['id'=>$order['id']])}}">
                                     {{ $order->id }}
                                 </a>
@@ -33,7 +33,7 @@
                         <td class="text-center text-capitalize">
                             @if($order['order_status'] == 'delivered' && $order['payment_status']=='paid')
                                 <span class="badge badge-success badge-success-2">
-                                        {{translate('received')}}
+                                        {{translate('Received')}}
                                 </span>
                             @else
                                 <span class="badge badge-soft-danger fz-12">
@@ -94,7 +94,7 @@
             <div class="text-center p-4">
                 <img class="mb-3 w-160"
                      src="{{dynamicAsset(path: 'public/assets/back-end/svg/illustrations/sorry.svg')}}"
-                     alt="{{translate('image_description')}}">
+                     alt="{{translate('image_Description')}}">
                 <p class="mb-0">{{translate('no_data_to_show')}}</p>
             </div>
         @endif

@@ -31,19 +31,19 @@
         $confirmedSummary = [];
         if (request()->filled('date_from') || request()->filled('date_to')) {
             $confirmedSummary[] = [
-                'label' => translate('date'),
+                'label' => translate('DATE'),
                 'value' => trim((request('date_from') ?: '...') . ' - ' . (request('date_to') ?: '...')),
             ];
         }
         if (request('delivery_status') && request('delivery_status') !== 'all') {
             $confirmedSummary[] = [
-                'label' => translate('Delivery Status'),
+                'label' => translate('Delivery_Status'),
                 'value' => request('delivery_status'),
             ];
         }
         if (request('payment_status') && request('payment_status') !== 'all') {
             $confirmedSummary[] = [
-                'label' => translate('Payment Status'),
+                'label' => translate('Payment_Status'),
                 'value' => request('payment_status'),
             ];
         }
@@ -55,7 +55,7 @@
         }
         if (request()->filled('searchValue')) {
             $confirmedSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
             ];
         }
@@ -82,25 +82,25 @@
             ],
             [
                 'name' => 'delivery_status',
-                'label' => translate('Delivery Status'),
+                'label' => translate('Delivery_Status'),
                 'type' => 'select',
                 'value' => request('delivery_status', 'all'),
                 'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                 'options' => [
-                    'all' => translate('all'),
-                    'delivered' => translate('delivered'),
+                    'all' => translate('All'),
+                    'delivered' => translate('Delivered'),
                     'partials' => translate('partials'),
-                    'pending' => translate('pending'),
+                    'pending' => translate('Pending'),
                 ],
             ],
             [
                 'name' => 'payment_status',
-                'label' => translate('Payment Status'),
+                'label' => translate('Payment_Status'),
                 'type' => 'select',
                 'value' => request('payment_status', 'all'),
                 'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                 'options' => [
-                    'all' => translate('all'),
+                    'all' => translate('All'),
                     'paid' => translate('paid'),
                     'unpaid' => translate('unpaid'),
                     'partials' => translate('partials'),
@@ -129,7 +129,7 @@
             ],
             [
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'type' => 'search',
                 'value' => request('searchValue'),
                 'placeholder' => translate('Search...'),
@@ -161,7 +161,7 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('Date')}}</th>
+                            <th>{{translate('DATE')}}</th>
                             <th>{{translate('Purchase_Order_No')}}</th>
                             <th>{{translate('external_Po_Number')}}</th>
                             <th>{{translate('Quotation_No')}}</th>
@@ -169,7 +169,7 @@
                             <th>{{translate('Inovice_no')}}</th>
                             <th>{{translate('Wholesaler')}}</th>
                             <th>{{translate('Delivery_Status')}}</th>
-                            <th>{{translate('Payment_status')}}</th>
+                            <th>{{translate('Payment_Status')}}</th>
                             <th>{{translate('Final_price')}}</th>
                             <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
@@ -230,11 +230,11 @@
                                     <div class="crm-row-actions__primary">
                                         <a class="btn btn-sm btn-info"
                                             href="{{ route('admin.wholesale.business.confirm-order.tracking-page', $order->id) }}">
-                                            {{ translate('view') }}
+                                            {{ translate('View') }}
                                         </a>
                                         @if (!$order->invoice_no)
                                             <button type="button" class="btn btn-sm btn-primary wholesale-open-invoice-modal" data-order-id="{{ $order->id }}">
-                                                {{ translate('Invoice No') }}
+                                                {{ translate('Invoice NO') }}
                                             </button>
                                         @elseif (!$order->confirm_order_no)
                                             <button type="button" class="btn btn-sm btn-primary wholesale-open-confirm-order-modal" data-order-id="{{ $order->id }}">
@@ -253,7 +253,7 @@
                                     @if (!$order->invoice_no || !$order->confirm_order_no)
                                         <div class="crm-row-actions__chips">
                                             @if (!$order->invoice_no)
-                                                <span class="crm-row-actions__chip">{{ translate('Invoice No') }}</span>
+                                                <span class="crm-row-actions__chip">{{ translate('Invoice NO') }}</span>
                                             @endif
                                             @if (!$order->confirm_order_no)
                                                 <span class="crm-row-actions__chip">{{ translate('Confirm Order No') }}</span>
@@ -270,7 +270,7 @@
                                             </a>
                                             @if (!$order->invoice_no)
                                                 <button type="button" class="dropdown-item wholesale-open-invoice-modal" data-order-id="{{ $order->id }}">
-                                                    {{ translate('Invoice No') }}
+                                                    {{ translate('Invoice NO') }}
                                                 </button>
                                             @endif
                                             @if (!$order->confirm_order_no)
@@ -306,7 +306,7 @@
                         @empty
                         <tr>
                             <td colspan="11" class="text-center py-4 text-muted">
-                                {{ translate('No order found') }}
+                                {{ translate('No_Order_Found') }}
                             </td>
                         </tr>
                         @endforelse
@@ -329,7 +329,7 @@
                                     aria-hidden="true">x</span></i></button>
                         </div>
                         <div class="modal-body">
-                            <label>{{ translate('Invoice No') }}</label>
+                            <label>{{ translate('Invoice NO') }}</label>
                             <input type="text" name="invoice_no" id="invoice_no" class="form-control" required>
                             <small id="invoiceAvailability" class="text-sm mt-1"></small>
                         </div>

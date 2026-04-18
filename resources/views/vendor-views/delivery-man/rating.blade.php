@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app-seller')
 
-@section('title', translate('delivery_man_Review'))
+@section('title', translate('delivery_Man_Review'))
 
 @section('content')
     <div class="content container-fluid">
@@ -14,7 +14,7 @@
 
             <div class="d-flex justify-content-end flex-wrap gap-10">
                 <a href="{{route('vendor.delivery-man.list')}}" class="btn btn--primary">
-                    <i class="tio-back-ui"></i> {{translate('back')}}
+                    <i class="tio-back-ui"></i> {{translate('Back')}}
                 </a>
             </div>
         </div>
@@ -113,7 +113,7 @@
                             <input id="datatableSearch_" type="search" name="search" class="form-control"
                                    placeholder="{{ translate('search_by_Order_ID') }}"
                                    aria-label="Search orders" value="{{ $searchValue}}" required>
-                            <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                         </div>
                     </form>
                 </div>
@@ -122,7 +122,7 @@
                 <div class="row gy-3 align-items-end">
                     <div class="col-md-3">
                         <div>
-                            <label for="from" class="title-color d-flex">{{ translate('from') }}</label>
+                            <label for="from" class="title-color d-flex">{{ translate('From') }}</label>
                             <input type="date" name="from_date" id="from_date" value="{{ $filters['from'] }}"
                                    class="form-control"
                                    title="{{ translate('from_date') }}">
@@ -130,7 +130,7 @@
                     </div>
                     <div class="col-md-3">
                         <div>
-                            <label for="to_date" class="title-color d-flex">{{ translate('to') }}</label>
+                            <label for="to_date" class="title-color d-flex">{{ translate('To') }}</label>
                             <input type="date" name="to_date" id="to_date" value="{{ $filters['to'] }}"
                                    class="form-control"
                                    title="{{ ucfirst(translate('to_date')) }}">
@@ -152,7 +152,7 @@
                         <div>
                             <button id="filter" type="submit" class="btn btn--primary btn-block filter">
                                 <i class="tio-filter-list nav-icon"></i>
-                                {{ translate('filter') }}
+                                {{ translate('Filter') }}
                             </button>
                         </div>
                     </div>
@@ -165,10 +165,10 @@
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('order_ID')}}</th>
+                        <th>{{translate('Order_ID')}}</th>
                         <th>{{translate('reviewer')}}</th>
-                        <th>{{translate('review')}}</th>
-                        <th>{{translate('date')}}</th>
+                        <th>{{translate('Review')}}</th>
+                        <th>{{translate('DATE')}}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -184,7 +184,7 @@
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-circle">
                                         <img class="avatar-img" src="{{getStorageImages(path: $review->customer->image_full_url,type: 'backend-profile')}}"
-                                            alt="{{translate('image_description')}}">
+                                            alt="{{translate('image_Description')}}">
                                     </div>
                                     <div class="ms-3">
                                     <span class="d-block h5 text-hover-primary mb-0">{{$review->customer['f_name']." ".$review->customer['l_name']}} <i

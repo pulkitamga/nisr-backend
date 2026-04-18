@@ -12,7 +12,7 @@
         <!-- Page Heading -->
         <nav aria-label="{{ translate('breadcrumb') }}">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('dashboard')}}</a>
+                <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('Dashboard')}}</a>
                 </li>
                 <li class="breadcrumb-item" aria-current="page">{{translate('language_setting_for_app')}}</li>
             </ol>
@@ -48,7 +48,7 @@
                                 </select>
                             </div>
                             <button type="submit"
-                                    class="btn btn--primary float-end ms-3">{{translate('save')}}</button>
+                                    class="btn btn--primary float-end ms-3">{{translate('Save')}}</button>
                         </form>
                     </div>
                 </div>

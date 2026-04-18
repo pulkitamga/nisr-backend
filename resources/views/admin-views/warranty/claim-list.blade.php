@@ -7,12 +7,12 @@
     $isStatusLocked = !request()->routeIs('admin.warranty.claim.all') && $pageTitleKey !== 'claims_list';
     $selectedStatus = $isStatusLocked ? $pageTitleKey : request('status', 'all');
     $statusOptions = [
-        'all' => translate('all'),
-        'new' => translate('new'),
+        'all' => translate('All'),
+        'new' => translate('New'),
         'triage_pending' => translate('triage_pending'),
-        'approved' => translate('approved'),
+        'approved' => translate('Approved'),
         'rma_issued' => translate('rma_issued'),
-        'received' => translate('received'),
+        'received' => translate('Received'),
         'repair_pending' => translate('repair_pending'),
         'replacement_pending' => translate('replacement_pending'),
         'diagnosis_pending' => translate('diagnosis_pending'),
@@ -20,7 +20,7 @@
         'shipped_ready' => translate('shipped_ready'),
         'dispatched' => translate('dispatched'),
         'resolved' => translate('resolved'),
-        'closed' => translate('closed'),
+        'closed' => translate('Closed'),
         'rejected' => translate('rejected'),
         'waiting_customer' => translate('waiting_customer'),
         'waiting_parts' => translate('waiting_parts'),
@@ -68,7 +68,7 @@
     $toolbarFields[] = [
         'type' => 'search',
         'name' => 'searchValue',
-        'label' => translate('search'),
+        'label' => translate('Search'),
         'value' => request('searchValue'),
         'placeholder' => translate('search_by_claim_or_serial'),
         'aria_label' => translate('search_by_claim_or_serial'),
@@ -92,7 +92,7 @@
 
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -156,11 +156,11 @@
                         <th>{{ translate('SL') }}</th>
                         <th>{{ translate('claim_number') }}</th>
                         <th>{{ translate('serial') }}</th>
-                        <th>{{ translate('status') }}</th>
-                        <th>{{ translate('customer') }}</th>
+                        <th>{{ translate('Status') }}</th>
+                        <th>{{ translate('Customer') }}</th>
                         <th>{{ translate('submitted_at') }}</th>
                         <th>{{ translate('sla_due') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody id="claimTableBody">
@@ -188,7 +188,7 @@
                             <div class="crm-row-actions">
                                 <div class="crm-row-actions__primary">
                                     <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
-                                        class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
+                                        class="btn btn-sm btn-outline-info">{{ translate('View') }}</a>
                                 </div>
 
                                 @if(!in_array($claim->status, ['closed']))

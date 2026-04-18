@@ -52,7 +52,7 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="title">{{translate('category')}}</label>
+                                            <label class="title-color d-flex" for="title">{{translate('Category')}}</label>
                                             <select id="category" name="category" class="form-control js-select2-custom">
                                             	<option value="0" selected="" disabled="">---Select---</option>
                                                 @foreach($categories as $category)
@@ -69,16 +69,16 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="cost">{{translate('charges')}}</label>
+                                            <label class="title-color d-flex" for="cost">{{translate('Charges')}}</label>
                                             <input type="number" min="0" step="0.01" max="1000000" name="charges"
-                                                   class="form-control" placeholder="{{translate('ex')}} :">
+                                                   class="form-control" placeholder="{{translate('Ex')}} :">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-10 mt-5">
-                            <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                            <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                         </div>
                     </form>
                 </div>
@@ -101,8 +101,8 @@
                             <th>{{translate('SL')}}</th>
                             <th>{{translate('Catgeory')}}</th>
                             <th>{{translate('Charges')}}</th>
-                            <th class="text-center">{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -136,7 +136,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-wrap justify-content-center gap-10">
-                                        <a title="{{translate('delete')}}"
+                                        <a title="{{translate('Delete')}}"
                                            class="btn btn-outline-danger btn-sm delete-data-without-form"
                                            data-action="{{route('admin.extra-charges.delete')}}"
                                            data-id="{{ $charges['id'] }}">

@@ -6,7 +6,7 @@
             </tr>
             <tr>
 
-                <th>{{ translate('filter_Criteria').' '.'-' }}</th>
+                <th>{{ translate('Filter_Criteria').' '.'-' }}</th>
                 <th></th>
                 <th>
 
@@ -20,8 +20,8 @@
             </tr>
             <tr>
                 <td> {{translate('SL')}}</td>
-                <td> {{translate('product_Name')}}</td>
-                <td> {{translate('Date')}}	</td>
+                <td> {{translate('Product_name')}}</td>
+                <td> {{translate('DATE')}}	</td>
                 <td> {{translate('total_In_Wishlist')}}</td>
             </tr>
             @foreach ($data['products'] as $key=>$item)

@@ -130,8 +130,8 @@ class CouponController extends BaseController
     public function getVendorList(Request $request): JsonResponse
     {
         $sellers = $this->vendorRepo->getListWhere(filters: ['status'=>'approved'], relations: ['shop'], dataLimit: 'all');
-        $output= '<option value="" disabled selected>'. translate('select_vendor') .'</option><option value="0">'.translate('all_vendor').'</option>';
-        $output .= $request['coupon_bearer'] == 'inhouse' ? '<option value="inhouse">'.translate('inhouse').'</option>' : '';
+        $output= '<option value="" disabled selected>'. translate('select_Vendor') .'</option><option value="0">'.translate('all_Vendor').'</option>';
+        $output .= $request['coupon_bearer'] == 'inhouse' ? '<option value="inhouse">'.translate('in_House').'</option>' : '';
         foreach($sellers as $seller) {
             $output .= '<option value="'.$seller->id.'">'.$seller->shop->name.'</option>';
         }

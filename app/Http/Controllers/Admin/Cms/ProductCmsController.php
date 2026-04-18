@@ -237,7 +237,7 @@ class ProductCmsController extends Controller
         );
 
         return redirect()->route('admin.content-management.products')
-            ->with('success', translate('updated_successfully'));
+            ->with('success', translate('Updated_Successfully'));
     }
 
     public function toggleStatus(Request $request)
@@ -252,7 +252,7 @@ class ProductCmsController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => translate('status_updated_successfully'),
+            'message' => translate('Status_updated_successfully'),
             'new_status' => $section->is_active,
         ]);
     }

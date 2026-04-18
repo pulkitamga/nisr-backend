@@ -102,5 +102,5 @@ use Illuminate\Support\Arr;
 </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('close') }}</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Close') }}</button>
 </div>

@@ -115,7 +115,7 @@ class LanguageController extends BaseController
     public function syncStaticKeys($lang, LanguageService $languageService): RedirectResponse
     {
         $languageService->syncStaticTranslateKeys(locales: [$lang]);
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 

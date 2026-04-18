@@ -340,7 +340,7 @@ class POSOrderController extends BaseController
         );
 
         if (($result['status'] ?? '') === 'error') {
-            Toastr::error((string)($result['message'] ?? translate('something_went_wrong')));
+            Toastr::error((string)($result['message'] ?? translate('Something_went_wrong')));
             return response()->json();
         }
         if (($result['status'] ?? '') === 'validation_error') {
@@ -350,7 +350,7 @@ class POSOrderController extends BaseController
             return response()->json($result);
         }
 
-        Toastr::success(translate('order_placed_successfully'));
+        Toastr::success(translate('Order_Placed_Successfully'));
         return response()->json([
             'orderId' => (int)($result['orderId'] ?? 0),
             'cartId' => (string)($result['cartId'] ?? ''),

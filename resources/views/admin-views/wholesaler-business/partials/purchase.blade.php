@@ -26,8 +26,8 @@
             <thead class="bg-light">
                 <tr>
                     <th>{{ translate('SL') }}</th>
-                    <th>{{ translate('Date') }}</th>
-                    <th class="text-nowrap">{{ translate('Order No') }}</th>
+                    <th>{{ translate('DATE') }}</th>
+                    <th class="text-nowrap">{{ translate('Order_No') }}</th>
                     <th>{{ translate('Total') }}</th>
                     <th>{{ translate('Status') }}</th>
                     <th>{{ translate('Action') }}</th>

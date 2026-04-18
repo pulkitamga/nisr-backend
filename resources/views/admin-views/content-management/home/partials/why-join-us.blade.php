@@ -54,15 +54,15 @@ $content = $jsonData['section'] ?? [];
                     <label class="title-color">{{ translate('main_subtitle') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="subtitle[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? ($content['subtitle'] ?? '') : (is_array($translatedSubtitle) ? ($translatedSubtitle[$lang] ?? '') : $translatedSubtitle) }}"
-                        placeholder="{{ translate('enter_subtitle') }}">
+                        placeholder="{{ translate('enter_sub_title') }}">
                 </div>
             </div>
         </div>
         @endforeach
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-            <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+            <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+            <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
         </div>
     </form>
 </div>
@@ -167,8 +167,8 @@ $content = $jsonData['section'] ?? [];
     @endforeach
 
     <div class="d-flex justify-content-end gap-4 mt-5">
-        <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+        <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
     </div>
 
 

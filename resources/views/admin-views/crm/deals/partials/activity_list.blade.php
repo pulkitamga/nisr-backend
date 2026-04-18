@@ -6,7 +6,7 @@
         class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
         <thead class="thead-light thead-50 text-capitalize">
             <tr>
-                <th>{{ translate('Date') }}</th>
+                <th>{{ translate('DATE') }}</th>
                 <th>{{ translate('Type') }}</th>
                 <th>{{ translate('Title') }}</th>
                 <th>{{ translate('Employee') }}</th>
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p><strong>{{ translate('Type') }}:</strong> ${activity.activity_type.charAt(0).toUpperCase() + activity.activity_type.slice(1)}</p>
                 <p><strong>{{ translate('Title') }}:</strong> ${activity.title}</p>
                 <p><strong>{{ translate('Subject') }}:</strong> ${activity.subject || textNA}</p>
-                <p><strong>${activity.activity_type === 'task' ? '{{ translate('Due Date') }}' : '{{ translate('Date') }}'}:</strong> 
+                <p><strong>${activity.activity_type === 'task' ? '{{ translate('due_date') }}' : '{{ translate('DATE') }}'}:</strong> 
                     ${activity.note_date ? new Date(activity.note_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date(activity.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
                 <p><strong>{{ translate('Employee') }}:</strong> ${activity.employee?.name || textUnassigned}</p>
             `;

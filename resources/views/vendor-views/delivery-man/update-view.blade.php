@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{asset('public/assets/back-end/img/deliveryman.png')}}" alt="">
-                {{translate('update_deliveryman')}}
+                {{translate('update_delivery_man')}}
             </h2>
         </div>
 
@@ -22,7 +22,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="title-color">{{translate('first_name')}}</label>
+                                <label class="title-color">{{translate('first_Name')}}</label>
                                 <input type="text" value="{{$deliveryMan['f_name']}}" name="f_name"
                                         class="form-control" placeholder="{{translate('new_delivery_man')}}"
                                         required>
@@ -36,7 +36,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                                 <div class="input-group mb-3">
                                     <div>
                                         <select class=" form-control js-example-basic-multiple js-states js-example-responsive"
@@ -47,14 +47,14 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <input type="text" name="phone" value="{{$deliveryMan['phone']}}" class="form-control" placeholder="{{translate('ex')}} : 017********"
+                                    <input type="text" name="phone" value="{{$deliveryMan['phone']}}" class="form-control" placeholder="{{translate('Ex')}} : 017********"
                                            required>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="title-color">{{translate('identity_type')}}</label>
+                                <label class="title-color">{{translate('identity_Type')}}</label>
                                 <select name="identity_type" class="form-control">
                                     <option
                                         value="passport" {{$deliveryMan['identity_type']=='passport'?'selected':''}}>
@@ -62,9 +62,9 @@
                                     </option>
                                     <option
                                         value="driving_license" {{$deliveryMan['identity_type']=='driving_license'?'selected':''}}>
-                                        {{translate('driving_license')}}
+                                        {{translate('driving_License')}}
                                     </option>
-                                    <option value="nid" {{$deliveryMan['identity_type']=='nid'?'selected':''}}>{{translate('nid')}}
+                                    <option value="nid" {{$deliveryMan['identity_type']=='nid'?'selected':''}}>{{translate('NID')}}
                                     </option>
                                     <option
                                         value="company_id" {{$deliveryMan['identity_type']=='company_id'?'selected':''}}>
@@ -74,15 +74,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="title-color">{{translate('identity_number')}}</label>
+                                <label class="title-color">{{translate('identity_Number')}}</label>
                                 <input type="text" name="identity_number" value="{{$deliveryMan['identity_number']}}"
                                         class="form-control"
-                                        placeholder="{{translate('ex')}} : DH-23434-LS"
+                                        placeholder="{{translate('Ex')}} : DH-23434-LS"
                                         required>
                             </div>
 
                             <div class="form-group">
-                                <label class="title-color d-flex">{{translate('address')}}</label>
+                                <label class="title-color d-flex">{{translate('Address')}}</label>
                                 <textarea name="address" class="form-control" id="address" rows="1" placeholder="Address">{{$deliveryMan['address']}}</textarea>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
                             <div class="form-group">
                                 <div class="d-flex mb-2 gap-2 align-items-center">
                                     <label
-                                        class="title-color mb-0">{{translate('deliveryman_image')}}</label>
+                                        class="title-color mb-0">{{translate('delivery_Man_Image')}}</label>
                                     <span class="text-info">* ( {{translate('ratio')}} 1:1 )</span>
                                 </div>
                                 <div class="form-group">
@@ -108,7 +108,7 @@
                                 <div class="mt-4 text-center">
                                     <img class="upload-img-view" id="viewer"
                                          src="{{getStorageImages(path:$deliveryMan->image_full_url,type: 'backend-profile')}}"
-                                         alt="{{translate('delivery_man_image')}}"/>
+                                         alt="{{translate('delivery_Man_Image')}}"/>
                                 </div>
                             </div>
                         </div>
@@ -135,9 +135,9 @@
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <label class="title-color">{{translate('email')}}</label>
+                                <label class="title-color">{{translate('Email')}}</label>
                                 <input type="email" value="{{$deliveryMan['email']}}" name="email" class="form-control"
-                                        placeholder="{{translate('ex')}} : ex@example.com"
+                                        placeholder="{{translate('Ex')}} : ex@example.com"
                                         required>
                             </div>
                         </div>
@@ -194,9 +194,9 @@
                     <span class="d-none" id="placeholderImg" data-img="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img3.png')}}"></span>
 
                     <div class="d-flex gap-3 justify-content-end">
-                        <button type="reset" id="reset" class="btn btn-secondary">{{translate('reset')}}</button>
+                        <button type="reset" id="reset" class="btn btn-secondary">{{translate('Reset')}}</button>
                         <button type="button" class="btn btn--primary form-submit" data-form-id="update-delivery-man-form" data-redirect-route="{{route('vendor.delivery-man.list')}}"
-                                data-message="{{translate('want_to_update_this_delivery_man').'?'}}">{{translate('submit')}}</button>
+                                data-message="{{translate('want_to_update_this_delivery_man').'?'}}">{{translate('Submit')}}</button>
                     </div>
                 </div>
             </div>

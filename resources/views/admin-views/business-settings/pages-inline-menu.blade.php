@@ -8,25 +8,25 @@
             <a href="{{route('admin.business-settings.service-policy')}}">{{translate('Service_policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::PRIVACY_POLICY[URI]) ?'active':'' }}">
-            <a href="{{route('admin.business-settings.privacy-policy')}}">{{translate('privacy_Policy')}}</a>
+            <a href="{{route('admin.business-settings.privacy-policy')}}">{{translate('Privacy_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::PRIVACY_POLICY[URI]) ?'active':'' }}">
             <a href="{{route('admin.business-settings.warranty-policy')}}">{{translate('warranty_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::VIEW[URI].'/refund-policy') ?'active':'' }}">
-            <a href="{{route('admin.business-settings.page',['refund-policy'])}}">{{translate('refund_Policy')}}</a>
+            <a href="{{route('admin.business-settings.page',['refund-policy'])}}">{{translate('Refund_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::VIEW[URI].'/return-policy') ?'active':'' }}">
-            <a href="{{route('admin.business-settings.page',['return-policy'])}}">{{translate('return_Policy')}}</a>
+            <a href="{{route('admin.business-settings.page',['return-policy'])}}">{{translate('Return_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::VIEW[URI].'/cancellation-policy') ?'active':'' }}">
-            <a href="{{route('admin.business-settings.page',['cancellation-policy'])}}">{{translate('cancellation_Policy')}}</a>
+            <a href="{{route('admin.business-settings.page',['cancellation-policy'])}}">{{translate('Cancellation_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::VIEW[URI].'/shipping-policy') ?'active':'' }}">
             <a href="{{ route('admin.business-settings.page', ['shipping-policy']) }}">{{translate('Shipping_Policy')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/'.Pages::ABOUT_US[URI]) ?'active':'' }}">
-            <a href="{{route('admin.business-settings.about-us')}}">{{translate('about_Us')}}</a>
+            <a href="{{route('admin.business-settings.about-us')}}">{{translate('About_us')}}</a>
         </li>
          <li class="{{ Request::is('admin/business-settings/'.Pages::COOKIE_SETTINGS[URI]) ? 'active':'' }}">
             <a href="{{ route('admin.business-settings.cookie-settings') }}">{{translate('cookies')}}</a>
@@ -45,7 +45,7 @@
         @if(theme_root_path() == 'default')
             <li class="{{ Request::is('admin/business-settings/'.FeaturesSection::COMPANY_RELIABILITY[URI]) ?'active':'' }}">
                 <a href="{{route('admin.business-settings.company-reliability')}}" class="text-capitalize">
-                    {{translate('company_reliability')}}
+                    {{translate('company_Reliability')}}
                 </a>
             </li>
         @endif

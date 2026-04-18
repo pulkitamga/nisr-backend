@@ -8,7 +8,7 @@
         <div class="mb-4">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/push-notification.png')}}" alt="">
-                {{translate('push_notification_setup')}}
+                {{translate('push_Notification_Setup')}}
             </h2>
         </div>
         <div class="d-flex flex-wrap justify-content-between gap-3 mb-4">
@@ -95,10 +95,10 @@
                                 </div>
                                 <div class="d-flex gap-3 justify-content-end">
                                     <button type="reset"
-                                            class="btn btn-secondary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('reset')}}
+                                            class="btn btn-secondary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Reset')}}
                                     </button>
                                     <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                            class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('submit')}}
+                                            class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Submit')}}
                                     </button>
                                 </div>
                             </form>
@@ -144,10 +144,10 @@
                                 </div>
                                 <div class="d-flex gap-3 justify-content-end">
                                     <button type="reset"
-                                            class="btn btn-secondary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('reset')}}
+                                            class="btn btn-secondary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Reset')}}
                                     </button>
                                     <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                            class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('submit')}}
+                                            class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Submit')}}
                                     </button>
                                 </div>
                             </form>
@@ -193,10 +193,10 @@
                                 </div>
                                 <div class="d-flex gap-3 justify-content-end">
                                     <button type="reset" class="btn btn-secondary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">
-                                        {{translate('reset')}}
+                                        {{translate('Reset')}}
                                     </button>
                                     <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-4 {{env('APP_MODE')!='demo'?'':'call-demo'}}">
-                                        {{translate('submit')}}
+                                        {{translate('Submit')}}
                                     </button>
                                 </div>
                             </form>

@@ -127,12 +127,12 @@
                     <p class="detail-row"><strong>{{ translate('Subject') }}:</strong> <span class="{{ $valueClass($inbox->subject ?? '') }}">{{ $translateMessageText($inbox->subject ?? translate('No Subject')) }}</span></p>
                     <p class="detail-row"><strong>{{ translate('Body') }}:</strong> <span class="{{ $valueClass($inbox->body ?? '') }}">{{ $translateMessageText($inbox->body ?? translate('No Message')) }}</span></p>
                     <p class="detail-row"><strong>{{ translate('Sender Name') }}:</strong> <span class="{{ $valueClass($inbox->sender_name ?? '') }}">{{ $inbox->sender_name ?? translate('Unassigned') }}</span></p>
-                    <p class="detail-row"><strong>{{ translate('Sender Email') }}:</strong> <span class="{{ $valueClass($inbox->sender_email ?? '') }}">{{ $inbox->sender_email ?? translate('Not Available') }}</span></p>
-                    <p class="detail-row"><strong>{{ translate('Sender Phone') }}:</strong> <span class="{{ $valueClass($inbox->sender_phone ?? '') }}">{{ $inbox->sender_phone ?? translate('Not Available') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Sender Email') }}:</strong> <span class="{{ $valueClass($inbox->sender_email ?? '') }}">{{ $inbox->sender_email ?? translate('not_available') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Sender Phone') }}:</strong> <span class="{{ $valueClass($inbox->sender_phone ?? '') }}">{{ $inbox->sender_phone ?? translate('not_available') }}</span></p>
                     <p class="detail-row"><strong>{{ translate('Pipeline') }}:</strong> <span class="{{ $valueClass($inbox->pipeline ?? '') }}">{{ $translateToken($inbox->pipeline ?? '-') }}</span></p>
-                    <p class="detail-row"><strong>{{ translate('Message Type') }}:</strong> <span class="{{ $valueClass($inbox->message_type ?? '') }}">{{ $translateToken($inbox->message_type ?? '-') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('message_type') }}:</strong> <span class="{{ $valueClass($inbox->message_type ?? '') }}">{{ $translateToken($inbox->message_type ?? '-') }}</span></p>
                     <p class="detail-row"><strong>{{ translate('Status') }}:</strong> <span class="{{ $valueClass($inbox->status ?? '') }}">{{ $translateToken($inbox->status ?? '-') }}</span></p>
-                    <p class="detail-row"><strong>{{ translate('Received At') }}:</strong> <span class="detail-value detail-value-ltr">{{ $inbox->created_at?->format('d M, Y H:i A') }}</span></p>
+                    <p class="detail-row"><strong>{{ translate('Received_At') }}:</strong> <span class="detail-value detail-value-ltr">{{ $inbox->created_at?->format('d M, Y H:i A') }}</span></p>
                     @if(is_array($inbox->details))
                     <div class="mb-3">
                         <strong>{{ translate('Details') }}:</strong>
@@ -187,7 +187,7 @@
                             </li>
                             <li>
                                 <a href="javascript:void(0)" class="nav-link action-btn" data-bs-toggle="collapse" data-bs-target="#collapseFile-{{ $inbox->id }}" data-collapse-target="file">
-                                    {{ translate('Upload File') }}
+                                    {{ translate('Upload_File') }}
                                 </a>
                             </li>
                         </ul>
@@ -197,7 +197,7 @@
                         <div class="border-0 shadow-sm mb-3">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mt-3 mb-2">{{ translate('activities') }}</h6>
+                                    <h6 class="mt-3 mb-2">{{ translate('Activities') }}</h6>
                                 </div>
 
                                 <div id="activity-list-{{ $inbox->id }} ">
@@ -218,7 +218,7 @@
                                     <textarea class="form-control" id="noteContent-{{ $inbox->id }}" name="note" placeholder="{{ translate('Enter note') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="noteDate-{{ $inbox->id }}" class="form-label">{{ translate('Noted At') }}</label>
+                                    <label for="noteDate-{{ $inbox->id }}" class="form-label">{{ translate('noted_at') }}</label>
                                     <input type="date" class="form-control" id="noteDate-{{ $inbox->id }}" name="noted_at">
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Note') }}</button>
@@ -248,14 +248,14 @@
                                 <input type="hidden" name="task_id" id="task-id-{{ $inbox->id }}">
                                 <div class="mb-3">
                                     <label for="taskName-{{ $inbox->id }}" class="form-label">{{ translate('Name') }}</label>
-                                    <input type="text" class="form-control" id="taskName-{{ $inbox->id }}" name="name" placeholder="{{ translate('Enter name') }}">
+                                    <input type="text" class="form-control" id="taskName-{{ $inbox->id }}" name="name" placeholder="{{ translate('enter_name') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskDesc-{{ $inbox->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="taskDesc-{{ $inbox->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="taskDesc-{{ $inbox->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="taskDue-{{ $inbox->id }}" class="form-label">{{ translate('Due Date') }}</label>
+                                    <label for="taskDue-{{ $inbox->id }}" class="form-label">{{ translate('due_date') }}</label>
                                     <input type="date" class="form-control" id="taskDue-{{ $inbox->id }}" name="due_date">
                                 </div>
                                 <div class="mb-3">
@@ -287,7 +287,7 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="callTitle-{{ $inbox->id }}" class="form-label">{{ translate('Title') }}</label>
-                                    <input type="text" class="form-control" id="callTitle-{{ $inbox->id }}" name="title" placeholder="{{ translate('Enter title') }}">
+                                    <input type="text" class="form-control" id="callTitle-{{ $inbox->id }}" name="title" placeholder="{{ translate('enter_title') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callFrom-{{ $inbox->id }}" class="form-label">{{ translate('From') }}</label>
@@ -308,11 +308,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="callLocation-{{ $inbox->id }}" class="form-label">{{ translate('Location') }}</label>
-                                    <input type="text" class="form-control" id="callLocation-{{ $inbox->id }}" name="location" placeholder="{{ translate('Enter location') }}">
+                                    <input type="text" class="form-control" id="callLocation-{{ $inbox->id }}" name="location" placeholder="{{ translate('Enter Location') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callDesc-{{ $inbox->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="callDesc-{{ $inbox->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="callDesc-{{ $inbox->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Call') }}</button>
                             </form>

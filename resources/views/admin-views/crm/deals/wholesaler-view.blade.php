@@ -46,7 +46,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4>{{ translate('Company Information') }}</h4>
+                            <h4>{{ translate('Company_information') }}</h4>
                             <p><strong>{{ translate('Company') }}:</strong> <span class="bidi-auto">{{ $deal->relatedParty->company_name ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $deal->relatedUser->email ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $deal->relatedUser->phone ?? translate('N/A') }}</span></p>
@@ -54,7 +54,7 @@
                         <div class="col-md-6">
 
                             <h4>{{ translate('Deal Information') }}</h4>
-                            <p><strong>{{ translate('Created At') }}:</strong> <span class="bidi-ltr">{{ $deal->created_at->format('d M, Y H:i A') }}</span></p>
+                            <p><strong>{{ translate('Created_At') }}:</strong> <span class="bidi-ltr">{{ $deal->created_at->format('d M, Y H:i A') }}</span></p>
                             <p><strong>{{ translate('Employee') }}:</strong> <span class="bidi-auto">{{ $deal->employee->name ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Quotation Status') }}:</strong>
                                 <span class="text-primary bg-soft-dark font-weight-bold px-3 py-1 mb-0 fz-12 bidi-auto">{{ \App\Utils\crm_status_label($deal->quotation_status) }}</span>
@@ -103,7 +103,7 @@
                             </li>
                             <li>
                                 <a href="javascript:void(0)" class="nav-link action-btn" data-bs-toggle="collapse" data-bs-target="#collapseFile-{{ $deal->id }}" data-collapse-target="file">
-                                    {{ translate('Upload File') }}
+                                    {{ translate('Upload_File') }}
                                 </a>
                             </li>
                         </ul>
@@ -113,7 +113,7 @@
                         <div class="border-0 shadow-sm mb-3">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mt-3 mb-2">{{ translate('activities') }}</h6>
+                                    <h6 class="mt-3 mb-2">{{ translate('Activities') }}</h6>
                                 </div>
 
                                 <div id="activity-list-{{ $deal->id }} ">
@@ -134,7 +134,7 @@
                                     <textarea class="form-control" id="noteContent-{{ $deal->id }}" name="note" placeholder="{{ translate('Enter note') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="noteDate-{{ $deal->id }}" class="form-label">{{ translate('Noted At') }}</label>
+                                    <label for="noteDate-{{ $deal->id }}" class="form-label">{{ translate('noted_at') }}</label>
                                     <input type="date" class="form-control" id="noteDate-{{ $deal->id }}" name="noted_at">
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Note') }}</button>
@@ -164,14 +164,14 @@
                                 <input type="hidden" name="task_id" id="task-id-{{ $deal->id }}">
                                 <div class="mb-3">
                                     <label for="taskName-{{ $deal->id }}" class="form-label">{{ translate('Name') }}</label>
-                                    <input type="text" class="form-control" id="taskName-{{ $deal->id }}" name="name" placeholder="{{ translate('Enter name') }}">
+                                    <input type="text" class="form-control" id="taskName-{{ $deal->id }}" name="name" placeholder="{{ translate('enter_name') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskDesc-{{ $deal->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="taskDesc-{{ $deal->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="taskDesc-{{ $deal->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="taskDue-{{ $deal->id }}" class="form-label">{{ translate('Due Date') }}</label>
+                                    <label for="taskDue-{{ $deal->id }}" class="form-label">{{ translate('due_date') }}</label>
                                     <input type="date" class="form-control" id="taskDue-{{ $deal->id }}" name="due_date">
                                 </div>
                                 <div class="mb-3">
@@ -203,7 +203,7 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="callTitle-{{ $deal->id }}" class="form-label">{{ translate('Title') }}</label>
-                                    <input type="text" class="form-control" id="callTitle-{{ $deal->id }}" name="title" placeholder="{{ translate('Enter title') }}">
+                                    <input type="text" class="form-control" id="callTitle-{{ $deal->id }}" name="title" placeholder="{{ translate('enter_title') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callFrom-{{ $deal->id }}" class="form-label">{{ translate('From') }}</label>
@@ -224,11 +224,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="callLocation-{{ $deal->id }}" class="form-label">{{ translate('Location') }}</label>
-                                    <input type="text" class="form-control" id="callLocation-{{ $deal->id }}" name="location" placeholder="{{ translate('Enter location') }}">
+                                    <input type="text" class="form-control" id="callLocation-{{ $deal->id }}" name="location" placeholder="{{ translate('Enter Location') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callDesc-{{ $deal->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="callDesc-{{ $deal->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="callDesc-{{ $deal->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Call') }}</button>
                             </form>
@@ -309,7 +309,7 @@
                 if (res.status) {
                     toastr.success(res.message);
                 } else {
-                    toastr.error(@json(__('Something went wrong')));
+                    toastr.error(@json(__('Something_went_wrong')));
                 }
             }
         });

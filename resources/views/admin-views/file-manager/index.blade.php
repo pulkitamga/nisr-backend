@@ -14,7 +14,7 @@
             <h5 class="mb-0">{{translate('file_manager')}}</h5>
             <button type="button" class="btn btn-sm btn--primary modalTrigger" data-toggle="modal" data-target="#exampleModal">
                 <i class="tio-add"></i>
-                <span class="text text-capitalize">{{translate('add_new')}}</span>
+                <span class="text text-capitalize">{{translate('add_New')}}</span>
             </button>
         </div>
         <div class="inline-page-menu my-4">
@@ -40,12 +40,12 @@
                         @if(end($currentFolder) != 'public' && $storage == 'public')
                             <a class="btn btn--primary btn-sm" href="{{ route('admin.file-manager.index', base64_encode($previousFolder)) }}">
                                 <i class="tio-chevron-left"></i>
-                                {{translate('back')}}
+                                {{translate('Back')}}
                             </a>
                         @elseif($storage == 's3' && end($currentFolder) != '')
                             <a class="btn btn--primary btn-sm" href="{{url()->previous()}}">
                                 <i class="tio-chevron-left"></i>
-                                {{translate('back')}}
+                                {{translate('Back')}}
                             </a>
                         @endif
                     </div>
@@ -77,7 +77,7 @@
                                                         <h4 class="modal-title" id="myModalLabel">{{$file['name']}}</h4>
                                                         <button type="button" class="close" data-dismiss="modal"><span
                                                                 aria-hidden="true">&times;</span><span
-                                                                class="sr-only">{{translate('close')}}</span>
+                                                                class="sr-only">{{translate('Close')}}</span>
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
@@ -87,7 +87,7 @@
                                                     <div class="modal-footer">
                                                         <a class="btn btn--primary"
                                                            href="{{route('admin.file-manager.download',['file_name' => base64_encode($file['path']), 'storage' => $storage])}}"><i
-                                                                class="tio-download"></i> {{translate('download')}}
+                                                                class="tio-download"></i> {{translate('Download')}}
                                                         </a>
                                                         <button class="btn btn-info copy-path"
                                                                 data-path="{{ $file['db_path'] }}"><i
@@ -112,7 +112,7 @@
                     <div class="indicator"></div>
                     <div class="modal-header">
                         <h5 class="modal-title text-capitalize"
-                            id="exampleModalLabel">{{translate('upload_file')}} </h5>
+                            id="exampleModalLabel">{{translate('Upload_File')}} </h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -143,7 +143,7 @@
                             <div class="row" id="files"></div>
                             <div class="form-group">
                                 <input class="btn btn--primary {{env('APP_MODE') != 'demo'?'':'call-demo'}}" type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                       value="{{translate('upload')}}">
+                                       value="{{translate('Upload')}}">
                             </div>
                         </form>
 

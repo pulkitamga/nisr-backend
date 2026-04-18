@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="">
-                    <h3 class="mb-3 text-capitalize">{{ translate('brand') }}</h3>
+                    <h3 class="mb-3 text-capitalize">{{ translate('Brand') }}</h3>
                     <p class="max-w-400">{{ translate('brands_are_lists_of_the_specific_products').', '. translate('_organize_by_putting_the_newest_ones_at_the_top_and_arranging_everything_alphabetically').'.'}}</p>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="brand-alphabetic-order"
                                             {{isset($brandPriority?->sort_by) && $brandPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer" for="brand-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -79,7 +79,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="brand-alphabetic-order-reverse"
                                             {{isset($brandPriority?->sort_by) && $brandPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer" for="brand-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -88,7 +88,7 @@
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="submit" class="btn btn-primary px-5">
-                            {{ translate('save') }}
+                            {{ translate('Save') }}
                         </button>
                     </div>
                 </form>

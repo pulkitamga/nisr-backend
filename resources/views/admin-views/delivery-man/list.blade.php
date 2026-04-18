@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/deliveryman.png')}}" width="20" alt="">
-                {{translate('delivery_man')}} <span class="badge badge-soft-dark radius-50 fz-12">{{ $deliveryMens->total() }}</span>
+                {{translate('delivery_Man')}} <span class="badge badge-soft-dark radius-50 fz-12">{{ $deliveryMens->total() }}</span>
             </h2>
         </div>
 
@@ -26,7 +26,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                                 placeholder="{{translate('search_by_name').','.translate('_contact_info')}}" aria-label="{{ translate('Search') }}" value="{{ request('searchValue') }}" required>
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -50,12 +50,12 @@
                             <thead class="thead-light thead-50 text-capitalize table-nowrap">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('name')}}</th>
-                                <th>{{translate('contact info')}}</th>
+                                <th>{{translate('Name')}}</th>
+                                <th>{{translate('_contact_info')}}</th>
                                 <th>{{translate('total_Orders')}}</th>
-                                <th>{{translate('rating')}}</th>
-                                <th class="text-center">{{translate('status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Rating')}}</th>
+                                <th class="text-center">{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
 
@@ -115,7 +115,7 @@
                                     <td>
                                         <div class="d-flex justify-content-center align-items-center gap-10">
                                             <a  class="btn btn-outline--primary btn-sm edit"
-                                                title="{{translate('edit')}}"
+                                                title="{{translate('Edit')}}"
                                                 href="{{route('admin.delivery-man.edit',[$deliveryMen['id']])}}">
                                                 <i class="tio-edit"></i></a>
                                             <a title="{{ translate('Earning Statement') }}"
@@ -125,7 +125,7 @@
                                             </a>
                                             <a class="btn btn-outline-danger btn-sm delete delete-data" href="javascript:"
                                                 data-id="delivery-man-{{$deliveryMen['id']}}"
-                                                title="{{ translate('delete')}}">
+                                                title="{{ translate('Delete')}}">
                                                 <i class="tio-delete"></i>
                                             </a>
                                             <form action="{{route('admin.delivery-man.delete',[$deliveryMen['id']])}}"

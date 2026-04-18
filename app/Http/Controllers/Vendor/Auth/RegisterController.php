@@ -52,7 +52,7 @@ class RegisterController extends BaseController
         $vendorRegistration = getWebConfig(name:'seller_registration');
         if((isset($businessMode) && $businessMode=='single') || (isset($vendorRegistration) && $vendorRegistration==0))
         {
-            Toastr::warning(translate('access_denied').'!!');
+            Toastr::warning(translate('access_Denied').'!!');
             return redirect('/');
         }
         $vendorRegistrationHeader = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'vendor_registration_header'])['value']);

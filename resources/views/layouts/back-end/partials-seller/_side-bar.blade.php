@@ -50,10 +50,10 @@
                     <ul class="navbar-nav navbar-nav-lg nav-tabs">
                         <li class="navbar-vertical-aside-has-menu {{Request::is('vendor/dashboard*')?'show':''}}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link"
-                               href="{{route('vendor.dashboard.index')}}" title="{{translate('dashboard')}}">
+                               href="{{route('vendor.dashboard.index')}}" title="{{translate('Dashboard')}}">
                                 <i class="tio-home-vs-1-outlined nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{translate('dashboard')}}
+                                    {{translate('Dashboard')}}
                                 </span>
                             </a>
                         </li>
@@ -76,10 +76,10 @@
                             <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                         </li>
                         <li class="navbar-vertical-aside-has-menu {{Request::is('vendor/orders*')?'active':''}}">
-                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:" title="{{translate('orders')}}">
+                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:" title="{{translate('Orders')}}">
                                 <i class="tio-shopping-cart nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{translate('orders')}}
+                                    {{translate('Orders')}}
                                 </span>
                             </a>
                             <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -88,7 +88,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['all'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('all')}}
+                                            {{translate('All')}}
                                             <span
                                                 class="badge badge-soft-info badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->count()}}
@@ -100,7 +100,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['pending'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('pending')}}
+                                            {{translate('Pending')}}
                                             <span
                                                 class="badge badge-soft-info badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'pending'])->count()}}
@@ -125,7 +125,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['processing'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('packaging')}}
+                                            {{translate('Packaging')}}
                                             <span
                                                 class="badge badge-soft-warning badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'processing'])->count()}}
@@ -139,7 +139,7 @@
                                        title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate text-capitalize">
-                                            {{translate('out_for_delivery')}}
+                                            {{translate('out_For_Delivery')}}
                                             <span
                                                 class="badge badge-soft-warning badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'out_for_delivery'])->count()}}
@@ -151,7 +151,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['delivered'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('delivered')}}
+                                            {{translate('Delivered')}}
                                             <span
                                                 class="badge badge-soft-success badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'delivered'])->count()}}
@@ -163,7 +163,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['returned'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('returned')}}
+                                            {{translate('Returned')}}
                                             <span
                                                 class="badge badge-soft-danger badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'returned'])->count()}}
@@ -175,7 +175,7 @@
                                     <a class="nav-link " href="{{route('vendor.orders.list',['failed'])}}" title="">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                            {{translate('failed To Deliver')}}
+                                            {{translate('Failed_to_Deliver')}}
                                             <span
                                                 class="badge badge-soft-danger badge-pill ms-1">
                                                 {{ Order::where(['seller_is'=>'seller'])->where(['seller_id'=>$sellerId])->where(['order_status'=>'failed'])->count()}}
@@ -213,7 +213,7 @@
                                        href="{{route('vendor.refund.index',['pending'])}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                          {{translate('pending')}}
+                                          {{translate('Pending')}}
                                             <span class="badge badge-soft-danger badge-pill ms-1">
                                                 {{RefundRequest::whereHas('order', function ($query) {
                                                     $query->where('seller_is', 'seller')->where('seller_id',auth('seller')->id());
@@ -228,7 +228,7 @@
                                        href="{{route('vendor.refund.index',['approved'])}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">
-                                           {{translate('approved')}}
+                                           {{translate('Approved')}}
                                             <span class="badge badge-soft-info badge-pill ms-1">
                                                 {{RefundRequest::whereHas('order', function ($query) {
                                                     $query->where('seller_is', 'seller')->where('seller_id',auth('seller')->id());
@@ -272,10 +272,10 @@
                             <small class="tio-more-horizontal nav-subtitle-replacer"></small>
                         </li>
                         <li class="navbar-vertical-aside-has-menu {{(Request::is('vendor/product*'))?'active':''}}">
-                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:" title="{{translate('products')}}">
+                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:" title="{{translate('Products')}}">
                                 <i class="tio-premium-outlined nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{translate('products')}}
+                                    {{translate('Products')}}
                                 </span>
                             </a>
                             <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -283,7 +283,7 @@
                                 <li class="nav-item {{Request::is('vendor/products/'.Product::LIST[URI].'/all')|| Request::is('vendor/products/'.Product::UPDATE[URI].'*')||   Request::is('vendor/products/'.Product::VIEW[URI].'*') || Request::is('vendor/products/'.Product::STOCK_LIMIT[URI])?'active':''}}">
                                     <a class="nav-link " href="{{route('vendor.products.list',['type'=>'all'])}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate text-capitalize">{{translate('product_list')}}</span>
+                                        <span class="text-truncate text-capitalize">{{translate('Product_List')}}</span>
                                     </a>
                                 </li>
                                 <li class="nav-item {{Request::is('vendor/products/'.Product::LIST[URI].'/approved')?'active':''}}">
@@ -308,7 +308,7 @@
                                     <a class="nav-link " href="{{route('vendor.products.add')}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span
-                                            class="text-truncate text-capitalize">{{translate('add_new_product')}}</span>
+                                            class="text-truncate text-capitalize">{{translate('add_New_Product')}}</span>
                                     </a>
                                 </li>
                                 <li class="nav-item {{Request::is('vendor/products/'.Product::PRODUCT_GALLERY[URI])?'active':''}}">
@@ -320,9 +320,9 @@
                                 </li>
 
                                 <li class="nav-item {{Request::is('vendor/products/'.Product::BULK_IMPORT[URI]) ? 'active':''}}">
-                                    <a class="nav-link " href="{{route('vendor.products.bulk-import')}}" title="{{translate('bulk_import')}}">
+                                    <a class="nav-link " href="{{route('vendor.products.bulk-import')}}" title="{{translate('bulk_Import')}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{translate('bulk_import')}}</span>
+                                        <span class="text-truncate">{{translate('bulk_Import')}}</span>
                                     </a>
                                 </li>
                                 <li class="nav-item {{Request::is('vendor/products/'.Product::REQUEST_RESTOCK_LIST[URI]) ? 'active' : '' }}">
@@ -374,10 +374,10 @@
                         </li>
                         <li class="navbar-vertical-aside-has-menu {{Request::is('vendor/messages*')?'active':''}}">
                             <a class="nav-link"
-                               href="{{route('vendor.messages.index', ['type' => 'customer'])}}" title="{{translate('inbox')}}">
+                               href="{{route('vendor.messages.index', ['type' => 'customer'])}}" title="{{translate('Inbox')}}">
                                 <i class="tio-chat nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                        {{translate('inbox')}}
+                                        {{translate('Inbox')}}
                                     </span>
                             </a>
                         </li>
@@ -397,11 +397,11 @@
                         </li>
                         <li class="navbar-vertical-aside-has-menu {{ (Request::is('vendor/report/all-product') ||Request::is('vendor/report/stock-product-report')) ?'active':''}}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link text-capitalize"
-                               href="{{route('vendor.report.all-product')}}" title="{{translate('product_report')}}">
+                               href="{{route('vendor.report.all-product')}}" title="{{translate('product_Report')}}">
                                 <i class="tio-chart-bar-4 nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                                     <span class="position-relative text-capitalize">
-                                        {{translate('product_report')}}
+                                        {{translate('product_Report')}}
                                     </span>
                                 </span>
                             </a>
@@ -409,7 +409,7 @@
                         <li class="navbar-vertical-aside-has-menu {{Request::is('vendor/report/order-report')?'active':''}}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link text-capitalize"
                                href="{{route('vendor.report.order-report')}}"
-                               title="{{translate('order_report')}}">
+                               title="{{translate('order_Report')}}">
                                 <i class="tio-chart-bar-1 nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
                              {{translate('order_Report')}}
@@ -471,7 +471,7 @@
                                    href="javascript:">
                                     <i class="tio-user nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{translate('delivery-Man')}}
+                                    {{translate('delivery_Man')}}
                                 </span>
                                 </a>
                                 <ul class="js-navbar-vertical-aside-submenu nav nav-sub"
@@ -479,13 +479,13 @@
                                     <li class="nav-item {{Request::is('vendor/delivery-man/'.DeliveryMan::INDEX[URI])?'active':''}}">
                                         <a class="nav-link " href="{{route('vendor.delivery-man.index')}}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate text-capitalize">{{translate('add_new')}}</span>
+                                            <span class="text-truncate text-capitalize">{{translate('add_New')}}</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{ Request::is('vendor/delivery-man/'.DeliveryMan::LIST[URI]) || Request::is('vendor/delivery-man/'.DeliveryMan::UPDATE[URI])  ||Request::is('vendor/delivery-man/'.DeliveryMan::RATING[URI].'/*') ||  Request::is('vendor/delivery-man/wallet*') ? 'active':''}}">
                                         <a class="nav-link" href="{{route('vendor.delivery-man.list')}}">
                                             <span class="tio-circle nav-indicator-icon"></span>
-                                            <span class="text-truncate">{{translate('list')}}</span>
+                                            <span class="text-truncate">{{translate('List')}}</span>
                                         </a>
                                     </li>
                                     <li class="nav-item {{Request::is('vendor/delivery-man/withdraw/*')?'active':''}}">
@@ -502,7 +502,7 @@
                                            title="{{translate('withdraws')}}">
                                             <span class="tio-circle nav-indicator-icon"></span>
                                             <span
-                                                class="text-truncate text-capitalize">{{translate('emergency_contact')}}</span>
+                                                class="text-truncate text-capitalize">{{translate('Emergency_Contact')}}</span>
                                         </a>
                                     </li>
                                 </ul>

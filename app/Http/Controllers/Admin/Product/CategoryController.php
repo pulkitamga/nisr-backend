@@ -177,7 +177,7 @@ class CategoryController extends BaseController
         $category = $this->categoryRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['childes.childes']);
         $categoryService->deleteImages(data: $category);
         $this->categoryRepo->delete(params: ['id' => $request['id']]);
-        Toastr::success(translate('deleted_successfully'));
+        Toastr::success(translate('Deleted_successfully'));
         return redirect()->back();
     }
 

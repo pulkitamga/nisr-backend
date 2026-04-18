@@ -105,15 +105,15 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}
+                                    {{ translate('this_Year') }}
                                 </option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}
+                                    {{ translate('this_Month') }}
                                 </option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}
+                                    {{ translate('this_Week') }}
                                 </option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}
@@ -126,18 +126,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('department') }}</label>
+                            <label class="form-label mb-1">{{ translate('Department') }}</label>
                             <select class="form-control" name="department_id">
-                                <option value="0">{{ translate('all') }}</option>
+                                <option value="0">{{ translate('All') }}</option>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
                                         {{ (int) ($filters['department_id'] ?? 0) === (int) $department->id ? 'selected' : '' }}>
@@ -149,7 +149,7 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('emepolyee') }}</label>
                             <select class="form-control" name="owner_id">
-                                <option value="0">{{ translate('all') }}</option>
+                                <option value="0">{{ translate('All') }}</option>
                                 @foreach ($owners as $owner)
                                     <option value="{{ $owner->id }}"
                                         {{ (int) ($filters['owner_id'] ?? 0) === (int) $owner->id ? 'selected' : '' }}>
@@ -161,14 +161,14 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('message_status') }}</label>
                             <select class="form-control" name="message_status">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="new"
                                     {{ ($filters['message_status'] ?? '') === 'new' ? 'selected' : '' }}>
-                                    {{ translate('new') }}
+                                    {{ translate('New') }}
                                 </option>
                                 <option value="converted"
                                     {{ ($filters['message_status'] ?? '') === 'converted' ? 'selected' : '' }}>
-                                    {{ translate('converted') }}
+                                    {{ translate('Converted') }}
                                 </option>
                                 <option value="spam"
                                     {{ ($filters['message_status'] ?? '') === 'spam' ? 'selected' : '' }}>
@@ -179,7 +179,7 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('deal_status') }}</label>
                             <select class="form-control" name="deal_status">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="open" {{ ($filters['deal_status'] ?? '') === 'open' ? 'selected' : '' }}>
                                     {{ translate('open') }}
                                 </option>
@@ -192,9 +192,9 @@
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.crm.insights-report') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.crm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}"
                                 class="btn btn-outline-success"><i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>
@@ -219,7 +219,7 @@
             <div class="col-sm-6 col-xl-2">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">{{ translate('leads') }}</p>
+                        <p class="kpi-label mb-2">{{ translate('Leads') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['lead_count']) }}</p>
                     </div>
                 </div>
@@ -344,7 +344,7 @@
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
-                            <th>{{ translate('owner') }}</th>
+                            <th>{{ translate('Owner') }}</th>
                             <th class="text-end">{{ translate('deals') }}</th>
                             <th class="text-end">{{ translate('total_value') }}</th>
                             <th class="text-end">{{ translate('avg_value') }}</th>
@@ -405,7 +405,7 @@
                                 fill: false
                             },
                             {
-                                label: @json(translate('leads')),
+                                label: @json(translate('Leads')),
                                 data: trendData.leads || [],
                                 borderColor: '#14b8a6',
                                 backgroundColor: 'rgba(20, 184, 166, 0.14)',

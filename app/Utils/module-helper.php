@@ -184,8 +184,8 @@ if (!function_exists('add_fund_to_wallet_success')) {
                         'userName' => $wallet_transaction->user['f_name'],
                         'userType' => 'customer',
                         'templateName' => 'add-fund-to-wallet',
-                        'subject' => translate('add_fund_to_wallet'),
-                        'title' => translate('add_fund_to_wallet'),
+                        'subject' => translate('Add_Fund_To_Wallet'),
+                        'title' => translate('Add_Fund_To_Wallet'),
                     ];
                     event(new AddFundToWalletEvent(email: $wallet_transaction->user['email'], data: $data));
                 } catch (\Exception $ex) {

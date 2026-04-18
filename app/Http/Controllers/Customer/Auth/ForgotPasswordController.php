@@ -254,7 +254,7 @@ class ForgotPasswordController extends Controller
                     $password_reset->updated_at = now();
                     $password_reset->save();
 
-                    Toastr::error(translate('invalid_otp'));
+                    Toastr::error(translate('invalid_OTP'));
 
                 } elseif ($password_reset->otp_hit_count >= $max_otp_hit && $password_reset->is_temp_blocked == 0) {
                     $password_reset->is_temp_blocked = 1;

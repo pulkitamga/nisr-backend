@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="_token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{{ translate('vendor') }} | {{ translate('reset_Password') }}</title>
+    <title>{{ translate('Vendor') }} | {{ translate('reset_Password') }}</title>
     <link rel="shortcut icon"
           href="{{getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type:'backend-logo')}}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/google-fonts.css') }}">
@@ -119,7 +119,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-lg btn-block btn--primary forget-password-form">
-                            {{ translate('reset_password')}}
+                            {{ translate('reset_Password')}}
                         </button>
                     </form>
                 </div>

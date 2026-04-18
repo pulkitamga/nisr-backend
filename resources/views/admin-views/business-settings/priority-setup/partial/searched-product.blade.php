@@ -66,7 +66,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="searched-product-list" id="default"
                                             {{isset($searchedProductListPriority?->out_of_stock_product) ? ($searchedProductListPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -90,7 +90,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="searched-product-list" id="searched-product-list-temporary-close-default"
                                             {{isset($searchedProductListPriority?->temporary_close_sorting) ?( $searchedProductListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="searched-product-list-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -101,7 +101,7 @@
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="submit" class="btn btn-primary px-5">
-                            {{ translate('save') }}
+                            {{ translate('Save') }}
                         </button>
                     </div>
                 </form>

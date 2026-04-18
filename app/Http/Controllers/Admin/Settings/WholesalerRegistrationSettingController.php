@@ -153,7 +153,7 @@ class WholesalerRegistrationSettingController extends BaseController
             model: BusinessSetting::class,
             id: $businessSetting->id
         );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 
@@ -195,7 +195,7 @@ class WholesalerRegistrationSettingController extends BaseController
             model: BusinessSetting::class,
             id: $businessSetting->id
         );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
     public function updateBusinessProcess(Request $request): RedirectResponse
@@ -276,7 +276,7 @@ class WholesalerRegistrationSettingController extends BaseController
             model: BusinessSetting::class,
             id: $businessSetting->id
         );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
     public function updateDownloadAppSection(Request $request): RedirectResponse
@@ -287,7 +287,7 @@ class WholesalerRegistrationSettingController extends BaseController
             type: 'download_wholesaler_app',
             value: $this->vendorRegistrationSettingService->getDownloadVendorAppUpdateData(request: $request, image: $downloadVendorApp?->image)
         );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 

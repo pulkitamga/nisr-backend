@@ -17,7 +17,7 @@
                     <label class="control-label">{{ translate('SKU') }}</label>
                 </th>
                 <th class="text-center">
-                    <label class="control-label">{{ translate('current_stock') }}</label>
+                    <label class="control-label">{{ translate('Current_Stock') }}</label>
                 </th>
             </tr>
         </thead>
@@ -34,7 +34,7 @@
                         <input type="number" name="price_{{ $combination['type'] }}"
                             value="{{ $combination['price'] }}" min="0" step="0.01"
                             class="form-control allow-edit-in-readonly" required
-                            placeholder="{{ translate('ex') . ': 100' }}">
+                            placeholder="{{ translate('Ex') . ': 100' }}">
                     </td>
                     <td>
                         <input type="text" name="sku_{{ $combination['type'] }}"

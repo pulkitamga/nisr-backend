@@ -21,7 +21,7 @@
                             </h6>
                         </a>
                         <div class="mt-30">
-                            <label class="form-label title-color font-weight-medium fz-14 title-color font-medium">{{ translate('Discount Amount') }}
+                            <label class="form-label title-color font-weight-medium fz-14 title-color font-medium">{{ translate('Discount_Amount') }}
                                 <span id="discount-symbol">(%)</span>
                             </label>
                             <div class="input-group">

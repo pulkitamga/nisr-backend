@@ -5,7 +5,7 @@
         <div class="mb-4">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{asset('public/assets/back-end/img/order_report.png')}}" alt="">
-                {{translate('transaction_report')}}
+                {{translate('transaction_Report')}}
             </h2>
         </div>
         @include('vendor-views.transaction.transaction-report-inline-menu')
@@ -22,7 +22,7 @@
                                         ---{{translate('select_status')}}---
                                     </option>
                                     <option class="text-capitalize"
-                                            value="all" {{ $status == 'all'? 'selected' : '' }} >{{translate('all')}} </option>
+                                            value="all" {{ $status == 'all'? 'selected' : '' }} >{{translate('All')}} </option>
                                     <option class="text-capitalize"
                                             value="disburse" {{ $status == 'disburse'? 'selected' : '' }} >{{translate('disburse')}} </option>
                                     <option class="text-capitalize"
@@ -61,21 +61,21 @@
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{$from}}" id="from_date"
                                        class="form-control __form-control">
-                                <label>{{translate('start_date')}}</label>
+                                <label>{{translate('Start_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{$to}}" name="to" id="to_date"
                                        class="form-control __form-control">
-                                <label>{{translate('end_date')}}</label>
+                                <label>{{translate('End_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-2 d-flex gap-2">
                             <button type="submit" class="btn btn--primary px-4 min-w-120 __h-45px"
                                     id="formUrlChange"
                                     data-action="{{ url()->current() }}">
-                                {{translate('filter')}}
+                                {{translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -136,10 +136,10 @@
                         </div>
                         <div class="apex-legends">
                             <div class="before-bg-004188">
-                                <span>{{translate('cash_payments')}} ({{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment']), currencyCode: getCurrencyCode()) }})</span>
+                                <span>{{translate('cash_Payments')}} ({{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment']), currencyCode: getCurrencyCode()) }})</span>
                             </div>
                             <div class="before-bg-0177CD">
-                                <span>{{translate('digital_payments')}} ({{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment']), currencyCode: getCurrencyCode()) }}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                <span>{{translate('digital_Payments')}} ({{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment']), currencyCode: getCurrencyCode()) }}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                             </div>
                             <div class="before-bg-A2CEEE">
                                 <span>{{translate('wallet')}} ({{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['wallet_payment']), currencyCode: getCurrencyCode()) }})</span>
@@ -171,14 +171,14 @@
                                    aria-label="Search orders"
                                    value="{{ $search }}"
                                    required>
-                            <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Search')}}</button>
                         </div>
                     </form>
                     <div>
                         <a href="{{ route('vendor.transaction.order-transaction-summary-pdf', ['date_type'=>request('date_type'), 'customer_id'=>request('customer_id'), 'status'=>request('status'), 'from'=>request('from'), 'to'=>request('to'), 'search'=>request('search')]) }}"
                            class="btn btn-outline--primary text-nowrap btn-block">
                             <i class="tio-file-text"></i>
-                            {{translate('download_PDF')}}
+                            {{translate('Download_PDF')}}
                         </a>
                     </div>
                     <div class="dropdown">
@@ -195,24 +195,24 @@
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('order_id')}}</th>
-                        <th>{{translate('customer_name')}}</th>
-                        <th>{{translate('total_product_amount')}}</th>
-                        <th>{{translate('product_discount')}}</th>
-                        <th>{{translate('coupon_discount')}}</th>
-                        <th>{{translate('discounted_amount')}}</th>
+                        <th>{{translate('Order_ID')}}</th>
+                        <th>{{translate('Customer_Name')}}</th>
+                        <th>{{translate('total_Product_Amount')}}</th>
+                        <th>{{translate('product_Discount')}}</th>
+                        <th>{{translate('Coupon_Discount')}}</th>
+                        <th>{{translate('Discounted_Amount')}}</th>
                         <th>{{translate('VAT/TAX')}}</th>
-                        <th>{{translate('shipping_charge')}}</th>
-                        <th>{{translate('order_amount')}}</th>
-                        <th>{{translate('delivered_by')}}</th>
-                        <th>{{translate('deliveryman_incentive')}}</th>
-                        <th>{{translate('admin_discount')}}</th>
-                        <th>{{translate('vendor_discount') }}</th>
-                        <th>{{translate('admin_commission') }}</th>
-                        <th>{{translate('vendor_net_income')}}</th>
-                        <th>{{translate('payment_method')}}</th>
-                        <th>{{translate('payment_Status')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('shipping_Charge')}}</th>
+                        <th>{{translate('order_Amount')}}</th>
+                        <th>{{translate('delivered_By')}}</th>
+                        <th>{{translate('delivery_man_incentive')}}</th>
+                        <th>{{translate('admin_Discount')}}</th>
+                        <th>{{translate('vendor_Discount') }}</th>
+                        <th>{{translate('admin_Commission') }}</th>
+                        <th>{{translate('vendor_Net_Income')}}</th>
+                        <th>{{translate('Payment_Method')}}</th>
+                        <th>{{translate('Payment_Status')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                     <tbody>

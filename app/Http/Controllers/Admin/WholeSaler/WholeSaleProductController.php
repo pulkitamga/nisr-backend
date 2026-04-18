@@ -311,7 +311,7 @@ class WholeSaleProductController extends BaseController
         $product->status = !$product->status;
         $product->save();
 
-        return response()->json(['message' => translate('status_updated_successfully')]);
+        return response()->json(['message' => translate('Status_updated_successfully')]);
     }
 
     public function getVariationsWithPrice($id)

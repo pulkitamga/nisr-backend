@@ -325,7 +325,7 @@ class ServiceTicketController extends BaseController
         }
 
         return response()->json([
-            'message' => translate('status_updated_successfully'),
+            'message' => translate('Status_updated_successfully'),
             'new_status_name' => $nextStatus?->name,
             'reopen_count' => $ticket->reopen_count ?? 0
         ], 200);
@@ -977,7 +977,7 @@ class ServiceTicketController extends BaseController
             $ticket->customer_id ? ['type' => 'customer', 'id' => $ticket->customer_id] : null,
         ]));
         if (empty($recipients)) {
-            Toastr::error(translate('Customer Not Found'));
+            Toastr::error(translate('customer_not_found'));
             return redirect()->back();
         }
 

@@ -22,17 +22,17 @@
                         <div class="row gy-1 align-items-center justify-content-between">
                             <div class="col-auto">
                                 <h5 class="text-capitalize">
-                                    {{ translate('withdraw_request_table')}}
+                                    {{ translate('withdraw_Request_Table')}}
                                     <span class="badge badge-soft-dark radius-50 fz-12 ms-1" id="withdraw-requests-count">{{ $withdrawRequests->total() }}</span>
                                 </h5>
                             </div>
                             <div class="d-flex col-auto gap-3">
                                 <div class="col-auto">
                                     <select name="status" class="custom-select max-w-200 status-filter" >
-                                        <option value="all">{{translate('all')}}</option>
-                                        <option value="approved">{{translate('approved')}}</option>
-                                        <option value="denied">{{translate('denied')}}</option>
-                                        <option value="pending">{{translate('pending')}}</option>
+                                        <option value="all">{{translate('All')}}</option>
+                                        <option value="approved">{{translate('Approved')}}</option>
+                                        <option value="denied">{{translate('Denied')}}</option>
+                                        <option value="pending">{{translate('Pending')}}</option>
                                     </select>
                                 </div>
                                 <div class="dropdown">

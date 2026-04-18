@@ -1,6 +1,6 @@
 @php
     $locale = app()->getLocale();
-    $reportTitle = $reportTitle ?? translate('transactions');
+    $reportTitle = $reportTitle ?? translate('Transactions');
 @endphp
 
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session('direction') ?? (app()->getLocale() === 'ar' ? 'rtl' : 'ltr') }}">
@@ -14,14 +14,14 @@
                 <th></th>
                 <th>
 
-                    {{translate('customer').' '.'-'.' '.ucwords($data['customer'] == 'all_customers' ? translate('all_customers') : $data['customer']['f_name'].' '.$data['customer']['l_name'])}}
+                    {{translate('Customer').' '.'-'.' '.ucwords($data['customer'] == 'all_customers' ? translate('all_Customers') : $data['customer']['f_name'].' '.$data['customer']['l_name'])}}
                     <br>
-                    {{ translate('transaction_Type').' '.'-'.' '.(!empty($data['transaction_type']) ? translate($data['transaction_type']) : translate('all')) }}
+                    {{ translate('transaction_Type').' '.'-'.' '.(!empty($data['transaction_type']) ? translate($data['transaction_type']) : translate('All')) }}
                     <br>
 
-                        {{ translate('from').' '.'-'.' '.($data['from'] ? formatDateTimeForDisplayText($data['from'], 'd M, Y', $locale) : '') }}
+                        {{ translate('From').' '.'-'.' '.($data['from'] ? formatDateTimeForDisplayText($data['from'], 'd M, Y', $locale) : '') }}
                     <br>
-                        {{ translate('to').' '.'-'.' '.($data['to'] ? formatDateTimeForDisplayText($data['to'], 'd M, Y', $locale) : '') }}
+                        {{ translate('To').' '.'-'.' '.($data['to'] ? formatDateTimeForDisplayText($data['to'], 'd M, Y', $locale) : '') }}
                     <br>
                 </th>
             </tr>
@@ -41,13 +41,13 @@
             <tr>
                 <td> {{translate('SL')}}	</td>
                 <td> {{translate('transaction_ID')}}	</td>
-                <td> {{translate('customer_Name')}}	</td>
+                <td> {{translate('Customer_Name')}}	</td>
                 <td> {{translate('credit')}}</td>
                 <td> {{translate('debit')}}</td>
                 <td> {{translate('balance')}}</td>
                 <td> {{translate('transaction_Type')}}</td>
-                <td> {{translate('reference')}}</td>
-                <td> {{translate('date')}}</td>
+                <td> {{translate('Reference')}}</td>
+                <td> {{translate('DATE')}}</td>
             </tr>
             @foreach ($data['transactions'] as $key=>$item)
                 <tr>

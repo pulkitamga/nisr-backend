@@ -278,7 +278,7 @@ class RegisterController extends Controller
                     ]);
 
                     $time = $tempBlockTime - Carbon::parse($getToken['temp_block_time'])->diffInSeconds();
-                    Toastr::error(translate('too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans());
+                    Toastr::error(translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans());
                 } else {
                     $this->phoneOrEmailVerificationRepo->update(id: $getToken['id'], data: [
                         'otp_hit_count' => $getToken['otp_hit_count'] + 1,
@@ -410,7 +410,7 @@ class RegisterController extends Controller
 
                     $time = $temp_block_time - Carbon::parse($verification->temp_block_time)->diffInSeconds();
                     $verify_status = 'error';
-                    $message = translate('too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
+                    $message = translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
                 } else {
                     $verification->otp_hit_count += 1;
                     $verification->save();

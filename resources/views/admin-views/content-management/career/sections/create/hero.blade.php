@@ -1,5 +1,5 @@
 @extends('layouts.back-end.app')
-@section('title', translate('Add Banner'))
+@section('title', translate('add_banner'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -47,7 +47,7 @@ if (!in_array($baseLanguage, $language ?? [], true)) {
                     <textarea name="description[]" rows="4" class="form-control summernote"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('Button Text') }}  ({{ strtoupper($lang) }})</label>
+                    <label>{{ translate('Button_Text') }}  ({{ strtoupper($lang) }})</label>
                     <input type="text" name="buttonText[]" class="form-control">
                 </div>
 
@@ -61,11 +61,11 @@ if (!in_array($baseLanguage, $language ?? [], true)) {
 
             <!-- Button Link (non-translatable) -->
             <div class="form-group">
-                <label>{{ translate('Button Link') }}</label>
+                <label>{{ translate('button_link') }}</label>
                 <input type="url" name="button_link" class="form-control">
             </div>
             <div class="form-group">
-                <label>{{ translate('image') }}</label>
+                <label>{{ translate('Image') }}</label>
                 <input type="file" id="hero_image" name="image" class="form-control" accept="image/*"
                     onchange="previewImage(event)">
             </div>

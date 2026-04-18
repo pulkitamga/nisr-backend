@@ -11,7 +11,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/push_notification.png')}}" alt="">
-                {{translate('send_notification')}}
+                {{translate('send_Notification')}}
             </h2>
         </div>
         <div class="row gx-2 gx-lg-3">
@@ -25,14 +25,14 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="title-color text-capitalize"
-                                               for="exampleFormControlInput1">{{translate('title')}} </label>
+                                               for="exampleFormControlInput1">{{translate('Title')}} </label>
                                         <input type="text" name="title" class="form-control"
                                                placeholder="{{translate('new_notification')}}"
                                                required>
                                     </div>
                                     <div class="form-group">
                                         <label class="title-color text-capitalize"
-                                               for="exampleFormControlInput1">{{translate('description')}} </label>
+                                               for="exampleFormControlInput1">{{translate('Description')}} </label>
                                         <textarea name="description" class="form-control text-area-max-min" required></textarea>
                                     </div>
                                 </div>
@@ -41,10 +41,10 @@
                                         <div class="d-flex justify-content-center">
                                             <img class="upload-img-view mb-4" id="viewer"
                                                  src="{{dynamicAsset(path: 'public/assets/back-end/img/900x400/img1.jpg')}}"
-                                                 alt="{{translate('image')}}"/>
+                                                 alt="{{translate('Image')}}"/>
                                         </div>
                                         <label
-                                            class="title-color text-capitalize">{{translate('image')}} </label>
+                                            class="title-color text-capitalize">{{translate('Image')}} </label>
                                         <span class="text-info">({{translate('ratio').'1:1'}})</span>
                                         <div class="custom-file text-start">
                                             <input type="file" name="image" class="custom-file-input image-input"
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary">{{translate('reset')}} </button>
+                                <button type="reset" class="btn btn-secondary">{{translate('Reset')}} </button>
                                 <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                         class="btn btn--primary {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('send_Notification')}}  </button>
                             </div>
@@ -87,10 +87,10 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{translate('search_by_title')}}"
-                                               aria-label="{{ translate('Search orders') }}" value="{{ $searchValue }}" required>
+                                               placeholder="{{translate('search_by_Title')}}"
+                                               aria-label="{{ translate('search_orders') }}" value="{{ $searchValue }}" required>
                                         <button type="submit"
-                                                class="btn btn--primary">{{translate('search')}}</button>
+                                                class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -101,13 +101,13 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}} </th>
-                                <th>{{translate('title')}} </th>
-                                <th>{{translate('description')}} </th>
-                                <th>{{translate('image')}} </th>
+                                <th>{{translate('Title')}} </th>
+                                <th>{{translate('Description')}} </th>
+                                <th>{{translate('Image')}} </th>
                                 <th>{{translate('notification_count')}} </th>
-                                <th>{{translate('status')}} </th>
+                                <th>{{translate('Status')}} </th>
                                 <th>{{translate('resend')}} </th>
-                                <th class="text-center">{{translate('action')}} </th>
+                                <th class="text-center">{{translate('Action')}} </th>
                             </tr>
                             </thead>
                             <tbody>
@@ -158,12 +158,12 @@
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             <a class="btn btn-outline--primary btn-sm edit square-btn"
-                                               title="{{translate('edit')}}"
+                                               title="{{translate('Edit')}}"
                                                href="{{route('admin.notification.update',[$notification['id']])}}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <a class="btn btn-outline-danger btn-sm delete-data-without-form"
-                                               title="{{translate('delete')}}"
+                                               title="{{translate('Delete')}}"
                                                data-action="{{route('admin.notification.delete')}}"
                                                data-id="{{$notification['id']}}')">
                                                 <i class="tio-delete"></i>

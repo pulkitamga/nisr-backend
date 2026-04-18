@@ -27,12 +27,12 @@
                 <td> {{translate('SL')}}	</td>
                 <td> {{translate('employee_Image')}}</td>
                 <td> {{translate('Name')}}</td>
-                <td> {{translate('phone')}}	</td>
-                <td> {{translate('email')}}	</td>
+                <td> {{translate('Phone')}}	</td>
+                <td> {{translate('Email')}}	</td>
                 <td> {{translate('role')}}	</td>
                 <td> {{translate('accesses')}} </td>
                 <td> {{translate('date_of_Joining')}} </td>
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['employees'] as $key=>$item)
                 <tr>

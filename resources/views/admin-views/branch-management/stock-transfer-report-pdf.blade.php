@@ -296,7 +296,7 @@
                 </td>
 
                 <td>
-                    <div class="kpi-label">{{ translate('approved') }}</div>
+                    <div class="kpi-label">{{ translate('Approved') }}</div>
                     <div class="kpi-value">
                         {{ (int) ($statistics['approved_transfers'] ?? 0) }}
                     </div>
@@ -389,11 +389,11 @@
             <thead>
                 <tr>
                     <th>{{ translate('SL') }}</th>
-                    <th>{{ translate('date') }}</th>
-                    <th>{{ translate('from_branch') }}</th>
+                    <th>{{ translate('DATE') }}</th>
+                    <th>{{ translate('From_branch') }}</th>
                     <th>{{ translate('to_branch') }}</th>
                     <th>{{ translate('items') }}</th>
-                    <th>{{ translate('status') }}</th>
+                    <th>{{ translate('Status') }}</th>
                 </tr>
             </thead>
 
@@ -450,7 +450,7 @@
                 @empty
 
                     <tr>
-                        <td colspan="6">{{ translate('no_data_found') }}</td>
+                        <td colspan="6">{{ translate('no_Data_found') }}</td>
                     </tr>
                 @endforelse
 

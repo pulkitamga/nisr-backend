@@ -26,8 +26,8 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -55,8 +55,8 @@
                                 <th>{{translate('User_Type')}}</th>
                                 <th>{{translate('User')}}</th>
                                 <th>{{translate('Email')}}</th>
-                                <th>{{translate('status')}}</th>                                
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Status')}}</th>                                
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -76,17 +76,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {!! $user->status=='active'?'<label class="badge badge-success">'.translate('active').'</label>':'<label class="badge badge-danger">'.translate('inactive').'</label>' !!}
+                                        {!! $user->status=='active'?'<label class="badge badge-success">'.translate('Active').'</label>':'<label class="badge badge-danger">'.translate('Inactive').'</label>' !!}
                                     </td>
                                     
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <!-- <a title="{{translate('edit')}}"
+                                            <!-- <a title="{{translate('Edit')}}"
                                                 class="btn btn-outline--primary btn-sm square-btn"
                                                 href="{{route('admin.department.update',$user->id)}}">
                                                 <i class="tio-edit"></i>
                                             </a> -->
-                                            <a title="{{translate('delete')}}"
+                                            <a title="{{translate('Delete')}}"
                                                 class="btn btn-outline-danger btn-sm square-btn department-delete-button"
                                                 id="{{ $user['id'] }}">
                                                 <i class="tio-delete"></i>

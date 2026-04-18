@@ -29,27 +29,27 @@
                             <div class="row">
                                 <div class="col-sm-6 col-12">
                                     <div class="form-group">
-                                        <label class="input-label d-flex" for="customer">{{translate('customer')}}</label>
+                                        <label class="input-label d-flex" for="customer">{{translate('Customer')}}</label>
                                         <select id='form-customer' name="customer_id" data-placeholder="{{translate('select_customer')}}" class="get-customer-list-without-all-customer" required>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-12">
                                     <div class="form-group">
-                                        <label class="input-label d-flex" for="amount">{{translate('amount')}}</label>
-                                        <input type="number" class="form-control" name="amount" id="amount" step=".01" placeholder="{{translate('ex').':'.'500'}}" required>
+                                        <label class="input-label d-flex" for="amount">{{translate('Amount')}}</label>
+                                        <input type="number" class="form-control" name="amount" id="amount" step=".01" placeholder="{{translate('Ex').':'.'500'}}" required>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label class="input-label d-flex align-items-center gap-1" for="reference">{{translate('reference')}} <small>({{translate('optional')}})</small></label>
-                                        <input type="text" class="form-control" name="reference" placeholder="{{translate('ex').':'.'abc990'}}" id="reference">
+                                        <label class="input-label d-flex align-items-center gap-1" for="reference">{{translate('Reference')}} <small>({{translate('optional')}})</small></label>
+                                        <input type="text" class="form-control" name="reference" placeholder="{{translate('Ex').':'.'abc990'}}" id="reference">
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end gap-3">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                                <button type="submit" id="submit" class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                                <button type="submit" id="submit" class="btn btn--primary px-4">{{translate('Submit')}}</button>
                             </div>
                         </form>
                     </div>
@@ -81,11 +81,11 @@
                                         $transaction_status=request()->get('transaction_type');
                                         @endphp
                                         <select name="transaction_type" class="form-control" title="{{translate('select_transaction_type')}}">
-                                            <option value="">{{translate('all')}}</option>
+                                            <option value="">{{translate('All')}}</option>
                                             <option value="add_fund_by_admin" {{isset($transaction_status) && $transaction_status=='add_fund_by_admin'?'selected':''}} >{{translate('add_fund_by_admin')}}</option>
                                             <option value="add_fund" {{isset($transaction_status) && $transaction_status=='add_fund'?'selected':''}} >{{translate('add_fund')}}</option>
                                             <option value="order_refund" {{isset($transaction_status) && $transaction_status=='order_refund'?'selected':''}}>{{translate('refund_order')}}</option>
-                                            <option value="loyalty_point" {{isset($transaction_status) && $transaction_status=='loyalty_point'?'selected':''}}>{{translate('customer_loyalty_point')}}</option>
+                                            <option value="loyalty_point" {{isset($transaction_status) && $transaction_status=='loyalty_point'?'selected':''}}>{{translate('customer_Loyalty_Point')}}</option>
                                             <option value="order_place" {{isset($transaction_status) && $transaction_status=='order_place'?'selected':''}}>{{translate('order_place')}}</option>
                                         </select>
                                     </div>
@@ -106,7 +106,7 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('filter')}}</button>
+                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('Filter')}}</button>
                             </div>
                         </form>
                     </div>
@@ -159,7 +159,7 @@
         <div class="card mt-3">
             <div class="card-header text-capitalize gap-2">
                 <h4 class="mb-0 text-nowrap ">
-                    {{translate('transactions')}}
+                    {{translate('Transactions')}}
                     <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $transactions->total() }}</span>
                 </h4>
                 <div class="d-flex justify-content-end">
@@ -182,9 +182,9 @@
                             <th>{{translate('credit')}}</th>
                             <th>{{translate('debit')}}</th>
                             <th>{{translate('balance')}}</th>
-                            <th>{{translate('transaction_type')}}</th>
-                            <th>{{translate('reference')}}</th>
-                            <th class="text-center">{{translate('created_at')}}</th>
+                            <th>{{translate('transaction_Type')}}</th>
+                            <th>{{translate('Reference')}}</th>
+                            <th class="text-center">{{translate('Created_At')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -245,14 +245,14 @@
             e.preventDefault();
             let formData = new FormData(this);
             Swal.fire({
-                title: "{{translate('are_you_sure').'?'}} ",
-                text: '{{translate("you_want_to_add_fund")}} '+$('#amount').val()+' {{getCurrencyCode(type: 'default').' '.translate("to")}} '+$('#form-customer option:selected').text()+'{{translate("to_wallet")}}',
+                title: "{{translate('Are_you_sure').'?'}} ",
+                text: '{{translate("you_want_to_add_fund")}} '+$('#amount').val()+' {{getCurrencyCode(type: 'default').' '.translate("To")}} '+$('#form-customer option:selected').text()+'{{translate("to_wallet")}}',
                 type: 'info',
                 showCancelButton: true,
                 cancelButtonColor: 'default',
                 confirmButtonColor: 'primary',
-                cancelButtonText: '{{translate("no")}}',
-                confirmButtonText: '{{translate("add")}}',
+                cancelButtonText: '{{translate("No")}}',
+                confirmButtonText: '{{translate("Add")}}',
                 reverseButtons: true
             }).then((result) => {
                 if (result.value) {

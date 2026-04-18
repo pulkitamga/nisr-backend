@@ -1,12 +1,12 @@
 @extends('layouts.back-end.app')
-@section('title', translate('earning_Reports'))
+@section('title', translate('Earning_Reports'))
 
 @section('content')
 <div class="content container-fluid">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/earning_report.png')}}" alt="">
-            {{translate('earning_Reports')}}
+            {{translate('Earning_Reports')}}
         </h2>
     </div>
     @include('admin-views.report.earning-report-inline-menu')
@@ -28,18 +28,18 @@
                     <div class="col-sm-6 col-md-3" id="from_div">
                         <div class="form-floating">
                             <input type="date" name="from" value="{{ $from }}" id="from_date" class="form-control">
-                            <label>{{ ucwords(translate('start_date'))}}</label>
+                            <label>{{ ucwords(translate('Start_Date'))}}</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3" id="to_div">
                         <div class="form-floating">
                             <input type="date" value="{{ $to }}" name="to" id="to_date" class="form-control">
-                            <label>{{ ucwords(translate('end_date'))}}</label>
+                            <label>{{ ucwords(translate('End_Date'))}}</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <button type="submit" class="btn btn--primary px-4 w-100">
-                            {{ translate('filter')}}
+                            {{ translate('Filter')}}
                         </button>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/cart.svg')}}" alt="">
                 <div class="info">
                     <h4 class="subtitle">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: array_sum($earning_data['total_earning_statistics'])), currencyCode: getCurrencyCode()) }}</h4>
-                    <h6 class="subtext">{{ translate('total_earnings')}}</h6>
+                    <h6 class="subtext">{{ translate('total_Earnings')}}</h6>
                 </div>
                 <div class="coupon__discount w-100 text-end d-flex flex-wrap justify-content-between g-1">
                     <!-- <div class="text-center">
@@ -110,10 +110,10 @@
                     </div>
                     <div class="apex-legends">
                         <div class="before-bg-004188">
-                            <span>{{translate('cash_payments')}} ({{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment']), currencyCode: getCurrencyCode()) }})</span>
+                            <span>{{translate('cash_Payments')}} ({{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment']), currencyCode: getCurrencyCode()) }})</span>
                         </div>
                         <div class="before-bg-0177CD">
-                            <span>{{translate('digital_payments')}} ({{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment']), currencyCode: getCurrencyCode()) }}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>{{translate('digital_Payments')}} ({{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment']), currencyCode: getCurrencyCode()) }}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                         </div>
                         <div class="before-bg-CDE6F5">
                             <span>{{translate('offline_payments')}} ({{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['offline_payment']), currencyCode: getCurrencyCode()) }})</span>
@@ -151,16 +151,16 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('duration')}}</th>
+                        <th>{{translate('Duration')}}</th>
                         <th>{{translate('in-House_Earning')}}</th>
                         <!-- <th>{{translate('commission_Earning')}}</th> -->
                         <th>{{translate('earn_From_Shipping')}}</th>
-                        <th>{{translate('deliveryman_incentive')}}</th>
+                        <th>{{translate('delivery_man_incentive')}}</th>
                         <th>{{translate('discount_Given')}}</th>
                         <th>{{translate('VAT/TAX')}}</th>
                         <th>{{translate('refund_Given')}}</th>
                         <th>{{translate('total_Earning')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>

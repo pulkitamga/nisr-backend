@@ -41,14 +41,14 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
-                        <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control"
-                            placeholder="{{ translate('Enter Title') }}" {{ $lang==$defaultLanguage ? 'required' : ''
+                            placeholder="{{ translate('enter_title') }}" {{ $lang==$defaultLanguage ? 'required' : ''
                             }}>
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="description[]" rows="5" class="form-control"
                             placeholder="{{ translate('Enter Description') }}" {{ $lang==$defaultLanguage ? 'required'
                             : '' }}></textarea>
@@ -60,19 +60,19 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 {{-- Common Fields --}}
                 <div class="form-group">
-                    <label>{{ translate('year') }}</label>
-                    <input type="text" name="year" class="form-control" placeholder="{{ translate('Enter Year') }}"
+                    <label>{{ translate('Year') }}</label>
+                    <input type="text" name="year" class="form-control" placeholder="{{ translate('enter_year') }}"
                         required>
                 </div>
 
                 <div class="form-group">
-                    <label>{{ translate('icon') }}</label>
+                    <label>{{ translate('Icon') }}</label>
                     <input type="text" name="icon" class="form-control"
                         placeholder="{{ translate('Enter Icon Class') }}">
                 </div>
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

@@ -126,7 +126,7 @@ class EmployeeController extends BaseController
         }
 
         if ($this->isSuperAdminRole($role) && !auth('admin')->user()?->isSuperAdmin()) {
-            Toastr::warning(translate('access_denied'));
+            Toastr::warning(translate('access_Denied'));
             return back()->withInput();
         }
 
@@ -209,7 +209,7 @@ class EmployeeController extends BaseController
         }
 
         if ($this->isSuperAdminRole($role) && !auth('admin')->user()?->isSuperAdmin()) {
-            Toastr::warning(translate('access_denied'));
+            Toastr::warning(translate('access_Denied'));
             return back()->withInput();
         }
 
@@ -217,7 +217,7 @@ class EmployeeController extends BaseController
         $employee->load('roles');
 
         if ($employee->hasRole(AdminPermissionRegistry::superAdminRole()) && !auth('admin')->user()?->isSuperAdmin()) {
-            Toastr::warning(translate('access_denied'));
+            Toastr::warning(translate('access_Denied'));
             return back()->withInput();
         }
 
@@ -273,7 +273,7 @@ class EmployeeController extends BaseController
     {
         $admin = $this->adminRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['roles']);
         if ($admin && $admin->hasRole(AdminPermissionRegistry::superAdminRole()) && !auth('admin')->user()?->isSuperAdmin()) {
-            $message = translate('access_denied');
+            $message = translate('access_Denied');
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'error',

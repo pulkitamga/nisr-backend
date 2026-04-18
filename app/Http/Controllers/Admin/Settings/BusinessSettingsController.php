@@ -263,7 +263,7 @@ class BusinessSettingsController extends BaseController
         session()->forget('currency_code');
         session()->forget('currency_symbol');
         session()->forget('currency_exchange_rate');
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -428,7 +428,7 @@ class BusinessSettingsController extends BaseController
                 'for_ios' => $request['for_ios'],
             ]));
         }
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -496,7 +496,7 @@ class BusinessSettingsController extends BaseController
         }
 
         clearWebConfigCacheKeys();
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -540,7 +540,7 @@ class BusinessSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'warranty_rate_limit_max_attempts', value: $request->get('rate_limit_max_attempts', 5));
         $this->businessSettingRepo->updateOrInsert(type: 'warranty_months', value: $request->get('warranty_months', 12));
         clearWebConfigCacheKeys();
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -564,7 +564,7 @@ class BusinessSettingsController extends BaseController
             return back()->with('success', translate('Cache cleared successfully!'));
         } catch (\Throwable $exception) {
             report($exception);
-            Toastr::error(translate('something_went_wrong'));
+            Toastr::error(translate('Something_went_wrong'));
             return back();
         } finally {
             optional($lock)->release();

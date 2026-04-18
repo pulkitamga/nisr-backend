@@ -99,7 +99,7 @@
     <a class="order-stats order-stats_out-for-delivery" href="{{route('admin.wholesale.business.wholesale.confirmedorder')}}">
         <div class="order-stats__content">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/out-of-delivery.png')}}" alt="">
-            <h6 class="order-stats__subtitle">{{translate('delivered')}}</h6>
+            <h6 class="order-stats__subtitle">{{translate('Delivered')}}</h6>
         </div>
         <span class="order-stats__title">
             {{$data['delivered']}}

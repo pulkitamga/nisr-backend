@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('banner'))
+@section('title', translate('Banner'))
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -29,7 +29,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg-30">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
-                        <h5 class="text-primary mb-0">{{ translate('note') }}</h5>
+                        <h5 class="text-primary mb-0">{{ translate('Note') }}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('currently_you_are_managing_banners_for') }} {{ucwords(str_replace("_", " ", theme_root_path())) }}.{{ translate('these_saved_data_is_only_applicable_only_for_') }}{{ucwords(str_replace("_", " ", theme_root_path())) }}.{{ translate('if_you_change_theme_from_theme_setup_these_banners_will_not_be_shown_in_changed_theme._You_have_upload_all_the_banners_over_again _according_to_the_new_theme_ratio_and_sizes._If_you_switch_back_to_') }}{{ucwords(str_replace("_", " ", theme_root_path())) }}{{ translate('_again_,_you_will_see_the_saved_data.') }}</p>
                 </div>
@@ -62,7 +62,7 @@
 
                                     <div class="form-group mb-3">
                                         <label for="name" class="title-color text-capitalize">{{ translate('banner_URL') }}</label>
-                                        <input type="url" name="url" class="form-control" id="url" required placeholder="{{ translate('Enter_url') }}">
+                                        <input type="url" name="url" class="form-control" id="url" required placeholder="{{ translate('Enter_URL') }}">
                                     </div>
 
                                     <div class="form-group">
@@ -70,16 +70,16 @@
                                                class="title-color text-capitalize">{{ translate('resource_type') }}</label>
                                         <select class="js-example-responsive form-control w-100 action-display-data"
                                                 name="resource_type" required>
-                                            <option value="product">{{ translate('product') }}</option>
-                                            <option value="category">{{ translate('category') }}</option>
+                                            <option value="product">{{ translate('Product') }}</option>
+                                            <option value="category">{{ translate('Category') }}</option>
                                             <option value="shop">{{ translate('shop') }}</option>
-                                            <option value="brand">{{ translate('brand') }}</option>
+                                            <option value="brand">{{ translate('Brand') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group mb-0" id="resource-product">
                                         <label for="product_id"
-                                               class="title-color text-capitalize">{{ translate('product') }}</label>
+                                               class="title-color text-capitalize">{{ translate('Product') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="product_id">
                                             @foreach($products as $product)
@@ -90,7 +90,7 @@
 
                                     <div class="form-group mb-0 d--none" id="resource-category">
                                         <label for="name"
-                                               class="title-color text-capitalize">{{ translate('category') }}</label>
+                                               class="title-color text-capitalize">{{ translate('Category') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="category_id">
                                             @foreach($categories as $category)
@@ -110,7 +110,7 @@
 
                                     <div class="form-group mb-0 d--none" id="resource-brand">
                                         <label for="brand_id"
-                                               class="title-color text-capitalize">{{ translate('brand') }}</label>
+                                               class="title-color text-capitalize">{{ translate('Brand') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="brand_id">
                                             @foreach($brands as $brand)
@@ -166,7 +166,7 @@
                                             {{ translate('banner_image') }}
                                         </label>
                                         <span class="title-color" id="theme_ratio">( {{ translate('ratio') }} 4:1 )</span>
-                                        <p>{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website') }}. {{ translate('please_review_the_ratio_before_upload') }}</p>
+                                        <p>{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website') }}. {{ translate('Please_review_the_ratio_before_upload') }}</p>
                                         <!-- For Theme Fashion - New input Field - Start -->
                                         @if(theme_root_path() == 'theme_fashion')
                                         @foreach($language as $lang)
@@ -191,11 +191,11 @@
                                     </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end flex-wrap gap-10">
-                                    <button class="btn btn-secondary cancel px-4" type="reset">{{ translate('reset') }}</button>
+                                    <button class="btn btn-secondary cancel px-4" type="reset">{{ translate('Reset') }}</button>
                                     <button id="add" type="submit"
-                                            class="btn btn--primary px-4">{{ translate('save') }}</button>
+                                            class="btn btn--primary px-4">{{ translate('Save') }}</button>
                                     <button id="update"
-                                       class="btn btn--primary d--none text-white">{{ translate('update') }}</button>
+                                       class="btn btn--primary d--none text-white">{{ translate('Update') }}</button>
                                 </div>
                             </div>
                         </form>
@@ -223,7 +223,7 @@
                                             <div class="row gy-2 gx-2 align-items-center text-start">
                                                 <div class="col-sm-12 col-md-9">
                                                     <select class="form-control __form-control" name="searchValue" id="date_type">
-                                                        <option value="">{{ translate('all') }}</option>
+                                                        <option value="">{{ translate('All') }}</option>
                                                         @foreach($bannerTypes as $key => $banner)
                                                             <option value="{{ $key }}" {{ request('searchValue') == $key ? 'selected':'' }}>{{ $banner }}</option>
                                                         @endforeach
@@ -231,7 +231,7 @@
                                                 </div>
                                                 <div class="col-sm-12 col-md-3">
                                                     <button type="submit" class="btn btn--primary px-4 w-100 text-nowrap">
-                                                        {{ translate('filter') }}
+                                                        {{ translate('Filter') }}
                                                     </button>
                                                 </div>
                                             </div>
@@ -256,10 +256,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th class="ps-xl-5">{{ translate('SL') }}</th>
-                                <th>{{ translate('image') }}</th>
+                                <th>{{ translate('Image') }}</th>
                                 <th>{{ translate('banner_type') }}</th>
                                 <th class="text-center">{{ translate('published') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             @foreach($banners as $key=>$banner)
@@ -282,8 +282,8 @@
                                                        data-toggle-id="banner-status{{ $banner['id'] }}"
                                                        data-on-image="banner-status-on.png"
                                                        data-off-image="banner-status-off.png"
-                                                       data-on-title="{{ translate('Want_to_Turn_ON').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('status') }}"
-                                                       data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('status') }}"
+                                                       data-on-title="{{ translate('Want_to_Turn_ON').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('Status') }}"
+                                                       data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate(str_replace('_',' ',$banner->banner_type)).' '.translate('Status') }}"
                                                        data-on-message="<p>{{ translate('if_enabled_this_banner_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                        data-off-message="<p>{{ translate('if_disabled_this_banner_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                 <span class="switcher_control"></span>
@@ -293,12 +293,12 @@
                                     <td>
                                         <div class="d-flex gap-10 justify-content-center">
                                             <a class="btn btn-outline--primary btn-sm cursor-pointer edit"
-                                               title="{{ translate('edit') }}"
+                                               title="{{ translate('Edit') }}"
                                                href="{{ route('admin.banner.update',[$banner['id']]) }}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <a class="btn btn-outline-danger btn-sm cursor-pointer banner-delete-button"
-                                               title="{{ translate('delete') }}"
+                                               title="{{ translate('Delete') }}"
                                                id="{{ $banner['id'] }}">
                                                 <i class="tio-delete"></i>
                                             </a>

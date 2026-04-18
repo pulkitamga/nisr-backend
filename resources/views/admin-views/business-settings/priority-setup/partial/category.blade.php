@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="">
-                    <h3 class="mb-3 text-capitalize">{{ translate('category') }}</h3>
+                    <h3 class="mb-3 text-capitalize">{{ translate('Category') }}</h3>
                     <p class="max-w-400">{{ translate('the_category_list_groups_similar_products_together_arranged_with_the_latest_category_first_and_in_alphabetical_order')}}</p>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="category-alphabetic-order"
                                             {{isset($categoryPriority?->sort_by) && $categoryPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="category-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -77,7 +77,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="category-alphabetic-order-reverse"
                                             {{isset($categoryPriority?->sort_by) && $categoryPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="category-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -85,7 +85,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

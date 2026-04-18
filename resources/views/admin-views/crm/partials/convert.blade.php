@@ -12,18 +12,18 @@
                     @csrf
                     <input type="hidden" name="message_id" id="convertMessageId">
                     <div class="mb-3">
-                        <label for="typeSelect" class="form-label">{{ translate('Select Type') }}</label>
+                        <label for="typeSelect" class="form-label">{{ translate('select_type') }}</label>
                         <select class="form-control" id="typeSelect" name="type">
-                            <option value="">-- {{ translate('Select Type') }} --</option>
+                            <option value="">-- {{ translate('select_type') }} --</option>
                             <option value="lead">{{ translate('Lead') }}</option>
                             <option value="ticket">{{ translate('Ticket') }}</option>
                         </select>
                     </div>
 
                     <div class="mb-3" id="subTypeWrapper" style="display: none;">
-                        <label for="subTypeSelect" class="form-label">{{ translate('Select Sub-Type') }}</label>
+                        <label for="subTypeSelect" class="form-label">{{ translate('select_sub_type') }}</label>
                         <select class="form-control" id="subTypeSelect" name="sub_type">
-                            <option value="">-- {{ translate('Select Sub-Type') }} --</option>
+                            <option value="">-- {{ translate('select_sub_type') }} --</option>
                         </select>
                     </div>
 
@@ -37,17 +37,17 @@
                     <div class="mb-3" id="priorityWrapper">
                         <label for="prioritySelect" class="form-label">{{ translate('Select Priority') }}</label>
                         <select class="form-control" id="prioritySelect" name="priority">
-                            <option value="medium" selected>{{ translate('medium') }}</option>
-                            <option value="urgent">{{ translate('urgent') }}</option>
-                            <option value="high">{{ translate('high') }}</option>
-                            <option value="low">{{ translate('low') }}</option>
+                            <option value="medium" selected>{{ translate('Medium') }}</option>
+                            <option value="urgent">{{ translate('Urgent') }}</option>
+                            <option value="high">{{ translate('High') }}</option>
+                            <option value="low">{{ translate('Low') }}</option>
                         </select>
                     </div>
 
                     <div class="mb-3" id="departmentWrapper">
-                        <label for="convertDepartmentId" class="form-label">{{ translate('Select Department') }}</label>
+                        <label for="convertDepartmentId" class="form-label">{{ translate('Select_Department') }}</label>
                         <select class="form-control" name="department_id" id="convertDepartmentId">
-                            <option value="">-- {{ translate('Select Department') }} --</option>
+                            <option value="">-- {{ translate('Select_Department') }} --</option>
                             @foreach ($getDepartment as $dept)
                             <option value="{{ $dept['id'] }}">{{ $dept['name'] }}</option>
                             @endforeach

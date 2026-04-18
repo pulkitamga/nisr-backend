@@ -65,7 +65,7 @@ class DatabaseSettingController extends BaseController
             return back();
         }
 
-        Toastr::success(translate('Updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 }

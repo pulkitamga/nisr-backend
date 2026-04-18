@@ -67,11 +67,11 @@ class CustomerWalletController extends BaseController
                 'userName' => $customer['f_name'],
                 'userType' => 'customer',
                 'templateName' => 'add-fund-to-wallet',
-                'subject' => translate('add_fund_to_wallet'),
-                'title' => translate('add_fund_to_wallet'),
+                'subject' => translate('Add_Fund_To_Wallet'),
+                'title' => translate('Add_Fund_To_Wallet'),
             ];
             event(new AddFundToWalletEvent(email: $customer['email'], data: $data));
-            return response()->json(['message' => translate('transaction_successful')], 200);
+            return response()->json(['message' => translate('Transaction_Successful')], 200);
         }
 
         return response()->json(['errors' => [
@@ -153,7 +153,7 @@ class CustomerWalletController extends BaseController
     public function updateStatus(AddFundBonusCategoriesUpdateRequest $request): JsonResponse|RedirectResponse
     {
         $this->addFundBonusCategoriesRepo->update(id: $request['id'], data: ['is_active' => $request->get('status', 0)]);
-        return response()->json(['message'=> translate('update_successfully')]);
+        return response()->json(['message'=> translate('Update_successfully')]);
     }
 
     public function deleteBonus(AddFundBonusCategoriesDeleteRequest $request): JsonResponse|RedirectResponse

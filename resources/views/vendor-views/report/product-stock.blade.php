@@ -9,7 +9,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/seller_sale.png')}}" alt="">
-                {{translate('product_report')}}
+                {{translate('product_Report')}}
             </h2>
         </div>
 
@@ -41,7 +41,7 @@
                         </div>
                         <div class="col-sm-6 col-md-2">
                             <button type="submit" class="btn btn--primary px-4 px-md-5">
-                                {{translate('filter')}}
+                                {{translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
                             <input id="datatableSearch_" type="search" name="search" class="form-control"
                                    placeholder="{{translate('search_Product_Name')}}" aria-label="Search orders"
                                    value="{{ $search }}">
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -86,16 +86,16 @@
                         <tr>
                             <th>{{translate('SL')}}</th>
                             <th>
-                                {{translate('product_Name')}}
+                                {{translate('Product_name')}}
                             </th>
                             <th>
                                 {{translate('last_Updated_Stock')}}
                             </th>
                             <th class="text-center">
-                                {{translate('current_Stock')}}
+                                {{translate('Current_Stock')}}
                             </th>
                             <th class="text-center">
-                                {{translate('status')}}
+                                {{translate('Status')}}
                             </th>
                         </tr>
                         </thead>
@@ -116,7 +116,7 @@
                                 <td>
                                     <div class="text-center">
                                         @if($data['current_stock'] >= $stock_limit)
-                                            <span class="badge __badge badge-soft-success">{{translate('In-Stock')}}</span>
+                                            <span class="badge __badge badge-soft-success">{{translate('in_stock')}}</span>
                                         @elseif($data['current_stock']  == 0)
                                             <span class="badge __badge badge-soft-warning">{{translate('out_of_Stock')}}</span>
                                         @elseif($data['current_stock'] < $stock_limit)

@@ -376,8 +376,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>{{ translate('method') }}</th>
-                                <th class="text-center">{{ translate('total') }}</th>
+                                <th>{{ translate('Method') }}</th>
+                                <th class="text-center">{{ translate('Total') }}</th>
                                 <th class="text-center">{{ translate('percentage') }}</th>
                             </tr>
                         </thead>
@@ -406,8 +406,8 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>{{ translate('product') }}</th>
-                                <th class="text-center">{{ translate('total') }}</th>
+                                <th>{{ translate('Product') }}</th>
+                                <th class="text-center">{{ translate('Total') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -437,13 +437,13 @@
                     <tr>
                         <th>#</th>
                         <th>{{ translate('serial') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('customer') }}</th>
-                        <th>{{ translate('branch') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Customer') }}</th>
+                        <th>{{ translate('Branch') }}</th>
                         <th>{{ translate('activation_method') }}</th>
                         <th>{{ translate('activation_date') }}</th>
                         <th>{{ translate('warranty_end') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th>{{ translate('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -502,7 +502,7 @@ color:#6b7280;
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3">{{ translate('no_data_found') }}</td>
+                        <td colspan="3">{{ translate('no_Data_found') }}</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -26,9 +26,9 @@
             <thead class="bg-light">
                 <tr>
                     <th>{{ translate('SL') }}</th>
-                    <th>{{ translate('Date') }}</th>
-                    <th class="text-nowrap">{{ translate('Quotation No') }}</th>
-                    <th class="text-nowrap">{{ translate('Order No') }}</th>
+                    <th>{{ translate('DATE') }}</th>
+                    <th class="text-nowrap">{{ translate('Quotation_No') }}</th>
+                    <th class="text-nowrap">{{ translate('Order_No') }}</th>
                     <th>{{ translate('Total') }}</th>
                     <th>{{ translate('Status') }}</th>
                     <th>{{ translate('Action') }}</th>
@@ -58,12 +58,12 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <a title="{{translate('View Details')}}"
+                            <a title="{{translate('view_details')}}"
                                 class="btn btn-outline-info btn-sm square-btn"
                                 href="{{ route('admin.wholesale.business.orders.invoice', $quote->id) }}">
                                 <i class="tio-invisible"></i>
                             </a>
-                            <a title="{{translate('View Details')}}"
+                            <a title="{{translate('view_details')}}"
                                 class="btn btn-outline-info btn-sm square-btn"
                                 href="{{ route('admin.wholesale.business.orders.invoice.edit', $quote->id) }}">
                                 <i class="tio-edit"></i>

@@ -19,7 +19,7 @@
         </th>
     </tr>
     <tr>
-        <th>{{translate('order_Status')}}</th>
+        <th>{{translate('Order_Status')}}</th>
         <th></th>
         <th>
             @foreach ($data['statusArray'] as $key=>$value)
@@ -31,7 +31,7 @@
         <th> {{translate('SL')}}    </th>
         <th> {{translate('Order_ID')}}    </th>
         <th> {{translate('Order_Date')}}    </th>
-        <th> {{translate('customer_Name')}}    </th>
+        <th> {{translate('Customer_Name')}}    </th>
         <th> {{translate('Total_Amount')}}    </th>
         <th> {{translate('Payment_Status')}}</th>
         <th> {{translate('Order_Status')}}</th>

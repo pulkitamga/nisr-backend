@@ -3,7 +3,7 @@
     <thead>
         <tr>
             <th>{{ translate('Sr No') }}</th>
-            <th>{{ translate('Product Name') }}</th>
+            <th>{{ translate('Product_name') }}</th>
             <th>{{ translate('Product Category') }}</th>
             <th>{{ translate('Product Subcategory') }}</th>
             <th>{{ translate('Product Attribute No') }}</th>

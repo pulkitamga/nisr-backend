@@ -65,7 +65,7 @@ class shippingController extends Controller
         }
 
         return response()->json([
-            'message'=>translate('successfully updated')
+            'message'=>translate('Successfully_Updated')
         ]);
     }
 
@@ -138,7 +138,7 @@ class shippingController extends Controller
         }
 
         return response()->json([
-            'success'=>translate('successfully_updated')
+            'success'=>translate('Successfully_Updated')
         ]);
 
     }

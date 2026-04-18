@@ -42,7 +42,7 @@
                         <div class="col-md-12">
                             <label class="title-color">{{translate('service_account_content')}}</label>
                             <textarea name="push_notification_key" class="form-control min-h-300" rows="2"
-                                      placeholder="{{translate('ex').':'.'abcd1234efgh5678ijklmnop90qrstuvwxYZ'}}"
+                                      placeholder="{{translate('Ex').':'.'abcd1234efgh5678ijklmnop90qrstuvwxYZ'}}"
                                       required>{{env('APP_MODE')=='demo'?'':$pushNotificationKey}}</textarea>
                         </div>
 
@@ -105,9 +105,9 @@
                         </div>
                         <div class="col-md-12">
                             <div class="d-flex gap-3 justify-content-end">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">
-                                    {{translate('submit')}}
+                                    {{translate('Submit')}}
                                 </button>
                             </div>
                         </div>

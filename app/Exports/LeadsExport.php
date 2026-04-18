@@ -50,16 +50,16 @@ class LeadsExport implements FromCollection, WithHeadings, WithTitle
         return [
             translate('SL'),
             translate('Subject'),
-            translate('Party Type'),
-            translate('Party Name'),
+            translate('Party_Type'),
+            translate('Party_Name'),
             translate('Email'),
             translate('Phone'),
             translate('Owner'),
             translate('Department'),
             translate('Employee'),
             translate('Priority'),
-            translate('status'),
-            translate('Created At'),
+            translate('Status'),
+            translate('Created_At'),
         ];
     }
 
@@ -81,9 +81,9 @@ class LeadsExport implements FromCollection, WithHeadings, WithTitle
             : 'new';
 
         return implode(' | ', [
-            translate('search') . ': ' . (trim((string) $request->get('searchValue', '')) ?: translate('all')),
-            translate('status') . ': ' . ($status === 'all' ? translate('all') : \App\Utils\crm_status_label($status)),
-            translate('Date') . ': ' . (trim((string) $request->get('filter_date', '')) ?: translate('all')),
+            translate('Search') . ': ' . (trim((string) $request->get('searchValue', '')) ?: translate('All')),
+            translate('Status') . ': ' . ($status === 'all' ? translate('All') : \App\Utils\crm_status_label($status)),
+            translate('DATE') . ': ' . (trim((string) $request->get('filter_date', '')) ?: translate('All')),
         ]);
     }
 
@@ -94,8 +94,8 @@ class LeadsExport implements FromCollection, WithHeadings, WithTitle
         }
 
         return match ($partyType) {
-            'company' => translate('company'),
-            'contact' => translate('contact'),
+            'company' => translate('Company'),
+            'contact' => translate('Contact'),
             default => Str::headline($partyType),
         };
     }

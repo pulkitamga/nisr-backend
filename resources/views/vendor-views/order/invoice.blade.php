@@ -9,7 +9,7 @@
       xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <title>{{ translate('invoice')}}</title>
+    <title>{{ translate('Invoice')}}</title>
     <meta http-equiv="Content-Type" content="text/html;"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -494,10 +494,10 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
             <tr>
                 <td class="text-start" style="padding:23px 16px">
                     <div class="mb-1 fz-10">
-                        <span class="font-bold">{{ translate('order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
+                        <span class="font-bold">{{ translate('Order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
                     </div>
                     <div class="mb-1 fz-10">
-                        <span class="font-bold">{{ translate('date')}}</span> : <span
+                        <span class="font-bold">{{ translate('DATE')}}</span> : <span
                             class="font-normal">{{date('M d, Y',strtotime($order['created_at']))}}</span>
                     </div>
                 </td>
@@ -519,7 +519,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
             </tr>
             <tr>
                 <td class="vertical-align-top {{$direction === "rtl" ? 'border-left' : ''}}" style="padding:8px 16px; width:25%">
-                    <div class="fz-11">{{ translate('payment')}}</div>
+                    <div class="fz-11">{{ translate('Payment')}}</div>
                     <div class="font-medium fz-10 mb-2 text-capitalize">
                         <span class="font-bold">{{ str_replace('_',' ',$order->payment_method) }}</span></div>
                     @if(!empty($order->transaction_ref))
@@ -576,7 +576,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                             <div class="font-normal mt-6px">{{ $shipping_address->city }} {{ $shipping_address->zip }} </div>
                         </div>
                     @else
-                        <span class="font-bold fz-11">{{ translate('customer_Info')}}</span>
+                        <span class="font-bold fz-11">{{ translate('Customer_Info')}}</span>
                         <div class="">
                             @if($order->is_guest)
                                 <div class="font-normal mt-6px">{{translate('guest_user')}}</div>
@@ -604,15 +604,15 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
             <tr>
                 <td class="text-start border-bottom" style="padding:23px 16px">
                     <div class="mb-1 fz-10">
-                        <span class="font-bold">{{ translate('order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
+                        <span class="font-bold">{{ translate('Order')}}</span> <span class="font-normal">#{{ $order->id }}</span>
                     </div>
                     <div class="fz-10">
-                        <span class="font-bold">{{ translate('date')}}</span> : <span
+                        <span class="font-bold">{{ translate('DATE')}}</span> : <span
                             class="font-normal">{{date('M d, Y',strtotime($order['created_at']))}}</span>
                     </div>
                 </td>
                 <td class="border-bottom" style="padding:23px 8px">
-                    <div class="font-normal mb-1 fz-10">{{translate('customer_Name')}}</div>
+                    <div class="font-normal mb-1 fz-10">{{translate('Customer_Name')}}</div>
                     <div
                         class="font-semibold fz-10">{{ $order->customer !=null? $order->customer['f_name'].' '.$order->customer['l_name']:translate('name_not_found')}}</div>
                 </td>
@@ -622,7 +622,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                         class="font-semibold fz-10">{{$order->customer !=null? $order->customer['phone']: translate('phone_not_found')}}</div>
                 </td>
                 <td class="border-bottom" style="padding:23px 8px">
-                    <div class="font-normal mb-1 fz-10">{{translate('payment')}}</div>
+                    <div class="font-normal mb-1 fz-10">{{translate('Payment')}}</div>
                     <div class="font-semibold fz-10">{{ translate($order->payment_status) }}</div>
                 </td>
                 <td class="text-end border-bottom" style="padding:23px 16px">
@@ -650,13 +650,13 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                             {{ translate('item_Description')}}
                         </th>
                         <th class="text-uppercase fz-12 text-dark font-normal text-end">
-                            {{ translate('qty')}}
+                            {{ translate('QTY')}}
                         </th>
                         <th class="text-uppercase text-dark fz-12 font-normal text-end">
-                            {{ translate('unit_Price')}}
+                            {{ translate('Unit_Price')}}
                         </th>
                         <th class="text-end text-dark text-uppercase fz-12 font-normal">
-                            {{ translate('total')}}
+                            {{ translate('Total')}}
                         </th>
                     </tr>
                     </thead>
@@ -681,7 +681,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                 <div class="fz-10">
                                     @if($details['variant'])
                                         <br>
-                                        {{ translate('variation')}} : {{$details['variant']}}
+                                        {{ translate('Variation')}} : {{$details['variant']}}
                                     @endif
                                 </div>
                             </td>
@@ -757,7 +757,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td class="text-start font-bold">{{ translate('sub_Total')}}</td>
+                                    <td class="text-start font-bold">{{ translate('Subtotal')}}</td>
                                     <td class="text-end">
                                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}
                                     </td>
@@ -777,13 +777,13 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td class="text-start font-bold">{{ translate('coupon_Discount')}}</td>
+                                    <td class="text-start font-bold">{{ translate('Coupon_Discount')}}</td>
                                     <td class="text-end">
                                         - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="text-start font-bold">{{ translate('tax')}}</td>
+                                    <td class="text-start font-bold">{{ translate('Tax')}}</td>
                                     <td class="text-end">
                                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}
                                     </td>
@@ -791,7 +791,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
 
                                 <tr>
                                     <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
-                                        {{ translate('total')}}</td>
+                                        {{ translate('Total')}}</td>
                                     <td class="border-dashed-top font-weight-bold text-end fz-14">
                                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
                                     </td>
@@ -799,14 +799,14 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                                 @if ($order->order_type == 'pos' || $order->order_type == 'POS')
                                     <tr>
                                         <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
-                                            {{ translate('paid_amount')}}</td>
+                                            {{ translate('Paid_Amount')}}</td>
                                         <td class="border-dashed-top font-weight-bold text-end fz-14">
                                             {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['paidAmount']), currencyCode: getCurrencyCode()) }}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td class="border-dashed-top font-weight-bold text-start fz-14 font-bold">
-                                            {{ translate('change_amount')}}</td>
+                                            {{ translate('Change_Amount')}}</td>
                                         <td class="border-dashed-top font-weight-bold text-end fz-14">
                                             {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['changeAmount']), currencyCode: getCurrencyCode()) }}
                                         </td>

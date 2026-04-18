@@ -176,7 +176,7 @@ class ServiceCmsController extends Controller
             id: $id
         );
 
-        return redirect()->route('admin.content-management.services')->with('success', translate('updated_successfully'));
+        return redirect()->route('admin.content-management.services')->with('success', translate('Updated_Successfully'));
     }
 
     public function storeShowcaseItem(Request $request, $id)
@@ -289,7 +289,7 @@ class ServiceCmsController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => translate('status_updated_successfully'),
+            'message' => translate('Status_updated_successfully'),
             'new_status' => $product->is_active
         ]);
     }

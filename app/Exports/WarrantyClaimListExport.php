@@ -52,11 +52,11 @@ class WarrantyClaimListExport implements FromCollection, WithMapping, WithHeadin
             translate('SL'),
             translate('claim_number'),
             translate('serial'),
-            translate('status'),
-            translate('customer'),
-            translate('product'),
+            translate('Status'),
+            translate('Customer'),
+            translate('Product'),
             translate('distributor'),
-            translate('branch'),
+            translate('Branch'),
             translate('activation_method'),
             translate('submitted_at'),
             translate('sla_due'),
@@ -153,7 +153,7 @@ class WarrantyClaimListExport implements FromCollection, WithMapping, WithHeadin
                 $sheet->setCellValueExplicit('K2', translate('reopen_count'), DataType::TYPE_STRING);
                 $sheet->setCellValueExplicit('L2', (string) $totalReopens, DataType::TYPE_STRING);
 
-                $sheet->setCellValueExplicit('A3', translate('filters'), DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit('A3', translate('Filters'), DataType::TYPE_STRING);
                 $sheet->mergeCells("B3:{$lastColumn}3");
                 $sheet->setCellValueExplicit('B3', $this->filterSummary, DataType::TYPE_STRING);
 

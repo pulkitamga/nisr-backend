@@ -123,7 +123,7 @@ class FlashDealController extends BaseController
                 $this->flashDealProductRepo->add(data: $dataArray);
             }
         }
-        Toastr::success(translate('product_added_successfully'));
+        Toastr::success(translate('Product_added_successfully'));
         return back();
     }
 

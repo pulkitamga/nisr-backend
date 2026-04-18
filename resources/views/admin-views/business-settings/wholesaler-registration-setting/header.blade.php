@@ -58,7 +58,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                     <input type="hidden" name="lang[]" value="{{ $lang }}">
 
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color">{{translate('Title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="title[][{{ $lang }}]" class="form-control"
 value="{{ $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->title : ($translations[$lang]['title'] ?? '') }}"
                                             placeholder="{{translate('enter_title')}}">
@@ -66,7 +66,7 @@ value="{{ $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->title : ($
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color text-capitalize">{{translate('sub_title')}} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color text-capitalize">{{translate('Sub_Title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="sub_title[][{{ $lang }}]" class="form-control"
                                             value="{{  $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->sub_title : ($translations[$lang]['sub_title']?? '')}}"
                                             placeholder="{{translate('enter_sub_title')}}">
@@ -84,8 +84,8 @@ value="{{ $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->title : ($
                         <div class="mx-auto max-w-400">
                             <div class="mb-3 text-center">
                                 <label for="name"
-                                    class="title-color text-capitalize font-weight-bold mb-0">{{translate('image')}}</label>
-                                <span class="badge badge-soft-info">{{'('.translate('size').' : '.'310px x
+                                    class="title-color text-capitalize font-weight-bold mb-0">{{translate('Image')}}</label>
+                                <span class="badge badge-soft-info">{{'('.translate('Size').' : '.'310px x
                                     240px'.')'}}</span>
                             </div>
 
@@ -108,7 +108,7 @@ value="{{ $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->title : ($
                                     <div class="d-flex flex-column justify-content-center align-items-center">
                                         <img alt="" class="w-75"
                                             src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                        <h3 class="text-muted text-capitalize">{{ translate('upload_image') }}</h3>
+                                        <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -116,14 +116,14 @@ value="{{ $lang == $defaultLanguage ? $wholesalerRegistrationHeader?->title : ($
                             <p class="text-muted text-center mt-2">
                                 {{ translate('image_format').' : '.'Jpg, png, jpeg, webp,'}}
                                 <br>
-                                {{ translate('image_size').' : '.translate('max').' ' .'2 MB'}}
+                                {{ translate('image_size').' : '.translate('Max').' ' .'2 MB'}}
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="row justify-content-end gap-3 mt-3 mx-1">
-                    <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                    <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                    <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                    <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                 </div>
             </div>
 

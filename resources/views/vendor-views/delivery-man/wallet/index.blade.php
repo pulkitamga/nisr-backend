@@ -40,7 +40,7 @@
                                     {{translate('cash_in_hand')}}
                                 </div>
                             </div>
-                            <a href="{{ route('vendor.delivery-man.wallet.cash-collect', ['id' => $deliveryMan->id]) }}" class="btn btn--primary mb-4 text-capitalize">{{translate('collect_cash')}}</a>
+                            <a href="{{ route('vendor.delivery-man.wallet.cash-collect', ['id' => $deliveryMan->id]) }}" class="btn btn--primary mb-4 text-capitalize">{{translate('collect_Cash')}}</a>
                         </div>
                     </div>
                     <div class="col-lg-8">
@@ -76,7 +76,7 @@
                                     <div class="d-flex gap-2 justify-content-between align-items-center">
                                         <div class="d-flex flex-column align-items-start">
                                             <h3 class="mb-1 fz-24">{{$deliveryMan->wallet ? setCurrencySymbol(amount: usdToDefaultCurrency(amount:$deliveryMan->wallet->pending_withdraw), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount:0, currencyCode: getCurrencyCode())}}</h3>
-                                            <div class="text-capitalize mb-0">{{translate('pending_withdraw')}}</div>
+                                            <div class="text-capitalize mb-0">{{translate('pending_Withdraw')}}</div>
                                         </div>
                                         <div>
                                             <img width="40" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/pw.png')}}" alt="">
@@ -91,7 +91,7 @@
                                             <h3 class="mb-1 fz-24">
                                                 {{ empty($withdrawableBalance) ? setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawableBalance), currencyCode: getCurrencyCode()) }}
                                             </h3>
-                                            <div class="text-capitalize mb-0">{{translate('withdrawable_balance')}}</div>
+                                            <div class="text-capitalize mb-0">{{translate('withdrawable_Balance')}}</div>
                                         </div>
                                         <div>
                                             <img width="40" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/withdraw.png')}}" alt="">
@@ -109,25 +109,25 @@
             <div class="col-md-6 mt-3">
                 <div class="card">
                     <div class="card-header text-capitalize">
-                        <h5 class="mb-0 text-capitalize">{{translate('delivery_man_account')}}</h5>
+                        <h5 class="mb-0 text-capitalize">{{translate('delivery_Man_Account')}}</h5>
                     </div>
                     <div class="card-body">
                         <div class="flex-start">
-                            <div><h4>{{translate('status')}} : </h4></div>
+                            <div><h4>{{translate('Status')}} : </h4></div>
                             <div class="mx-1">
-                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">'.__('Active').'</label>':'<label class="badge badge-danger">'.__('In-Active').'</label>' !!}</h4>
+                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">'.__('Active').'</label>':'<label class="badge badge-danger">'.__('Inactive').'</label>' !!}</h4>
                             </div>
                         </div>
                         <div class="flex-start">
-                            <div><h5 class="text-nowrap">{{translate('name')}} : </h5></div>
+                            <div><h5 class="text-nowrap">{{translate('Name')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->f_name}} {{$deliveryMan->l_name}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5>{{translate('email')}} : </h5></div>
+                            <div><h5>{{translate('Email')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->email}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5>{{translate('phone')}} : </h5></div>
+                            <div><h5>{{translate('Phone')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->phone}}</h5></div>
                         </div>
                     </div>
@@ -136,32 +136,32 @@
             <div class="col-md-6 mt-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0"> {{translate('bank_info')}}</h5>
+                        <h5 class="mb-0"> {{translate('bank_Info')}}</h5>
                     </div>
                     <div class="card-body">
                         <div class="mt-2">
                             <div class="flex-start">
-                                <div><h4>{{translate('bank_name')}} : </h4></div>
+                                <div><h4>{{translate('bank_Name')}} : </h4></div>
                                 <div class="mx-1">
-                                    <h4>{{$deliveryMan->bank_name ??  translate('no_data_found')}}</h4>
+                                    <h4>{{$deliveryMan->bank_name ??  translate('no_Data_found')}}</h4>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6>{{translate('branch')}} : </h6></div>
+                                <div><h6>{{translate('Branch')}} : </h6></div>
                                 <div class="mx-1">
-                                    <h6>{{$deliveryMan->branch ??  translate('no_data_found')}}</h6>
+                                    <h6>{{$deliveryMan->branch ??  translate('no_Data_found')}}</h6>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6>{{translate('holder_name')}} : </h6></div>
+                                <div><h6>{{translate('holder_Name')}} : </h6></div>
                                 <div class="mx-1">
-                                    <h6>{{$deliveryMan->holder_name ?? translate('no_data_found')}}</h6>
+                                    <h6>{{$deliveryMan->holder_name ?? translate('no_Data_found')}}</h6>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6>{{translate('account_no')}} : </h6></div>
+                                <div><h6>{{translate('account_No')}} : </h6></div>
                                 <div class="mx-1">
-                                    <h6>{{$deliveryMan->account_no ?? translate('no_data_found')}}</h6>
+                                    <h6>{{$deliveryMan->account_no ?? translate('no_Data_found')}}</h6>
                                 </div>
                             </div>
                         </div>
@@ -195,8 +195,8 @@
                     <div class="col-md-12 mb-3">
                         <div class="mt-4 text-center">
                             <form action="">
-                                <button type="button" class="btn btn-danger" data-dismiss="modal">{{translate('close')}}</button>
-                                <button class="btn btn--primary text-capitalize" data-toggle="modal" data-target="#exampleModal">{{translate('collect_cash')}}</button>
+                                <button type="button" class="btn btn-danger" data-dismiss="modal">{{translate('Close')}}</button>
+                                <button class="btn btn--primary text-capitalize" data-toggle="modal" data-target="#exampleModal">{{translate('collect_Cash')}}</button>
                             </form>
                         </div>
                         <hr class="non-printable">

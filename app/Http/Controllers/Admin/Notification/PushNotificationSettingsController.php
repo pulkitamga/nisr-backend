@@ -112,7 +112,7 @@ class PushNotificationSettingsController extends BaseController
                 }
             }
         }
-        Toastr::success(translate('update_successfully'));
+        Toastr::success(translate('Update_successfully'));
         return redirect()->back();
     }
 
@@ -146,7 +146,7 @@ class PushNotificationSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'fcm_credentials', value: json_encode($configData));
         clearWebConfigCacheKeys();
 
-        Toastr::success(translate('settings_updated'));
+        Toastr::success(translate('Settings_updated'));
         return back();
     }
 

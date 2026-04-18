@@ -287,11 +287,11 @@
                     <div class="kpi-value text-info">{{ number_format($summary['assigned'] ?? 0) }}</div>
                 </td>
                 <td>
-                    <div class="kpi-label">{{ translate('pending') }}</div>
+                    <div class="kpi-label">{{ translate('Pending') }}</div>
                     <div class="kpi-value text-warning">{{ number_format($summary['pending'] ?? 0) }}</div>
                 </td>
                 <td>
-                    <div class="kpi-label">{{ translate('converted') }}</div>
+                    <div class="kpi-label">{{ translate('Converted') }}</div>
                     <div class="kpi-value text-info">{{ number_format($summary['converted'] ?? 0) }}</div>
                 </td>
                 <td>
@@ -331,10 +331,10 @@
             <thead>
                 <tr>
                     <th>{{ translate('period') }}</th>
-                    <th>{{ translate('total') }}</th>
+                    <th>{{ translate('Total') }}</th>
                     <th>{{ translate('assigned') }}</th>
-                    <th>{{ translate('pending') }}</th>
-                    <th>{{ translate('converted') }}</th>
+                    <th>{{ translate('Pending') }}</th>
+                    <th>{{ translate('Converted') }}</th>
                     <th>{{ translate('ignored') }}</th>
                     <th>{{ translate('spam') }}</th>
                     <th>{{ translate('assigned_%') }}</th>
@@ -366,7 +366,7 @@
                 @empty
                     <tr>
                         <td colspan="8" style="text-align: center; padding: 20px;">
-                            {{ translate('no_data_found') }}
+                            {{ translate('no_Data_found') }}
                         </td>
                     </tr>
                 @endforelse

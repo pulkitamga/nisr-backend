@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('service_policy'))
+@section('title', translate('Service_policy'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -30,7 +30,7 @@ $pageTranslations[$translation->locale][$translation->key] = $translation->value
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" alt="">
-            {{translate('pages')}}
+            {{translate('Pages')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -40,7 +40,7 @@ $pageTranslations[$translation->locale][$translation->key] = $translation->value
                 <form action="{{route('admin.business-settings.update-service')}}" method="post">
                     @csrf
                 <div class="card-header">
-                    <h5 class="mb-0">{{translate('service_policy')}}</h5>
+                    <h5 class="mb-0">{{translate('Service_policy')}}</h5>
                     <label class="switcher show-status-text justify-content-end" for="service-policy-status">
                         <input type="checkbox" class="switcher_input toggle-switch-message" value="1" name="status"
                                id="service-policy-status" {{ ($servicePolicyPage->status ?? 0) == 1 ? 'checked' : '' }}
@@ -48,11 +48,11 @@ $pageTranslations[$translation->locale][$translation->key] = $translation->value
                                data-toggle-id="service-policy-status"
                                data-on-image=""
                                data-off-image=""
-                               data-on-title="{{ translate('want_to_Turn_ON').' '.translate('service_policy').' '.translate('status') }}"
-                               data-off-title="{{ translate('want_to_Turn_OFF').' '.translate('service_policy').' '.translate('status') }}"
+                               data-on-title="{{ translate('Want_to_Turn_ON').' '.translate('Service_policy').' '.translate('Status') }}"
+                               data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate('Service_policy').' '.translate('Status') }}"
                                data-on-message="<p>{{ translate('if_you_enable_this_option_service_policy_page_will_be_shown_in_the_user_app_and_website') }}</p>"
                                data-off-message="<p>{{ translate('if_you_disable_this_option_service_policy_page_will_not_be_shown_in_the_user_app_and_website') }}</p>">
-                            <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                            <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                     </label>
                 </div>
                     <div class="card-body">
@@ -86,7 +86,7 @@ $pageTranslations[$translation->locale][$translation->key] = $translation->value
                                 ? ($service_policy?->value ?? '')
                                 : ($policyTranslations[$lang]['value'] ?? '');
                                 @endphp
-                                <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                                 <input type="text" name="title[]" value="{{ $titleValue }}" class="form-control mb-3" maxlength="255">
                                 <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -96,7 +96,7 @@ $pageTranslations[$translation->locale][$translation->key] = $translation->value
                             @endforeach
                         </div>
                         <div class="form-group">
-                            <input class="form-control btn--primary" type="submit" value="{{translate('submit')}}" name="btn">
+                            <input class="form-control btn--primary" type="submit" value="{{translate('Submit')}}" name="btn">
                         </div>
                     </div>
                 </form>

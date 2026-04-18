@@ -64,7 +64,7 @@ class MostDemandedController extends BaseController
     {
         $this->mostDemandedRepo->updateWhere(params: ['status' => 1], data: ['status' => 0]);
         $this->mostDemandedRepo->updateWhere(params: ['id' => $request['id']], data: ['status' => $request->get('status', 0)]);
-        return response()->json(['success' => 1, 'message'=>translate('status_updated_successfully')], 200);
+        return response()->json(['success' => 1, 'message'=>translate('Status_updated_successfully')], 200);
     }
 
     public function getUpdateView($id): View|RedirectResponse

@@ -616,7 +616,7 @@ class AccessGuard
         ], static fn ($value) => $value !== null && $value !== ''));
 
         throw new AccessViolationException(
-            message: translate('access_denied'),
+            message: translate('access_Denied'),
             reason: $reason,
             context: $context,
         );

@@ -1,6 +1,6 @@
 @php use App\Utils\Helpers; @endphp
 @extends('layouts.back-end.app')
-@section('title', translate('mail_Config'))
+@section('title', translate('Mail_Config'))
 
 @push('css_or_js')
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.css')}}"/>
@@ -11,7 +11,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -89,7 +89,7 @@
                                                            title="{{translate('enter_mailer_name')}}"></i>
                                                     </div>
                                                     <input type="text"
-                                                           placeholder="{{translate('ex')}}:{{translate('alex')}}"
+                                                           placeholder="{{translate('Ex')}}:{{translate('alex')}}"
                                                            class="form-control" name="name"
                                                            value="{{env('APP_MODE')=='demo' ? '' :$data_smtp['name']}}">
                                                 </div>
@@ -102,7 +102,7 @@
                                                            title="{{translate('enter_the_name_of_the_host_of_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="host"
-                                                           placeholder="{{translate('ex').':'}} {{translate('smtp.mailtrap.io')}}"
+                                                           placeholder="{{translate('Ex').':'}} {{translate('smtp.mailtrap.io')}}"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_smtp['host']}}">
                                                 </div>
                                             </div>
@@ -114,7 +114,7 @@
                                                            title="{{translate('enter_the_driver_for_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="driver"
-                                                           placeholder="{{translate('ex')}}:{{translate('smtp')}}"
+                                                           placeholder="{{translate('Ex')}}:{{translate('smtp')}}"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_smtp['driver']}}">
                                                 </div>
                                             </div>
@@ -126,7 +126,7 @@
                                                            title="{{translate('enter_the_port_number_for_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="port"
-                                                           placeholder="{{translate('ex')}}:587"
+                                                           placeholder="{{translate('Ex')}}:587"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_smtp['port']}}">
                                                 </div>
                                             </div>
@@ -134,7 +134,7 @@
                                                 <div class="form-group">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
                                                         <label
-                                                            class="title-color mb-0">{{translate('username')}}</label>
+                                                            class="title-color mb-0">{{translate('Username')}}</label>
                                                         <i class="tio-info-outined" data-toggle="tooltip"
                                                            title="{{translate('enter_the_username_of_your_account')}}"></i>
                                                     </div>
@@ -148,12 +148,12 @@
                                                 <div class="form-group">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
                                                         <label
-                                                            class="title-color mb-0">{{translate('email_ID')}}</label>
+                                                            class="title-color mb-0">{{translate('Email_ID')}}</label>
                                                         <i class="tio-info-outined" data-toggle="tooltip"
                                                            title="{{translate('enter_your_email_ID')}}"></i>
                                                     </div>
                                                     <input type="text"
-                                                           placeholder="{{translate('ex')}}:{{translate('example@example.com')}}"
+                                                           placeholder="{{translate('Ex')}}:{{translate('example@example.com')}}"
                                                            class="form-control" name="email"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_smtp['email_id']}}">
                                                 </div>
@@ -185,7 +185,7 @@
                                                         <input type="password" class="js-toggle-password form-control"
                                                                value="{{env('APP_MODE')=='demo'?'':$data_smtp['password']}}"
                                                                name="password" id="smtpPassword"
-                                                               placeholder="{{translate('ex')}}:123456"
+                                                               placeholder="{{translate('Ex')}}:123456"
                                                                data-hs-toggle-password-options='{
                                                                      "target": "#changePassTarget2",
                                                             "defaultClass": "tio-hidden-outlined",
@@ -206,9 +206,9 @@
 
                                         <div class="d-flex flex-wrap justify-content-end gap-10">
                                             <button type="reset"
-                                                    class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                                                    class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                                             <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                                    class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('save')}}</button>
+                                                    class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Save')}}</button>
                                             @else
                                                 <button type="submit"
                                                         class="btn btn--primary px-5">{{translate('configure')}}</button>
@@ -257,7 +257,7 @@
                                                            title="{{translate('enter_mailer_name')}}"></i>
                                                     </div>
                                                     <input type="text"
-                                                           placeholder="{{translate('ex').':'}}{{translate('alex')}}"
+                                                           placeholder="{{translate('Ex').':'}}{{translate('alex')}}"
                                                            class="form-control" name="name"
                                                            value="{{env('APP_MODE')=='demo' ? '' :$data_sendgrid['name']}}">
                                                 </div>
@@ -270,7 +270,7 @@
                                                            title="{{translate('enter_the_name_of_the_host_of_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="host"
-                                                           placeholder="{{translate('ex')}}:{{translate('smtp.mailtrap.io')}}"
+                                                           placeholder="{{translate('Ex')}}:{{translate('smtp.mailtrap.io')}}"
                                                            value="{{env('APP_MODE')=='demo' ? '' : $data_sendgrid['host']}}">
                                                 </div>
                                             </div>
@@ -282,7 +282,7 @@
                                                            title="{{translate('enter_the_driver_for_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="driver"
-                                                           placeholder="{{translate('ex')}}:{{translate('smtp')}}"
+                                                           placeholder="{{translate('Ex')}}:{{translate('smtp')}}"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['driver']}}">
                                                 </div>
                                             </div>
@@ -294,7 +294,7 @@
                                                            title="{{translate('enter_the_port_number_for_your_mailing_service')}}"></i>
                                                     </div>
                                                     <input type="text" class="form-control" name="port"
-                                                           placeholder="{{translate('ex').':'.'587'}}"
+                                                           placeholder="{{translate('Ex').':'.'587'}}"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['port']}}">
                                                 </div>
                                             </div>
@@ -302,11 +302,11 @@
                                                 <div class="form-group">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
                                                         <label
-                                                            class="title-color mb-0">{{translate('username')}}</label>
+                                                            class="title-color mb-0">{{translate('Username')}}</label>
                                                         <i class="tio-info-outined" data-toggle="tooltip"
                                                            title="{{translate('enter_the_username_of_your_account')}}"></i>
                                                     </div>
-                                                    <input type="text" placeholder="{{translate('ex').':'.'yahoo'}}"
+                                                    <input type="text" placeholder="{{translate('Ex').':'.'yahoo'}}"
                                                            class="form-control" name="username"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['username']}}">
                                                 </div>
@@ -315,12 +315,12 @@
                                                 <div class="form-group">
                                                     <div class="d-flex align-items-center gap-2 mb-2">
                                                         <label
-                                                            class="title-color mb-0">{{translate('email_ID')}}</label>
+                                                            class="title-color mb-0">{{translate('Email_ID')}}</label>
                                                         <i class="tio-info-outined" data-toggle="tooltip"
                                                            title="{{translate('enter_your_email_ID')}}"></i>
                                                     </div>
                                                     <input type="text"
-                                                           placeholder="{{translate('ex').':'}}{{translate('example@example.com')}}"
+                                                           placeholder="{{translate('Ex').':'}}{{translate('example@example.com')}}"
                                                            class="form-control" name="email"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['email_id']}}">
                                                 </div>
@@ -334,7 +334,7 @@
                                                            title="{{translate('enter_the_encryption_type')}}"></i>
                                                     </div>
                                                     <input type="text"
-                                                           placeholder="{{translate('ex').':'}}{{translate('tls')}}"
+                                                           placeholder="{{translate('Ex').':'}}{{translate('tls')}}"
                                                            class="form-control" name="encryption"
                                                            value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['encryption']}}">
                                                 </div>
@@ -351,7 +351,7 @@
                                                     <div class="input-group input-group-merge">
                                                         <input type="password" class="js-toggle-password form-control"
                                                                name="password" id="sendGridPassword"
-                                                               placeholder="{{translate('ex')}}:123456"
+                                                               placeholder="{{translate('Ex')}}:123456"
                                                                value="{{env('APP_MODE')=='demo'?'':$data_sendgrid['password']}}"
                                                                data-hs-toggle-password-options='{
                                                                      "target": "#changePassTarget",
@@ -372,9 +372,9 @@
 
                                         <div class="d-flex flex-wrap justify-content-end gap-10">
                                             <button type="reset"
-                                                    class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                                                    class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                                             <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                                    class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('save')}}</button>
+                                                    class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Save')}}</button>
                                             @else
                                                 <button type="submit"
                                                         class="btn btn--primary px-5">{{translate('configure')}}</button>
@@ -394,14 +394,14 @@
                                 <div class="col-xl-8 col-lg-10">
                                     <div class="d-flex align-items-end gap-2 gap-sm-3">
                                         <div class="flex-grow-1">
-                                            <label class="title-color">{{translate('email')}}</label>
+                                            <label class="title-color">{{translate('Email')}}</label>
                                             <input type="email" id="test-email" class="form-control"
-                                                   placeholder="{{translate('ex').':'.'jhon@email.com'}}">
+                                                   placeholder="{{translate('Ex').':'.'jhon@email.com'}}">
                                         </div>
                                         <button type="button" class="btn btn--primary px-sm-5" data-toggle="modal"
                                                 data-target="#send-mail-confirmation-modal">
                                             <i class="tio-telegram"></i>
-                                            {{translate('send_mail')}}
+                                            {{translate('send_Mail')}}
                                         </button>
                                     </div>
                                 </div>
@@ -433,7 +433,7 @@
                                         <li>
                                             {{translate('contact_your_email_service_provider_or_IT_administrator_to_obtain_the_SMTP_server_details_such_as_hostname_port_username_and_password').'.'}}
                                         </li>
-                                        <li>{{translate('note').':'}}
+                                        <li>{{translate('Note').':'}}
                                              {{translate('if_you`re_not_sure_where_to_find_these_details,_check_the_email_provider`s_documentation_or_support_resources_for_guidance').'.'}}
                                         </li>
                                     </ul>
@@ -464,7 +464,7 @@
                                         </li>
                                         <li>{{translate('if_successful,_you_will_see_a_confirmation_message_indicating_that_the_connection_is_working_fine').'.'}} </li>
                                         <li>{{translate('if_not,_double-check_your_SMTP_settings_and_try_again').'.'}}</li>
-                                        <li>{{translate('note').':'.translate('if_you_are_unsure_about_the_SMTP_settings,_contact_your_email_service_provider_or_IT_administrator_for_assistance').'.'}}
+                                        <li>{{translate('Note').':'.translate('if_you_are_unsure_about_the_SMTP_settings,_contact_your_email_service_provider_or_IT_administrator_for_assistance').'.'}}
                                         </li>
                                     </ul>
                                 </div>
@@ -506,7 +506,7 @@
                         <p class="text-muted">{{translate('a_test_mail_will_be_send_to_your_email_to')}}
                             <br> {{translate('confirm_it_works_perfectly').'.'}}</p>
                         <button type="button" id="test-mail-send"
-                                class="btn btn--primary px-5 px-sm-10 text-capitalize">{{translate('send_mail')}}</button>
+                                class="btn btn--primary px-5 px-sm-10 text-capitalize">{{translate('send_Mail')}}</button>
                     </div>
                 </div>
             </div>

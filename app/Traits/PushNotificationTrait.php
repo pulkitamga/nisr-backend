@@ -31,7 +31,7 @@ trait PushNotificationTrait
                 if ($fcmToken && $value) {
                     $value = $this->textVariableDataFormat(value: $value, key: $key, userName: "{$order->customer?->f_name} {$order->customer?->l_name}", shopName: $order->seller?->shop?->name, deliveryManName: "{$order->deliveryMan?->f_name} {$order->deliveryMan?->l_name}", time: now()->diffForHumans(), orderId: $order->id);
                     $postData = [
-                        'title' => translate('order'),
+                        'title' => translate('Order'),
                         'description' => $value,
                         'order_id' => $order['id'],
                         'order_details_id' => $data['order_details_id'] ?? '',
@@ -54,7 +54,7 @@ trait PushNotificationTrait
                     if ($value_seller) {
                         $value_seller = $this->textVariableDataFormat(value: $value_seller, key: $key, userName: "{$order->customer?->f_name} {$order->customer?->l_name}", shopName: $order->seller?->shop?->name, deliveryManName: "{$order->deliveryMan?->f_name} {$order->deliveryMan?->l_name}", time: now()->diffForHumans(), orderId: $order->id);
                         $postData = [
-                            'title' => translate('order'),
+                            'title' => translate('Order'),
                             'description' => $value_seller,
                             'order_id' => $order['id'],
                             'order_details_id' => $data['order_details_id'] ?? '',
@@ -82,7 +82,7 @@ trait PushNotificationTrait
                 if ($value_delivery_man) {
                     $value_delivery_man = $this->textVariableDataFormat(value: $value_delivery_man, key: $key, userName: "{$order->customer?->f_name} {$order->customer?->l_name}", shopName: $order->seller?->shop?->name, deliveryManName: "{$order->deliveryMan?->f_name} {$order->deliveryMan?->l_name}", time: now()->diffForHumans(), orderId: $order->id);
                     $postData = [
-                        'title' => translate('order'),
+                        'title' => translate('Order'),
                         'description' => $value_delivery_man,
                         'order_id' => $order['id'],
                         'deliveryman_charge' => usdToDefaultCurrency(amount: $order['deliveryman_charge']) ?? 0,
@@ -139,7 +139,7 @@ trait PushNotificationTrait
                         $messageFromType = '';
                     }
                     $data = [
-                        'title' => translate('message'),
+                        'title' => translate('Message'),
                         'description' => $value,
                         'order_id' => '',
                         'image' => '',

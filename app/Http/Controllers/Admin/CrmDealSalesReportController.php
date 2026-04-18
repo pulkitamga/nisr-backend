@@ -221,7 +221,7 @@ class CrmDealSalesReportController extends BaseController
                 'employee_wholesale_won_sales' => $chartRows->pluck('wholesale_won_sales')->map(fn($value) => round((float)$value, 2))->all(),
                 'status_labels' => [translate('won'), translate('lost')],
                 'status_values' => [$summary['won_count'], $summary['lost_count']],
-                'sales_type_labels' => [translate('retail'), translate('wholesale')],
+                'sales_type_labels' => [translate('Retail'), translate('Wholesale')],
                 'sales_type_values' => [round($summary['retail_won_sales'], 2), round($summary['wholesale_won_sales'], 2)],
             ],
             'employeeChart' => $employeeChart,
@@ -303,9 +303,9 @@ class CrmDealSalesReportController extends BaseController
 
         return collect($rows)->map(function ($row) {
             $row->department_id = (int)$row->department_id;
-            $row->department_name = $row->department_name ?: translate('unassigned');
+            $row->department_name = $row->department_name ?: translate('Unassigned');
             $row->employee_id = (int)$row->employee_id;
-            $row->employee_name = $row->employee_name ?: translate('unassigned');
+            $row->employee_name = $row->employee_name ?: translate('Unassigned');
             $row->retail_won_count = (int)$row->retail_won_count;
             $row->wholesale_won_count = (int)$row->wholesale_won_count;
             $row->retail_lost_count = (int)$row->retail_lost_count;

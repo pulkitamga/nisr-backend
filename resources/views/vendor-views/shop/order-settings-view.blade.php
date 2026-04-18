@@ -21,13 +21,13 @@
                             <div class="card-header">
                                 <h5 class="text-capitalize mb-0">
                                     <i class="tio-dollar-outlined"></i>
-                                    {{translate('minimum_order_amount')}}
+                                    {{translate('minimum_Order_Amount')}}
                                 </h5>
                             </div>
                             <div class="card-body text-start">
                                 <div class="mb-3">
                                     <label class="title-color" for="minimum_order_amount">
-                                        {{translate('amount')}} ({{ getCurrencySymbol() }})
+                                        {{translate('Amount')}} ({{ getCurrencySymbol() }})
                                     </label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="top"
@@ -44,7 +44,7 @@
 
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" id="submit"
-                                            class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                            class="btn btn--primary px-4">{{translate('Submit')}}</button>
                                 </div>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                             <div class="card-header">
                                 <h5 class="text-capitalize mb-0">
                                     <i class="tio-dollar-outlined"></i>
-                                    {{translate('free_delivery_over_amount')}}
+                                    {{translate('free_Delivery_Over_Amount')}}
                                 </h5>
                             </div>
                             <div class="card-body text-start">
@@ -111,14 +111,14 @@
                                         </span>
                                             </label>
                                             <input type="number" class="form-control" name="free_delivery_over_amount" id="free-delivery-over-amount" min="0"
-                                                   placeholder="{{translate('ex').':'.translate('10')}}"
+                                                   placeholder="{{translate('Ex').':'.translate('10')}}"
                                                    value="{{ usdToDefaultCurrency($vendor['free_delivery_over_amount']) ?? 0 }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" id="submit"
-                                            class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                            class="btn btn--primary px-4">{{translate('Submit')}}</button>
                                 </div>
                             </div>
                         </div>

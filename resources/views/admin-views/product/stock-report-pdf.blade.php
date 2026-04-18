@@ -118,9 +118,9 @@
 <div class="report-header">
     <div class="header-title">{{ translate('stock_report') }}</div>
     <div class="header-meta">
-        {{ translate('product') }}: {{ $product->name }} |
-        {{ translate('variation') }}: {{ $variation ?? translate('Default') }} |
-        {{ translate('current_stock') }}: {{ $currentStock }}
+        {{ translate('Product') }}: {{ $product->name }} |
+        {{ translate('Variation') }}: {{ $variation ?? translate('Default') }} |
+        {{ translate('Current_Stock') }}: {{ $currentStock }}
     </div>
     
 </div>
@@ -198,18 +198,18 @@
     <table>
         <thead>
         <tr>
-            <th>{{ translate('date') }}</th>
-            <th>{{ translate('type') }}</th>
-            <th>{{ translate('quantity') }}</th>
-            <th>{{ translate('category') }}</th>
-            <th>{{ translate('reference') }}</th>
+            <th>{{ translate('DATE') }}</th>
+            <th>{{ translate('Type') }}</th>
+            <th>{{ translate('Quantity') }}</th>
+            <th>{{ translate('Category') }}</th>
+            <th>{{ translate('Reference') }}</th>
         </tr>
         </thead>
         <tbody>
         @forelse($historyRows as $history)
             <tr>
                 <td>{{ \Carbon\Carbon::parse($history['date'])->format('Y-m-d H:i') }}</td>
-                <td>{{ strtoupper((string)$history['type']) === 'IN' ? translate('Stock In') : translate('Stock Out') }}</td>
+                <td>{{ strtoupper((string)$history['type']) === 'IN' ? translate('stock_in') : translate('stock_out') }}</td>
                 <td>{{ strtoupper((string)$history['type']) === 'IN' ? '+' : '-' }}{{ (int)$history['quantity'] }}</td>
                 <td>{{ $history['category'] }}</td>
                 <td>
@@ -218,8 +218,8 @@
 
                     @if ($history['from_branch'] || $history['to_branch'])
                         <br>
-                        {{ $history['from_branch'] ? (translate('from') . ': ' . $history['from_branch']) : '' }}
-                        {{ $history['to_branch'] ? (' | ' . translate('to') . ': ' . $history['to_branch']) : '' }}
+                        {{ $history['from_branch'] ? (translate('From') . ': ' . $history['from_branch']) : '' }}
+                        {{ $history['to_branch'] ? (' | ' . translate('To') . ': ' . $history['to_branch']) : '' }}
                     @endif
                 </td>
             </tr>

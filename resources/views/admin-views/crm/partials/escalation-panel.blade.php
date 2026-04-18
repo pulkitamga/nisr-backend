@@ -60,7 +60,7 @@
                             <div class="mb-2">
                                 <label class="form-label">{{ translate('Change Escalation Status') }}</label>
                                 <select class="form-control" name="status" required>
-                                    <option value="">{{ translate('Select Status') }}</option>
+                                    <option value="">{{ translate('select_status') }}</option>
                                     @foreach($nextStatuses as $nextStatus)
                                         <option value="{{ $nextStatus }}">{{ $resolveStatusLabel($nextStatus) }}</option>
                                     @endforeach

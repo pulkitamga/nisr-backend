@@ -14,7 +14,7 @@
                 </h2>
                 <div class="col-sm-auto">
                     <a class="btn btn--primary" href="{{route('admin.dashboard.index')}}">
-                        <i class="tio-home me-1"></i> {{translate('dashboard')}}
+                        <i class="tio-home me-1"></i> {{translate('Dashboard')}}
                     </a>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                         >
                             <img id="viewer"    class="avatar-img"
                                  src="{{getStorageImages(path:$admin->image_full_url, type:'backend-profile')}}"
-                                 alt="{{translate('image')}}">
+                                 alt="{{translate('Image')}}">
                             <label class="change-profile-image-icon" for="custom-file-upload">
                                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-photo.png') }}" alt="">
                             </label>
@@ -90,7 +90,7 @@
                                 <div class="col-md-4">
                                     <div class="d-flex align-items-center mb-2">
                                         <label for="firstNameLabel" class="input-label mb-0">
-                                            {{translate('full_name')}}
+                                            {{translate('full_Name')}}
                                             <span class="text-danger px-1">*</span>
                                         </label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="" data-original-title="{{ translate('this_will_be_displayed_as_your_profile_name') }}">
@@ -101,7 +101,7 @@
                                     <div class="mb-3">
                                         <div class="input-group input-group-sm-down-break">
                                             <input type="text" class="form-control" name="name" id="firstNameLabel"
-                                                   placeholder="{{ translate('ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
+                                                   placeholder="{{ translate('Ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
                                                    value="{{ $admin->name }}">
                                         </div>
                                     </div>
@@ -120,7 +120,7 @@
                                     <div class="mb-3">
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                                type="tel" id="exampleInputPhone" value="{{$admin->phone ?? old('phone')}}"
-                                               placeholder="{{ translate('ex') }}: {{ translate('123456789') }}" required>
+                                               placeholder="{{ translate('Ex') }}: {{ translate('123456789') }}" required>
                                         <input type="hidden" class="country-picker-phone-number w-50" value="{{$admin->phone}}" name="phone" readonly>
                                     </div>
                                 </div>
@@ -128,7 +128,7 @@
                                 <div class="col-md-4">
                                     <div class="d-flex align-items-center mb-2">
                                         <label for="newEmailLabel" class="input-label mb-0">
-                                            {{translate('email')}}
+                                            {{translate('Email')}}
                                             <span class="text-danger px-1">*</span>
                                         </label>
 
@@ -139,7 +139,7 @@
                                     <div class="mb-3">
                                         <input type="email" class="form-control" name="email" id="newEmailLabel"
                                                value="{{$admin->email}}"
-                                               placeholder="{{ translate('ex') }}: {{ 'admin@admin.com' }}">
+                                               placeholder="{{ translate('Ex') }}: {{ 'admin@admin.com' }}">
                                     </div>
                                 </div>
 

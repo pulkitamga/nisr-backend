@@ -13,7 +13,7 @@
                             </div>
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                               placeholder="{{ translate('search') }}..." aria-label="Search by Order ID" value="{{ request('searchValue') }}">
+                               placeholder="{{ translate('Search') }}..." aria-label="Search by Order ID" value="{{ request('searchValue') }}">
                         <button type="submit" class="btn btn--primary input-group-text">
                             {{ translate('Search') }}
                         </button>
@@ -36,28 +36,28 @@
                     class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
-                        <th>{{ translate('sl') }}</th>
+                        <th>{{ translate('SL') }}</th>
                         <th>
                             <div class="d-flex">
                                 <div class="w-60px">{{translate('Image')}}</div>
-                                <div>{{translate('name')}}</div>
+                                <div>{{translate('Name')}}</div>
                             </div>
                         </th>
                         <th class="text-center">
-                            {{ translate('unit_price') }}
+                            {{ translate('Unit_Price') }}
                             ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                         </th>
                         @if(isset($clearanceConfig->discount_type) && $clearanceConfig->discount_type == 'product_wise')
-                            <th class="text-center">{{ translate('discount_amount') }} </th>
+                            <th class="text-center">{{ translate('Discount_Amount') }} </th>
                         @else
-                            <th class="text-center">{{ translate('discount_amount') . ' (%)' }} </th>
+                            <th class="text-center">{{ translate('Discount_Amount') . ' (%)' }} </th>
                         @endif
                         <th class="text-center">
                             {{ translate('discount_price') }}
                             ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                         </th>
-                        <th class="text-center">{{ translate('status') }}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{ translate('Status') }}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                 </table>
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                               placeholder="{{ translate('search_by_product_name') }}" aria-label="Search by Order ID" value="{{ request('searchValue') }}">
+                               placeholder="{{ translate('search_by_Product_Name') }}" aria-label="Search by Order ID" value="{{ request('searchValue') }}">
                         <button type="submit" class="btn btn--primary input-group-text">
                             {{ translate('Search') }}
                         </button>
@@ -127,28 +127,28 @@
                     class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
-                        <th>{{ translate('sl') }}</th>
+                        <th>{{ translate('SL') }}</th>
                         <th>
                             <div class="d-flex">
                                 <div class="w-60px">{{translate('Image')}}</div>
-                                <div>{{ translate('name') }}</div>
+                                <div>{{ translate('Name') }}</div>
                             </div>
                         </th>
                         <th class="text-center">
-                            {{ translate('unit_price') }}
+                            {{ translate('Unit_Price') }}
                             ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                         </th>
                         @if(isset($clearanceConfig->discount_type) && $clearanceConfig->discount_type == 'product_wise')
-                            <th class="text-center">{{ translate('discount_amount') }} </th>
+                            <th class="text-center">{{ translate('Discount_Amount') }} </th>
                         @else
-                            <th class="text-center">{{ translate('discount_amount') . ' (%)' }} </th>
+                            <th class="text-center">{{ translate('Discount_Amount') . ' (%)' }} </th>
                         @endif
                         <th class="text-center">
                             {{ translate('discount_price') }}
                             ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                         </th>
-                        <th class="text-center">{{ translate('status') }}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{ translate('Status') }}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -168,19 +168,19 @@
                                                 @if($clearanceProduct?->product->product_type != 'digital')
                                                     <span class="parent">
                                                         <span class="opacity--70">
-                                                            {{ translate('current_stock') }}
+                                                            {{ translate('Current_Stock') }}
                                                         </span>
                                                         <span>{{ $clearanceProduct?->product?->current_stock }}</span>
                                                     </span>
                                                 @endif
                                                 <span class="parent text-truncate">
-                                                    <span class="opacity--70">{{ translate('category') }}: </span>
+                                                    <span class="opacity--70">{{ translate('Category') }}: </span>
                                                     <span>{{ $clearanceProduct?->product?->category->name ?? translate('not_found') }}</span>
                                                 </span>
                                             </div>
                                             @if($clearanceProduct?->product?->product_type !== 'digital')
                                                 <span class="parent text-truncate">
-                                                        <span class="opacity--70">{{translate('brand')}}: </span><span>{{ $clearanceProduct?->product?->brand->name ?? translate('not_found') }}</span>
+                                                        <span class="opacity--70">{{translate('Brand')}}: </span><span>{{ $clearanceProduct?->product?->brand->name ?? translate('not_found') }}</span>
                                                     </span>
                                             @endif
                                         </div>

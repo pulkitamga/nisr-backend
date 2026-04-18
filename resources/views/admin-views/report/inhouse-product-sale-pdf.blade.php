@@ -244,13 +244,13 @@
             <p>{{ translate('report_period') }}: {{ $filters['from'] }} - {{ $filters['to'] }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->format('d M Y, h:i A') }}</p>
             @if (!empty($filters['states'] ?? []))
-                <p>{{ translate('state') }}: {{ implode(', ', $filters['states']) }}</p>
+                <p>{{ translate('State') }}: {{ implode(', ', $filters['states']) }}</p>
             @endif
             @if (!empty($filters['cities'] ?? []))
-                <p>{{ translate('city') }}: {{ implode(', ', $filters['cities']) }}</p>
+                <p>{{ translate('City') }}: {{ implode(', ', $filters['cities']) }}</p>
             @endif
             @if (!empty($filters['areas'] ?? []))
-                <p>{{ translate('area') }}: {{ implode(', ', $filters['areas']) }}</p>
+                <p>{{ translate('Area') }}: {{ implode(', ', $filters['areas']) }}</p>
             @endif
             @if ($locationFiltersApplied ?? false)
                 <p>{{ translate('wholesale_is_excluded_when_retail_address_filters_are_applied') }}</p>
@@ -295,22 +295,22 @@
                 <td>
                     <div class="kpi-label">{{ translate('total_sales') }}</div>
                     <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['total_amount']), currencyCode: getCurrencyCode()) }}</div>
-                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['total_qty'] }}</div>
+                    <div class="kpi-meta">{{ translate('QTY') }}: {{ $summary['total_qty'] }}</div>
                  </td>
                  <td>
                     <div class="kpi-label">{{ translate('POS') }}</div>
                     <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['pos_amount']), currencyCode: getCurrencyCode()) }}</div>
-                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['pos_qty'] }}</div>
+                    <div class="kpi-meta">{{ translate('QTY') }}: {{ $summary['pos_qty'] }}</div>
                  </td>
                  <td>
                     <div class="kpi-label">{{ translate('online') }}</div>
                     <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['online_amount']), currencyCode: getCurrencyCode()) }}</div>
-                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['online_qty'] }}</div>
+                    <div class="kpi-meta">{{ translate('QTY') }}: {{ $summary['online_qty'] }}</div>
                  </td>
                  <td>
-                    <div class="kpi-label">{{ translate('wholesale') }}</div>
+                    <div class="kpi-label">{{ translate('Wholesale') }}</div>
                     <div class="kpi-value">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['wholesale_amount']), currencyCode: getCurrencyCode()) }}</div>
-                    <div class="kpi-meta">{{ translate('qty') }}: {{ $summary['wholesale_qty'] }}</div>
+                    <div class="kpi-meta">{{ translate('QTY') }}: {{ $summary['wholesale_qty'] }}</div>
                  </td>
               </tr>
          </table>
@@ -429,13 +429,13 @@
                 <table class="matrix-table">
                     <thead>
                          <tr>
-                            <th style="width: 5%;">{{ translate('sl') }}</th>
+                            <th style="width: 5%;">{{ translate('SL') }}</th>
                             <th style="width: 12%;">{{ translate('period') }}</th>
-                            <th style="width: 25%;">{{ translate('product') }}</th>
-                            <th style="width: 20%;">{{ translate('branch') }}</th>
-                            <th style="width: 10%;">{{ translate('qty') }}</th>
-                            <th style="width: 10%;">{{ translate('orders') }}</th>
-                            <th style="width: 18%;">{{ translate('sales') }}</th>
+                            <th style="width: 25%;">{{ translate('Product') }}</th>
+                            <th style="width: 20%;">{{ translate('Branch') }}</th>
+                            <th style="width: 10%;">{{ translate('QTY') }}</th>
+                            <th style="width: 10%;">{{ translate('Orders') }}</th>
+                            <th style="width: 18%;">{{ translate('Sales') }}</th>
                          </tr>
                     </thead>
                     <tbody>
@@ -466,7 +466,7 @@
                         @empty
                              <tr>
                                 <td colspan="7" style="text-align: center; padding: 15px;">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                  </td>
                              </tr>
                         @endforelse
@@ -479,9 +479,9 @@
     <div class="page-break">
         @php
             $locationSections = [
-                ['title' => translate('state_sales_summary'), 'column' => translate('state'), 'data' => $retailStateRows],
-                ['title' => translate('city_sales_summary'), 'column' => translate('city'), 'data' => $retailCityRows],
-                ['title' => translate('area_sales_summary'), 'column' => translate('area'), 'data' => $retailAreaRows],
+                ['title' => translate('state_sales_summary'), 'column' => translate('State'), 'data' => $retailStateRows],
+                ['title' => translate('city_sales_summary'), 'column' => translate('City'), 'data' => $retailCityRows],
+                ['title' => translate('area_sales_summary'), 'column' => translate('Area'), 'data' => $retailAreaRows],
             ];
         @endphp
 
@@ -494,11 +494,11 @@
                 <table class="matrix-table">
                     <thead>
                         <tr>
-                            <th style="width: 8%;">{{ translate('sl') }}</th>
+                            <th style="width: 8%;">{{ translate('SL') }}</th>
                             <th style="width: 34%;">{{ $section['column'] }}</th>
-                            <th style="width: 16%;">{{ translate('qty') }}</th>
-                            <th style="width: 16%;">{{ translate('orders') }}</th>
-                            <th style="width: 26%;">{{ translate('sales') }}</th>
+                            <th style="width: 16%;">{{ translate('QTY') }}</th>
+                            <th style="width: 16%;">{{ translate('Orders') }}</th>
+                            <th style="width: 26%;">{{ translate('Sales') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -515,7 +515,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" style="text-align: center; padding: 15px;">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                         @endforelse

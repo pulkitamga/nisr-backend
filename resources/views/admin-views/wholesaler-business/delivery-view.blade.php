@@ -141,14 +141,14 @@
                         <table class="table table-hover align-middle mb-0 bg-white shadow-sm rounded">
                             <thead class="bg-light text-muted border-bottom">
                                 <tr class="text-nowrap">
-                                    <th class="fw-semibold">{{ translate('sl') }}</th>
-                                    <th class="fw-semibold">{{ translate('date') }}</th>
-                                    <th class="fw-semibold">{{ translate('product_name') }}</th>
-                                    <th class="fw-semibold">{{ translate('variation') }}</th>
+                                    <th class="fw-semibold">{{ translate('SL') }}</th>
+                                    <th class="fw-semibold">{{ translate('DATE') }}</th>
+                                    <th class="fw-semibold">{{ translate('Product_name') }}</th>
+                                    <th class="fw-semibold">{{ translate('Variation') }}</th>
                                     <th class="fw-semibold">{{ translate('requested_qty') }}</th>
                                     <th class="fw-semibold">{{ translate('qty_sent') }}</th>
-                                    <th class="fw-semibold">{{ translate('remaining') }}</th>
-                                    <th class="fw-semibold text-center">{{ translate('action') }}</th>
+                                    <th class="fw-semibold">{{ translate('Remaining') }}</th>
+                                    <th class="fw-semibold text-center">{{ translate('Action') }}</th>
 
                                 </tr>
                             </thead>
@@ -158,7 +158,7 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($delivery->created_at)->format('d/m/Y') }}</span></td>
                                     <td>{{ $delivery->product->getTranslatedField('name') ?? __('N/A') }}</td>
-                                    <td>{{ $delivery->product_variation_type ?? __('No Variation') }}</td>
+                                    <td>{{ $delivery->product_variation_type ?? __('no_variation') }}</td>
                                     <td>{{ $delivery->product_quantity }}</td>
                                     <td>{{ $delivery->quantity_sent }}</td>
                                     <td>{{ $delivery->remaining }}</td>
@@ -219,7 +219,7 @@
                                         <input type="hidden" name="confirmed_order_id" id="modalConfirmedOrderId">
 
                                         <div class="mb-3">
-                                            <label class="form-label fw-semibold">{{ translate('product') }}</label>
+                                            <label class="form-label fw-semibold">{{ translate('Product') }}</label>
                                             <div class="form-control-plaintext" id="modalProductName"></div>
                                         </div>
 
@@ -233,13 +233,13 @@
                                                 <div class="form-control-plaintext" id="modalSentQty"></div>
                                             </div>
                                             <div class="col">
-                                                <label class="form-label fw-semibold">{{ translate('remaining') }}</label>
+                                                <label class="form-label fw-semibold">{{ translate('Remaining') }}</label>
                                                 <div class="form-control-plaintext" id="modalRemainingQty"></div>
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="branchSelect" class="form-label fw-semibold">{{ translate('select_branch') }}</label>
+                                            <label for="branchSelect" class="form-label fw-semibold">{{ translate('Select_Branch') }}</label>
                                             <select class="form-control select2" id="branchSelect" name="branch_id" required>
                                                 <option value="">{{ translate('choose_branch') }}</option>
                                             </select>
@@ -273,15 +273,15 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="deliveryStatusSelect" class="form-label fw-semibold">{{ translate('delivery_status') }}</label>
+                                            <label for="deliveryStatusSelect" class="form-label fw-semibold">{{ translate('Delivery_Status') }}</label>
                                             <select class="form-control" id="deliveryStatusSelect" name="delivery_status" required>
                                                 <option value="partials">{{ translate('partial') }}</option>
-                                                <option value="delivered">{{ translate('delivered') }}</option>
+                                                <option value="delivered">{{ translate('Delivered') }}</option>
                                             </select>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="note" class="form-label fw-semibold">{{ translate('note') }}</label>
+                                            <label for="note" class="form-label fw-semibold">{{ translate('Note') }}</label>
                                             <textarea class="form-control" id="deliveryNote" name="note" rows="3"
                                                 placeholder="{{ translate('enter_any_note_about_this_delivery') }}"></textarea>
                                         </div>
@@ -292,7 +292,7 @@
                                             <i class="bi bi-box-arrow-up"></i> {{ translate('submit_delivery') }}
                                         </button>
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                            <i class="bi bi-x-circle"></i> {{ translate('cancel') }}
+                                            <i class="bi bi-x-circle"></i> {{ translate('Cancel') }}
                                         </button>
                                     </div>
                                 </div>
@@ -311,14 +311,14 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted">
                     <tr class="text-nowrap">
-                        <th class="fw-semibold">{{ translate('sl') }}</th>
-                        <th class="fw-semibold">{{ translate('date') }}</th>
-                        <th class="fw-semibold">{{ translate('product') }}</th>
-                        <th class="fw-semibold">{{ translate('variation') }}</th>
+                        <th class="fw-semibold">{{ translate('SL') }}</th>
+                        <th class="fw-semibold">{{ translate('DATE') }}</th>
+                        <th class="fw-semibold">{{ translate('Product') }}</th>
+                        <th class="fw-semibold">{{ translate('Variation') }}</th>
                         <th class="fw-semibold">{{ translate('qty_sent') }}</th>
-                        <th class="fw-semibold">{{ translate('branch') }}</th>
-                        <th class="fw-semibold">{{ translate('note') }}</th>
-                        <th class="fw-semibold text-center">{{ translate('Csv') }}</th>
+                        <th class="fw-semibold">{{ translate('Branch') }}</th>
+                        <th class="fw-semibold">{{ translate('Note') }}</th>
+                        <th class="fw-semibold text-center">{{ translate('CSV') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -327,7 +327,7 @@
                         <td>{{ $deliveryLogs->firstItem() + $index }}</td>
                         <td><span class="bidi-ltr d-inline-block">{{ \Carbon\Carbon::parse($log->delivery_date)->format('d/m/Y') }}</span></td>
                         <td>{{ $log->product->getTranslatedField('name') ?? __('N/A') }}</td>
-                        <td>{{ $log->product_variation_type ?? __('No Variation') }}</td>
+                        <td>{{ $log->product_variation_type ?? __('no_variation') }}</td>
                         <td>{{ $log->quantity_sent }}</td>
                         <td>{{ $log->branch->branch_name ?? __('N/A') }}</td>
                         <td>{{ $log->note ?? '-' }}</td>
@@ -376,7 +376,7 @@
 
         $('#branchSelect').select2({
             dropdownParent: $('#addDeliveryModal'),
-            placeholder: @json(__('Select Branch')),
+            placeholder: @json(__('Select_Branch')),
             width: '100%'
         });
 
@@ -423,7 +423,7 @@
                 url: "{{ route('admin.wholesale.business.branch-list') }}",
                 method: 'GET',
                 success: function(branches) {
-                    $('#branchSelect').empty().append('<option value="">{{ __('Select Branch') }}</option>');
+                    $('#branchSelect').empty().append('<option value="">{{ __('Select_Branch') }}</option>');
                     branches.forEach(branch => {
                         $('#branchSelect').append(`<option value="${branch.id}">${branch.branch_name}</option>`);
                     });

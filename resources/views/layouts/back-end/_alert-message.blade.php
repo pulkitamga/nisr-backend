@@ -18,7 +18,7 @@
         <div class="alert alert--message-2 alert-dismissible fade show" id="demo-reset-warning">
             <img width="28" class="align-self-start" src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-2.png') }}" alt="">
             <div class="w-0">
-                <h6>{{ translate('warning').'!'}}</h6>
+                <h6>{{ translate('Warning').'!'}}</h6>
                 <span class="warning-message">
                     {{translate('though_it_is_a_demo_site').'.'.translate('_our_system_automatically_reset_after_one_hour_&_that_why_you_logged_out').'.'}}
                 </span>

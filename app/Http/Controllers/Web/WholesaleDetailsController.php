@@ -230,7 +230,7 @@ class   WholesaleDetailsController extends Controller
                 'error' => $exception->getMessage(),
             ]);
 
-            Toastr::error(translate('something_went_wrong'));
+            Toastr::error(translate('Something_went_wrong'));
             return redirect()->back();
         }
 

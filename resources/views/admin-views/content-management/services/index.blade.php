@@ -717,7 +717,7 @@
                             </div>
                             <div class="catalogue-toggle-wrap">
                                 <span class="{{ $headerSection->is_active ? 'catalogue-status-chip' : 'catalogue-status-chip catalogue-status-chip--muted' }}">
-                                    {{ $headerSection->is_active ? translate('active') : translate('inactive') }}
+                                    {{ $headerSection->is_active ? translate('Active') : translate('Inactive') }}
                                 </span>
                             </div>
                         </div>
@@ -751,7 +751,7 @@
                                 @endforeach
 
                                 <div class="catalogue-actions">
-                                    <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -820,7 +820,7 @@
                                 </div>
 
                                 <div class="catalogue-actions">
-                                    <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                 </div>
                             </form>
 
@@ -855,7 +855,7 @@
                                                 </div>
                                                 <div>
                                                     <div class="catalogue-meta-row">
-                                                        <span class="{{ $item->is_active ? 'catalogue-status-chip' : 'catalogue-status-chip catalogue-status-chip--muted' }}">{{ $item->is_active ? translate('active') : translate('inactive') }}</span>
+                                                        <span class="{{ $item->is_active ? 'catalogue-status-chip' : 'catalogue-status-chip catalogue-status-chip--muted' }}">{{ $item->is_active ? translate('Active') : translate('Inactive') }}</span>
                                                     </div>
                                                     <h3 class="catalogue-showcase-item__title">{{ $itemTitle !== '' ? $itemTitle : '-' }}</h3>
                                                     <div class="catalogue-showcase-item__copy">{{ $itemDescription !== '' ? \Illuminate\Support\Str::limit($itemDescription, 220) : translate('No_description_added_yet') }}</div>
@@ -930,7 +930,7 @@
                                 @endforeach
 
                                 <div class="catalogue-actions">
-                                    <button type="submit" class="btn btn-outline-primary">{{ translate('save_changes') }}</button>
+                                    <button type="submit" class="btn btn-outline-primary">{{ translate('save_Changes') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -956,7 +956,7 @@
                                         <div>
                                             <div class="catalogue-meta-row">
                                                 <span class="catalogue-type-chip">{{ $showcaseTypeLabels[$item->card_type] ?? ucfirst((string) $item->card_type) }}</span>
-                                                <span class="{{ $item->is_active ? 'catalogue-status-chip' : 'catalogue-status-chip catalogue-status-chip--muted' }}">{{ $item->is_active ? translate('active') : translate('inactive') }}</span>
+                                                <span class="{{ $item->is_active ? 'catalogue-status-chip' : 'catalogue-status-chip catalogue-status-chip--muted' }}">{{ $item->is_active ? translate('Active') : translate('Inactive') }}</span>
                                             </div>
                                             <h3 class="catalogue-showcase-item__title">{{ $itemTitle !== '' ? $itemTitle : '-' }}</h3>
                                             <div class="catalogue-showcase-item__copy">{{ $itemDescription !== '' ? \Illuminate\Support\Str::limit($itemDescription, 220) : translate('No_description_added_yet') }}</div>
@@ -1041,7 +1041,7 @@
                                         </div>
 
                                         <div class="catalogue-actions">
-                                            <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                            <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                         </div>
                                     </div>
 
@@ -1141,7 +1141,7 @@
                                                             <input type="checkbox" class="switcher_input" name="is_active" value="1" checked>
                                                             <span class="switcher_control"></span>
                                                         </label>
-                                                        <span class="catalogue-switch-label">{{ translate('active') }}</span>
+                                                        <span class="catalogue-switch-label">{{ translate('Active') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1150,7 +1150,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
-                                    <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -1239,7 +1239,7 @@
                                                                 <input type="checkbox" class="switcher_input" name="is_active" value="1" {{ $item->is_active ? 'checked' : '' }}>
                                                                 <span class="switcher_control"></span>
                                                             </label>
-                                                            <span class="catalogue-switch-label">{{ translate('active') }}</span>
+                                                            <span class="catalogue-switch-label">{{ translate('Active') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1248,7 +1248,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
-                                        <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                        <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -1343,7 +1343,7 @@
                                                             <input type="checkbox" class="switcher_input" name="is_active" value="1" checked>
                                                             <span class="switcher_control"></span>
                                                         </label>
-                                                        <span class="catalogue-switch-label">{{ translate('active') }}</span>
+                                                        <span class="catalogue-switch-label">{{ translate('Active') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1352,7 +1352,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
-                                    <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -1449,7 +1449,7 @@
                                                                 <input type="checkbox" class="switcher_input" name="is_active" value="1" {{ $item->is_active ? 'checked' : '' }}>
                                                                 <span class="switcher_control"></span>
                                                             </label>
-                                                            <span class="catalogue-switch-label">{{ translate('active') }}</span>
+                                                            <span class="catalogue-switch-label">{{ translate('Active') }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1458,7 +1458,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Cancel') }}</button>
-                                        <button type="submit" class="btn btn--primary">{{ translate('save_changes') }}</button>
+                                        <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                                     </div>
                                 </form>
                             </div>

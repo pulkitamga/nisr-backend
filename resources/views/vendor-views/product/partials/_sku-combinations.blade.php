@@ -45,7 +45,7 @@
                     <input type="number" name="price_{{ $combination['type'] }}"
                            value="{{ usdToDefaultCurrency(amount: $combination['price']) }}" min="0"
                            step="0.01"
-                           class="form-control" required placeholder="{{ translate('ex') }}: {{ translate('535') }}">
+                           class="form-control" required placeholder="{{ translate('Ex') }}: {{ translate('535') }}">
                 </td>
                 <td>
                     <input type="text" name="sku_{{ $combination['type'] }}" value="{{ $combination['sku'] }}"
@@ -54,7 +54,7 @@
                 <td>
                     <input type="number" name="qty_{{ $combination['type'] }}"
                            value="{{ $combination['qty'] }}" min="1" max="100000" step="1"
-                           class="form-control" placeholder="{{ translate('ex') }}: {{ translate('5') }}"
+                           class="form-control" placeholder="{{ translate('Ex') }}: {{ translate('5') }}"
                            required>
                 </td>
             </tr>

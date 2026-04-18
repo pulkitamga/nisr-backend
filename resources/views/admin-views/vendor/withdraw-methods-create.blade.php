@@ -8,7 +8,7 @@
             <div class="page-title-wrap d-flex justify-content-between flex-wrap align-items-center gap-3 mb-3">
                 <h2 class="page-title text-capitalize">
                     <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/withdraw-icon.png')}}" alt="">
-                    {{translate('withdrawal_methods')}}
+                    {{translate('Withdrawal_Methods')}}
                 </h2>
                 <button class="btn btn--primary" id="add-more-field">
                     <i class="tio-add"></i> {{translate('add_Fields')}}
@@ -35,10 +35,10 @@
                                             <option value="" selected disabled>{{translate('input_Field_Type').' '.'*'}}</option>
                                             <option value="string">{{translate('string')}}</option>
                                             <option value="number">{{translate('number')}}</option>
-                                            <option value="date">{{translate('date')}}</option>
+                                            <option value="date">{{translate('DATE')}}</option>
                                             <option value="password">{{translate('password')}}</option>
-                                            <option value="email">{{translate('email')}}</option>
-                                            <option value="phone">{{translate('phone')}}</option>
+                                            <option value="email">{{translate('Email')}}</option>
+                                            <option value="phone">{{translate('Phone')}}</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 col-12">
@@ -76,8 +76,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end">
-                            <button type="reset" class="btn btn--secondary mx-2">{{translate('reset')}}</button>
-                            <button type="submit" class="btn btn--primary demo_check">{{translate('submit')}}</button>
+                            <button type="reset" class="btn btn--secondary mx-2">{{translate('Reset')}}</button>
+                            <button type="submit" class="btn btn--primary demo_check">{{translate('Submit')}}</button>
                         </div>
                     </div>
                 </form>
@@ -85,19 +85,19 @@
         </div>
     </div>
     <span id="get-add-filed-text"
-          data-input-filed="{{translate('input_field_type')}}"
+          data-input-filed="{{translate('input_Field_Type')}}"
           data-string="{{translate('string')}}"
           data-number="{{translate('number')}}"
-          data-date="{{translate('date')}}"
+          data-date="{{translate('DATE')}}"
           data-password="{{translate('password')}}"
-          data-email="{{translate('email')}}"
-          data-phone="{{translate('phone')}}"
+          data-email="{{translate('Email')}}"
+          data-phone="{{translate('Phone')}}"
           data-field-name="{{translate('field_name')}}"
           data-placeholder-text="{{translate('placeholder_text')}}"
           data-required="{{translate('this_field_required')}}"
-          data-remove="{{translate('remove')}}"
+          data-remove="{{translate('Remove')}}"
           data-reached-maximum="{{translate('reached_maximum')}}"
-          data-confirm="{{translate('ok')}}"
+          data-confirm="{{translate('OK')}}"
     >
     </span>
 @endsection

@@ -36,11 +36,11 @@
                         <img src="{{dynamicAsset('public/assets/back-end/img/idea.png')}}" alt="">
                         @if(env('APP_MODE') == 'demo')
                             <div class="w-0 flex-grow">
-                                {{ translate('the_robots.txt_editor_lets_you_tell_search_engines_which_parts_of_your_website_they_should_or_should_not_crawl.') }} {{ translate('please_note') }}:{{ translate('this_feature_is_disabled_for_demo.') }}
+                                {{ translate('the_robots.txt_editor_lets_you_tell_search_engines_which_parts_of_your_website_they_should_or_should_not_crawl.') }} {{ translate('Please_Note') }}:{{ translate('this_feature_is_disabled_for_demo.') }}
                             </div>
                         @else
                             <div class="w-0 flex-grow">
-                                {{ translate('the_robots.txt_editor_lets_you_tell_search_engines_which_parts_of_your_website_they_should_or_should_not_crawl.') }} {{ translate('please_note') }}:{{ translate('the_system_will_automatically_generate_a_robot.txt_for_your_site.') }} {{ translate('you_do_not_have_to_create_it_manually.') }} {{ translate('but_you_can_edit_or_modify_this_robots.txt.') }}
+                                {{ translate('the_robots.txt_editor_lets_you_tell_search_engines_which_parts_of_your_website_they_should_or_should_not_crawl.') }} {{ translate('Please_Note') }}:{{ translate('the_system_will_automatically_generate_a_robot.txt_for_your_site.') }} {{ translate('you_do_not_have_to_create_it_manually.') }} {{ translate('but_you_can_edit_or_modify_this_robots.txt.') }}
                             </div>
                         @endif
                     </div>
@@ -52,9 +52,9 @@
                         <textarea class="form-control" name="robot_text" rows="5">{{$content}}</textarea>
                     </div>
                     <div class="btn--container">
-                        <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
+                        <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
                         <button type="{{ env('APP_MODE') == 'demo' ? 'button' : 'submit' }}" class="btn btn--primary {{env('APP_MODE')!='demo'? '' : 'call-demo'}}">
-                            {{ translate('submit') }}
+                            {{ translate('Submit') }}
                         </button>
                     </div>
                 </form>

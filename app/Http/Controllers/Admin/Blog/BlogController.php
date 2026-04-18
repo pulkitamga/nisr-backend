@@ -95,7 +95,7 @@ class BlogController extends Controller
     {
         $this->businessSettingRepo->updateOrInsert(type: 'blog_feature_title', value: json_encode($request['title'] ?? []));
         $this->businessSettingRepo->updateOrInsert(type: 'blog_feature_sub_title', value: json_encode($request['sub_title'] ?? []));
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -240,7 +240,7 @@ class BlogController extends Controller
             'redirect' => route('admin.blog.view'),
             'message' => $request->is_draft
                 ? translate('Blog drafted successfully')
-                : translate('Blog published successfully'),
+                : translate('Blog_published_successfully'),
         ]);
     }
 

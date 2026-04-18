@@ -18,7 +18,7 @@ $defaultLanguage = $languages[0] ?? 'en';
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" width="20" alt="">
-            {{translate('pages')}}
+            {{translate('Pages')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -41,11 +41,11 @@ $defaultLanguage = $languages[0] ?? 'en';
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
-                                    <th>{{translate('question')}}</th>
-                                    <th class="min-w-200">{{translate('answer')}}</th>
+                                    <th>{{translate('Question')}}</th>
+                                    <th class="min-w-200">{{translate('Answer')}}</th>
                                     <th class="text-center">{{translate('ranking')}}</th>
-                                    <th class="text-center">{{translate('status')}} </th>
-                                    <th class="text-center">{{translate('action')}}</th>
+                                    <th class="text-center">{{translate('Status')}} </th>
+                                    <th class="text-center">{{translate('Action')}}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -93,7 +93,7 @@ $defaultLanguage = $languages[0] ?? 'en';
                                                     class="tio-edit"></i>
                                             </button>
                                             <a class="btn btn-outline-danger btn-sm delete-data-without-form"
-                                                title="{{ translate('delete')}}"
+                                                title="{{ translate('Delete')}}"
                                                 data-action="{{route('admin.helpTopic.delete')}}"
                                                 data-id="{{$help['id']}}">
                                                 <i class="tio-delete"></i>
@@ -142,13 +142,13 @@ $defaultLanguage = $languages[0] ?? 'en';
                             id="{{ $lang }}-form">
 
                             <div class="form-group">
-                                <label>{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                                <label>{{translate('Question')}} ({{ strtoupper($lang) }})</label>
                                 <input type="text" class="form-control"
                                     {{ $lang == $defaultLanguage ? 'required' : '' }} name="question[]"
                                     placeholder="{{translate('type_Question')}}">
                             </div>
                             <div class="form-group">
-                                <label>{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                                <label>{{translate('Answer')}} ({{ strtoupper($lang) }})</label>
                                 <textarea class="form-control"
                                     {{ $lang == $defaultLanguage ? 'required' : '' }} name="answer[]" cols="5"
                                     rows="5" placeholder="{{translate('type_Answer')}}"></textarea>
@@ -162,13 +162,13 @@ $defaultLanguage = $languages[0] ?? 'en';
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <div class="control-label">{{translate('status')}}</div>
+                                    <div class="control-label">{{translate('Status')}}</div>
                                     <label class="mt-2">
                                         <input type="checkbox" name="status" id="e_status" value="1"
                                             class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span
-                                            class="custom-switch-description">{{translate('active')}}</span>
+                                            class="custom-switch-description">{{translate('Active')}}</span>
                                     </label>
                                 </div>
                             </div>
@@ -182,8 +182,8 @@ $defaultLanguage = $languages[0] ?? 'en';
                     </div>
                     <div class="modal-footer bg-whitesmoke br">
                         <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">{{translate('close')}}</button>
-                        <button class="btn btn--primary">{{translate('save')}}</button>
+                            data-dismiss="modal">{{translate('Close')}}</button>
+                        <button class="btn btn--primary">{{translate('Save')}}</button>
                     </div>
                 </form>
             </div>
@@ -225,13 +225,13 @@ $defaultLanguage = $languages[0] ?? 'en';
                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <div class="form-group">
-                            <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Question')}} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="question[]" id="edit-question" class="form-control lang-question"
                                 data-lang="{{ $lang }}" id="question-filed" placeholder="{{translate('enter_question')}}" required="">
                         </div>
                         <div class="form-group">
 
-                            <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Answer')}} ({{ strtoupper($lang) }})</label>
                             <textarea name="answer[]" class="form-control lang-answer" id="edit-answer"
                                 data-lang="{{ $lang }}"
                                 rows="3"
@@ -242,7 +242,7 @@ $defaultLanguage = $languages[0] ?? 'en';
                     </div>
                     @endforeach
                     <div class="form-group">
-                        <label class="title-color">{{translate('priority')}}</label>
+                        <label class="title-color">{{translate('Priority')}}</label>
                         <select name="ranking" class="form-control" id="edit-ranking">
                             @for($index = 1; $index <= 15; $index++)
                                 <option value="{{ $index }}">{{ $index }}</option>
@@ -253,7 +253,7 @@ $defaultLanguage = $languages[0] ?? 'en';
                         <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                             <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
                             <div class="d-flex gap-2 align-items-center">
-                                <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                 <label class="switcher">
                                     <input type="checkbox" class="switcher_input" id="edit-status" name="status" value="1" checked>
                                     <span class="switcher_control"></span>
@@ -262,8 +262,8 @@ $defaultLanguage = $languages[0] ?? 'en';
                         </div>
                     </div>
                     <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                        <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                     </div>
                 </div>
             </form>

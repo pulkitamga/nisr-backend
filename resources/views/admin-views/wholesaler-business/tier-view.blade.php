@@ -345,10 +345,10 @@
                     status: isChecked
                 },
                 success: function(response) {
-                    toastr.success(response.message || @json(translate('Status updated successfully')));
+                    toastr.success(response.message || @json(translate('Status_updated_successfully')));
                 },
                 error: function() {
-                    toastr.error(@json(translate('Something went wrong')));
+                    toastr.error(@json(translate('Something_went_wrong')));
                 }
             });
         });

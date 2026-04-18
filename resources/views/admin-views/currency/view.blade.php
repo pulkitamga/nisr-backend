@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('currency'))
+@section('title', translate('Currency'))
 
 @section('content')
     <div class="content container-fluid">
@@ -22,7 +22,7 @@
                 <form class="form-inline_ text-start" action="{{route('admin.currency.system-currency-update')}}" method="post">
                     @csrf
                     <div class="form-group">
-                        <label for="currency_id" class="title-color">{{translate('currency')}}</label>
+                        <label for="currency_id" class="title-color">{{translate('Currency')}}</label>
                         <select class="form-control js-select2-custom" name="currency_id">
                             @foreach ($currencies->where('status', 1) as $key => $currency)
                                 <option value="{{ $currency->id }}" {{$default['value'] == $currency->id?'selected':''}} >
@@ -32,7 +32,7 @@
                         </select>
                     </div>
                     <div class="d-flex justify-content-end flex-wrap mt-3">
-                        <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+                        <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
                     </div>
                 </form>
             </div>
@@ -107,7 +107,7 @@
                                                                title="{{translate('add_the_symbol_of_the_currency_you_want_to_add')}}"></i>
                                                         </div>
                                                         <input type="text" name="symbol[]" class="form-control" id="symbol-{{ $lang }}"
-                                                               placeholder="{{translate('ex').':'.'$'}}"
+                                                               placeholder="{{translate('Ex').':'.'$'}}"
                                                             {{ $lang == $defaultLanguage ? 'required' : '' }}>
                                                     </div>
                                                 </div>
@@ -127,7 +127,7 @@
                                            title="{{translate('add_the_code_of_the_currency_you_want_to_add')}}"></i>
                                     </div>
                                     <input type="text" name="code" class="form-control" id="code"
-                                           placeholder="{{translate('ex').':'.'USD'}}" required>
+                                           placeholder="{{translate('Ex').':'.'USD'}}" required>
                                 </div>
                             </div>
                             @if($currencyModel['value']=='multi_currency')
@@ -135,21 +135,21 @@
                                     <div class="form-group">
                                         <div class="d-flex align-items-center gap-2 mb-2">
                                             <label for="exchange_rate"
-                                                   class="title-color mb-0">{{translate('exchange_rate')}}</label>
+                                                   class="title-color mb-0">{{translate('exchange_Rate')}}</label>
                                             <i class="tio-info-outined" data-toggle="tooltip"
                                                title="{{translate('based_on_your_region_set_the_exchange_rate_of_the_currency_you_want_to_add')}}"></i>
                                         </div>
                                         <input type="number" min="0" max="1000000" name="exchange_rate"
                                                step="0.00000001" class="form-control" id="exchange_rate"
-                                               placeholder="{{translate('ex').':'.'120'}}" required>
+                                               placeholder="{{translate('Ex').':'.'120'}}" required>
                                     </div>
                                 </div>
                             @endif
                             <div class="col-12">
                                 <div class="d-flex justify-content-end gap-3">
-                                    <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                                    <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                                     <button type="submit" id="add"
-                                            class="btn btn--primary px-5">{{translate('submit')}}</button>
+                                            class="btn btn--primary px-5">{{translate('Submit')}}</button>
                                 </div>
                             </div>
                         </div>
@@ -166,12 +166,12 @@
                                 <th>{{translate('currency_symbol')}}</th>
                                 <th>{{translate('currency_code')}}</th>
                                 @if($currencyModel['value']=='multi_currency')
-                                    <th>{{translate('exchange_rate')}}
+                                    <th>{{translate('exchange_Rate')}}
                                         ({{'1'.' '. getCurrencyCode(type: 'default').' '.'='.'?' }})
                                     </th>
                                 @endif
-                                <th>{{translate('status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -205,18 +205,18 @@
                                                 </label>
                                             @endif
                                         @else
-                                            <label class="badge badge-primary-light">{{translate('default')}}</label>
+                                            <label class="badge badge-primary-light">{{translate('Default')}}</label>
                                         @endif
                                     </td>
                                     <td>
                                         <div class="d-flex gap-10 justify-content-center">
                                             @if($currency->code != 'USD')
-                                                <a title="{{translate('edit')}}"
+                                                <a title="{{translate('Edit')}}"
                                                    type="button" class="btn btn-outline--primary btn-sm btn-xs edit"
                                                    href="{{route('admin.currency.update',[$currency->id])}}">
                                                     <i class="tio-edit"></i>
                                                 </a>
-                                                <a title="{{translate('delete')}}"
+                                                <a title="{{translate('Delete')}}"
                                                    type="button" class="btn btn-outline-danger btn-sm btn-xs {{$default['value'] == $currency['id'] ? 'default-currency-delete-alert' : 'delete-data-without-form'}}"
                                                    data-action="{{route('admin.currency.delete')}}"
                                                    data-id="{{$currency->id}}"
@@ -225,7 +225,7 @@
                                                     <i class="tio-delete"></i>
                                                 </a>
                                             @else
-                                                <button title="{{translate('edit')}}"
+                                                <button title="{{translate('Edit')}}"
                                                         class="btn btn-outline--primary btn-sm btn-xs edit" disabled>
                                                     <i class="tio-edit"></i>
                                                 </button>
@@ -272,10 +272,10 @@
                                         </div>
                                         <div class="d-flex justify-content-center gap-3 mt-3">
                                             <button type="button" class="btn btn--primary min-w-120" data-dismiss="modal">
-                                                {{ translate('ok') }}
+                                                {{ translate('OK') }}
                                             </button>
                                             <button type="button" class="btn btn-danger-light min-w-120" data-dismiss="modal">
-                                                {{ translate('cancel') }}
+                                                {{ translate('Cancel') }}
                                             </button>
                                         </div>
                                     </div>

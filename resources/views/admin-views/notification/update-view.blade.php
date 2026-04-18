@@ -18,12 +18,12 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('title')}}</label>
+                                <label class="input-label" for="exampleFormControlInput1">{{translate('Title')}}</label>
                                 <input type="text" value="{{$notification['title']}}" name="title" class="form-control"
                                         placeholder="{{translate('new_notification')}}" required>
                             </div>
                             <div class="form-group mb-0">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('description')}}</label>
+                                <label class="input-label" for="exampleFormControlInput1">{{translate('Description')}}</label>
                                 <textarea name="description" class="form-control"
                                             required>{{$notification['description']}}</textarea>
                             </div>
@@ -32,9 +32,9 @@
                             <div class="d-flex justify-content-center">
                                 <img class="upload-img-view mt-4" id="viewer"
                                      src="{{ getStorageImages(path: $notification->image_full_url, type: 'backend-basic') }}"
-                                        alt="{{translate('image')}}"/>
+                                        alt="{{translate('Image')}}"/>
                             </div>
-                            <label class="title-color">{{translate('image')}}</label>
+                            <label class="title-color">{{translate('Image')}}</label>
                             <span class="text-info"> ( {{translate('ratio').'1:1'}})</span>
                             <div class="custom-file">
                                 <input type="file" name="image"  class="custom-file-input image-input" data-image-id="viewer"
@@ -44,8 +44,8 @@
                         </div>
                         <div class="col-12">
                             <div class="d-flex justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
+                                <button type="reset" class="btn btn-secondary">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Update')}}</button>
                             </div>
                         </div>
                     </div>

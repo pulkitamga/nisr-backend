@@ -26,7 +26,7 @@ $toolbarFields = [
     [
         'type' => 'search',
         'name' => 'searchValue',
-        'label' => translate('search'),
+        'label' => translate('Search'),
         'value' => request('searchValue'),
         'placeholder' => translate('search_ticket_by_subject_or_status'),
         'aria_label' => translate('search_ticket_by_subject_or_status'),
@@ -70,7 +70,7 @@ if ($priority !== 'all') {
 }
 if (request()->filled('searchValue')) {
     $toolbarSummary[] = [
-        'label' => translate('search'),
+        'label' => translate('Search'),
         'value' => Str::limit(request('searchValue'), 28),
         'muted' => true,
     ];
@@ -89,7 +89,7 @@ $headerActions = [
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
-            {{translate('service_ticket')}}
+            {{translate('service_Ticket')}}
             <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
         </h2>
     </div>
@@ -165,7 +165,7 @@ $headerActions = [
                             {{ $ticket->customer->f_name ?? '' }} {{ $ticket->customer->l_name ?? '' }}
                             <div class="fz-12 text-muted">{{ $ticket->customer->email ?? '' }}</div>
                             @else
-                            {{ translate('Customer Not Found') }}
+                            {{ translate('customer_not_found') }}
                             @endif
                         </td>
                         <td><span class="badge {{ $priorityClass }}">{{ translate($ticket->priority) }}</span></td>
@@ -376,7 +376,7 @@ $headerActions = [
                             <input type="number" id="base_price_inshop" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label>{{ translate('Parts Cost') }}</label>
+                            <label>{{ translate('parts_cost') }}</label>
                             <input type="number" id="parts_cost" name="parts_cost" class="form-control" step="0.01">
                         </div>
                         <div class="form-group">
@@ -396,7 +396,7 @@ $headerActions = [
                             <input type="number" id="base_price_mobile" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label>{{ translate('Travel Fee per KM') }}</label>
+                            <label>{{ translate('travel_fee_per_km') }}</label>
                             <input type="number" id="travel_fee_per_km" class="form-control" readonly>
                         </div>
                         <div class="form-group">
@@ -412,7 +412,7 @@ $headerActions = [
                             <input type="number" id="labor_charge_mobile" class="form-control" step="0.01">
                         </div>
                         <div class="form-group">
-                            <label>{{ translate('Parts Cost') }}</label>
+                            <label>{{ translate('parts_cost') }}</label>
                             <input type="number" id="parts_cost_mobile" class="form-control" step="0.01">
                         </div>
                         <div class="form-group">
@@ -620,7 +620,7 @@ $headerActions = [
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('Upload Image') }}</label>
+                        <label>{{ translate('Upload_Image') }}</label>
                         <input type="file" name="image" class="form-control" multiple>
                     </div>
                     <div class="form-group">
@@ -723,7 +723,7 @@ $headerActions = [
                         <input type="number" step="0.01" name="fee_amount" id="fee_amount" class="form-control" placeholder="50.00" required>
                     </div>
                     <div class="form-group">
-                        <label for="refund_amount">{{translate('Refund Amount')}}</label>
+                        <label for="refund_amount">{{translate('Refund_Amount')}}</label>
                         <input type="number" step="0.01" name="refund_amount" id="refund_amount" class="form-control" placeholder="0.00" required>
                     </div>
                 </div>
@@ -766,7 +766,7 @@ $headerActions = [
 </div>
 <span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
-<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 <span id="service-ticket-are-you-sure" data-text="{{ translate('Are you sure?') }}"></span>
 <span id="service-ticket-action-cannot-be-undone" data-text="{{ translate('This action cannot be undone.') }}"></span>
 <span id="service-ticket-yes" data-text="{{ translate('Yes') }}"></span>

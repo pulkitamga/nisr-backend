@@ -24,7 +24,7 @@
                                 <label for="name"
                                     class="title-color font-weight-medium d-flex">{{translate('coupon_type')}}</label>
                                 <select class="form-control" id="coupon_type" name="coupon_type" required>
-                                    <option disabled selected>{{translate('select_coupon_type')}}</option>
+                                    <option disabled selected>{{translate('select_Coupon_Type')}}</option>
                                     <option
                                         value="discount_on_purchase">{{translate('discount_on_Purchase')}}</option>
                                     <option value="free_delivery">{{translate('free_Delivery')}}</option>
@@ -51,7 +51,7 @@
                                 @foreach($language as $lang)
                                     <div class="{{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
                                         <input type="text" name="title[]" class="form-control"
-                                            placeholder="{{translate('title')}} ({{ strtoupper($lang) }})" required>
+                                            placeholder="{{translate('Title')}} ({{ strtoupper($lang) }})" required>
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{$lang}}">
                                 @endforeach
@@ -64,34 +64,34 @@
                                 </div>
                                 <input type="text" name="code" value=""
                                     class="form-control" id="code"
-                                    placeholder="{{translate('ex')}}: EID100" required>
+                                    placeholder="{{translate('Ex')}}: EID100" required>
                             </div>
 
                             @if($web_config['business_mode'] == 'multi' && $web_config['seller_registration'])
 
                             <div class="col-md-6 col-lg-4 form-group first_order">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('coupon_bearer')}}</label>
+                                    class="title-color font-weight-medium d-flex">{{translate('coupon_Bearer')}}</label>
                                 <select class="form-control" name="coupon_bearer" id="coupon_bearer">
                                     <option disabled selected>{{translate('select_coupon_bearer')}}</option>
-                                    <option value="seller">{{translate('vendor')}}</option>
-                                    <option value="inhouse">{{translate('admin')}}</option>
+                                    <option value="seller">{{translate('Vendor')}}</option>
+                                    <option value="inhouse">{{translate('Admin')}}</option>
                                 </select>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group coupon_by first_order">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('vendor')}}</label>
+                                    class="title-color font-weight-medium d-flex">{{translate('Vendor')}}</label>
                                 <select
                                     class="js-example-basic-multiple js-states js-example-responsive form-control"
                                     name="seller_id" id="vendor_wise_coupon">
-                                    <option disabled selected>{{translate('select_vendor')}}</option>
+                                    <option disabled selected>{{translate('select_Vendor')}}</option>
                                 </select>
                             </div>
                             @endif
 
                             <div class="col-md-6 col-lg-4 form-group coupon_type first_order">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('customer')}}</label>
+                                    class="title-color font-weight-medium d-flex">{{translate('Customer')}}</label>
                                 <select
                                     class="js-example-basic-multiple js-states js-example-responsive form-control"
                                     name="customer_id">
@@ -109,24 +109,24 @@
                                     class="title-color font-weight-medium d-flex">{{translate('limit_for_same_user')}}</label>
                                 <input type="number" name="limit" value="{{ old('limit') }}" min="0"
                                     id="coupon_limit" class="form-control"
-                                    placeholder="{{translate('ex')}}: 10">
+                                    placeholder="{{translate('Ex')}}: 10">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group free_delivery">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('discount_type')}}</label>
+                                    class="title-color font-weight-medium d-flex">{{translate('Discount_Type')}}</label>
                                 <select id="discount_type" class="form-control w-100" name="discount_type">
-                                    <option value="amount">{{translate('amount')}}</option>
+                                    <option value="amount">{{translate('Amount')}}</option>
                                     <option value="percentage">{{translate('percentage')}} (%)</option>
                                 </select>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group free_delivery">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('discount_Amount')}}
+                                    class="title-color font-weight-medium d-flex">{{translate('Discount_Amount')}}
                                     <span id="discount_percent"> (%)</span></label>
                                 <input type="number" min="1" max="1000000" name="discount"
                                     value="{{ old('discount') }}" class="form-control"
                                     id="discount"
-                                    placeholder="{{translate('ex')}} : 500">
+                                    placeholder="{{translate('Ex')}} : 500">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name"
@@ -135,7 +135,7 @@
                                 <input type="number" min="1" max="1000000" name="min_purchase"
                                     value="{{ old('min_purchase') }}" class="form-control"
                                     id="minimum purchase"
-                                    placeholder="{{translate('ex')}} : 100">
+                                    placeholder="{{translate('Ex')}} : 100">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group free_delivery" id="max-discount">
                                 <label for="name"
@@ -144,14 +144,14 @@
                                 <input type="number" min="1" max="1000000" name="max_discount"
                                     value="{{ old('max_discount') }}"
                                     class="form-control" id="maximum discount"
-                                    placeholder="{{translate('ex')}} : 5000">
+                                    placeholder="{{translate('Ex')}} : 5000">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name"
-                                    class="title-color font-weight-medium d-flex">{{translate('start_date')}}</label>
+                                    class="title-color font-weight-medium d-flex">{{translate('Start_Date')}}</label>
                                 <input id="start_date" type="date" name="start_date" value="{{ old('start_date') }}"
                                     class="form-control"
-                                    placeholder="{{translate('start_date')}}" required>
+                                    placeholder="{{translate('Start_Date')}}" required>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name"
@@ -163,8 +163,8 @@
                         </div>
 
                         <div class="d-flex align-items-center justify-content-end flex-wrap gap-10">
-                            <button type="reset" class="btn btn-secondary px-4">{{translate('reset')}}</button>
-                            <button type="submit" class="btn btn--primary px-4">{{translate('submit')}}</button>
+                            <button type="reset" class="btn btn-secondary px-4">{{translate('Reset')}}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{translate('Submit')}}</button>
                         </div>
                     </form>
                 </div>
@@ -190,8 +190,8 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                     placeholder="{{translate('search_by_Title_or_Code_or_Discount_Type')}}"
-                                    value="{{ request('searchValue') }}" aria-label="{{ translate('Search orders') }}" required>
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                    value="{{ request('searchValue') }}" aria-label="{{ translate('search_orders') }}" required>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                         <div>
@@ -213,11 +213,11 @@
                                 <th>{{translate('SL')}}</th>
                                 <th>{{translate('coupon')}}</th>
                                 <th>{{translate('coupon_type')}}</th>
-                                <th>{{translate('duration')}}</th>
+                                <th>{{translate('Duration')}}</th>
                                 <th>{{translate('user_limit')}}</th>
                                 <th class="text-center">{{translate('discount_bearer')}}</th>
-                                <th>{{translate('status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -226,7 +226,7 @@
                                 <td>{{$coupons->firstItem() + $key }}</td>
                                 <td>
                                     <div>{{substr($coupon['title'],0,20)}}</div>
-                                    <strong>{{translate('code')}}: {{$coupon['code']}}</strong>
+                                    <strong>{{translate('Code')}}: {{$coupon['code']}}</strong>
                                 </td>
                                 <td class="text-capitalize">{{translate(str_replace('_',' ',$coupon['coupon_type']))}}</td>
                                 <td>
@@ -273,13 +273,13 @@
                                         </button>
                                         <a class="btn btn-outline--primary btn-sm edit"
                                             href="{{route('admin.coupon.update',[$coupon['id']])}}"
-                                            title="{{ translate('edit')}}">
+                                            title="{{ translate('Edit')}}">
                                             <i class="tio-edit"></i>
                                         </a>
                                         <a class="btn btn-outline-danger btn-sm delete delete-data"
                                             href="javascript:"
                                             data-id="coupon-{{$coupon['id']}}"
-                                            title="{{translate('delete')}}">
+                                            title="{{translate('Delete')}}">
                                             <i class="tio-delete"></i>
                                         </a>
                                         <form action="{{route('admin.coupon.delete',[$coupon['id']])}}"

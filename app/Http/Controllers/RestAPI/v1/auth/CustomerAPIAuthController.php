@@ -182,7 +182,7 @@ class CustomerAPIAuthController extends Controller
                     ]);
                     $time = $tempBlockTime - Carbon::parse($user['temp_block_time'])->diffInSeconds();
                     $code = 'login_temp_blocked';
-                    $errorMsg = translate('too_many_attempts._please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
+                    $errorMsg = translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
                 }
                 $user = $this->customerRepo->getByIdentity(filters: ['identity' => $request['email_or_phone']]);
                 $this->customerRepo->updateWhere(params: ['id' => $user['id']], data: [
@@ -614,7 +614,7 @@ class CustomerAPIAuthController extends Controller
         }
 
         return response()->json(['errors' => [
-            ['code' => 'token', 'message' => translate('OTP is not matched!')]
+            ['code' => 'token', 'message' => translate('OTP_is_not_matched!')]
         ]], 403);
     }
 

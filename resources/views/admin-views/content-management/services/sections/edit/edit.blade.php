@@ -80,7 +80,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                  
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('image') }}</label>
+                    <label>{{ translate('Image') }}</label>
                     <input type="file" name="image" class="form-control" id="image_input">
                     @if ($products->image)
                     <input type="hidden" name="remove_image" id="remove_image" value="0">
@@ -116,8 +116,8 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <!-- Submit Button -->
                 <div class="form-group mt-3">
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('admin.content-management.services') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
-                        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+                        <a href="{{ route('admin.content-management.services') }}" class="btn btn-secondary">{{ translate('Cancel') }}</a>
+                        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
                     </div>
                 </div>
             </form>

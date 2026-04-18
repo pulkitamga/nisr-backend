@@ -16,7 +16,7 @@
                         <select name="decision" class="form-control" required>
                             <option value="approve">{{ translate('Approve') }}</option>
                             <option value="reject">{{ translate('Reject') }}</option>
-                            <!-- <option value="waiting_customer">{{ translate('Waiting Customer') }}</option> -->
+                            <!-- <option value="waiting_customer">{{ translate('waiting_customer') }}</option> -->
                         </select>
                     </div>
 

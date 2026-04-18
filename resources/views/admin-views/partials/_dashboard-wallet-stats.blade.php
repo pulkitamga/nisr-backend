@@ -4,7 +4,7 @@
             <img width="48" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/inhouse-earning.png')}}" alt="">
             <h3 class="for-card-count mb-0 fz-24">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['inhouse_earning']), currencyCode: getCurrencyCode())}}</h3>
             <div class="text-capitalize mb-30">
-                {{translate('in-house_earning')}}
+                {{translate('in-House_Earning')}}
             </div>
         </div>
     </div>

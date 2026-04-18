@@ -26,8 +26,8 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -52,12 +52,12 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('name')}}</th>                                  
+                                <th>{{translate('Name')}}</th>                                  
                                 <th>{{translate('User')}}</th>
                                 <th>{{translate('Email')}}</th>
-                                <th>{{translate('status')}}</th>
+                                <th>{{translate('Status')}}</th>
                                 
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -77,12 +77,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {!! $dept->status=='active'?'<label class="badge badge-success">'.translate('active').'</label>':'<label class="badge badge-danger">'.translate('inactive').'</label>' !!}
+                                        {!! $dept->status=='active'?'<label class="badge badge-success">'.translate('Active').'</label>':'<label class="badge badge-danger">'.translate('Inactive').'</label>' !!}
                                     </td>
                                     
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <!-- <a title="{{translate('edit')}}"
+                                            <!-- <a title="{{translate('Edit')}}"
                                                 class="btn btn-outline--primary btn-sm square-btn"
                                                 href="{{route('admin.department.update',$dept->id)}}">
                                                 <i class="tio-edit"></i>

@@ -33,7 +33,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
+                        <b class="bold black">{{translate('DATE')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
                 </tr>
@@ -50,11 +50,11 @@
                     <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('order_ID')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Order_ID')}}</th>
                                 <td class="p-0 p-3">: {{ $transaction['order_id'] }}</td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('date')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('DATE')}}</th>
                                 <td class="p-0 p-3">
                                     : {{ \Carbon\Carbon::parse($transaction->created_at)->format('d/m/Y') }}</td>
                             </tr>
@@ -73,7 +73,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('customer_Info')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Customer_Info')}}</th>
                                 <td class="p-0 p-3">:
                                     @if (isset($transaction->customer))
                                         {{ $transaction->customer->f_name}} {{ $transaction->customer->l_name }}
@@ -96,14 +96,14 @@
                                 <th class="bold black p-0 text-start">{{translate('delivered_By')}} </th>
                                 <td class="p-0 p-3">:
                                     @if($transaction->order->delivery_type =='self_delivery' && !empty($transaction->order->delivery_man_id))
-                                        {{translate('delivery_man')}} {{ $transaction->order->deliveryMan->seller_id == 0 ? 'admin':'seller' }}
+                                        {{translate('delivery_Man')}} {{ $transaction->order->deliveryMan->seller_id == 0 ? 'admin':'seller' }}
                                     @else
                                         {{ $transaction->delivery_type }}
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start">{{translate('payment_Method')}}</th>
+                                <th class="bold black p-0 text-start">{{translate('Payment_Method')}}</th>
                                 <td class="p-0 p-3">:
                                     @if(in_array($transaction->order->payment_method, ['cash', 'cash_on_delivery', 'pay_by_wallet', 'offline_payment']))
                                         {{ ucfirst(str_replace('_', ' ', $transaction->order->payment_method)) }}
@@ -113,7 +113,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start">{{translate('payment_Status')}}</th>
+                                <th class="bold black p-0 text-start">{{translate('Payment_Status')}}</th>
                                 <td class="p-0 p-3">
                                     : {{ ucfirst($transaction->order->payment_status) }}</td>
                             </tr>
@@ -137,9 +137,9 @@
                 <tr>
                     <td class="ps-0 pe-0 text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
-                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
+                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Details')}}</td>
                     <td class="text-end"
-                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
+                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
@@ -157,14 +157,14 @@
                 </tr>
                 <tr>
                     <td class="text-center">3</td>
-                    <td>{{translate('coupon_Discount')}}</td>
+                    <td>{{translate('Coupon_Discount')}}</td>
                     <td class="text-end">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->order->discount_amount), currencyCode: getCurrencyCode()) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">4</td>
-                    <td>{{translate('discounted_Amount')}}</td>
+                    <td>{{translate('Discounted_Amount')}}</td>
                     <td class="text-end">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: ($transaction->order_details_sum_price * $transaction->order_details_sum_qty) - $transaction->order_details_sum_discount - (isset($transaction->order->coupon) && $transaction->order->coupon->coupon_type != 'free_delivery'?$transaction->order->discount_amount:0)), currencyCode: getCurrencyCode()) }}
                     </td>
@@ -185,7 +185,7 @@
                 </tr>
                 <tr>
                     <td class="text-center">7</td>
-                    <td>{{translate('deliveryman_incentive')}}</td>
+                    <td>{{translate('delivery_man_incentive')}}</td>
                     <td class="text-end">
                         {{ ($transaction->order->delivery_type=='self_delivery' && $transaction->order->shipping_responsibility=='sellerwise_shipping' && $transaction->order->delivery_man_id) ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $transaction->order->deliveryman_charge), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: usdToDefaultCurrency(amount: 0), currencyCode: getCurrencyCode()) }}
                     </td>
@@ -282,12 +282,12 @@
             <div class="d-flex justify-content-center gap-2">
                 <div class="mb-2">
                     <i class="fa fa-phone"></i>
-                    {{translate('phone')}}
+                    {{translate('Phone')}}
                     : {{ $company_phone }}
                 </div>
                 <div class="mb-2">
                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                    {{translate('email')}}
+                    {{translate('Email')}}
                     : {{ $company_email }}
                 </div>
             </div>

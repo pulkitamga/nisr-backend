@@ -16,7 +16,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     <div class="mb-4 pb-2">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/system-setting.png')}}" alt="">
-            {{translate('system_setup')}}
+            {{translate('system_Setup')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -86,7 +86,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button type="submit" id="submit" class="btn px-5 btn--primary">{{translate('save')}}</button>
+                        <button type="submit" id="submit" class="btn px-5 btn--primary">{{translate('Save')}}</button>
                     </div>
                 </div>
             </div>

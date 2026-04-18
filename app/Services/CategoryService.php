@@ -39,7 +39,7 @@ class CategoryService
 
     public function getSelectOptionHtml(object $data): string
     {
-        $output = '<option value="" disabled selected>' . (translate('select_sub_category')) . '</option>';
+        $output = '<option value="" disabled selected>' . (translate('select_Sub_Category')) . '</option>';
         foreach ($data as $row) {
             $output .= '<option value="' . $row->id . '">' . $row->defaultName . '</option>';
         }

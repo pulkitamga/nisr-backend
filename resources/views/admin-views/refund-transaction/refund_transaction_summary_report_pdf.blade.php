@@ -306,7 +306,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
+                        <b class="bold black">{{translate('DATE')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
                 </tr>
@@ -324,7 +324,7 @@
                         <table>
                             <tr>
                                 <th class="bold black p-0 text-start"
-                                    style="padding: 3px 0">{{translate('duration')}}</th>
+                                    style="padding: 3px 0">{{translate('Duration')}}</th>
                                 <td class="p-0" style="padding: 3px 0">: {{ $data['duration'] }}</td>
                             </tr>
                         </table>
@@ -348,28 +348,28 @@
                 <thead>
                 <tr>
                     <th class="ps-0 pe-0 text-center">{{translate('SL')}}</th>
-                    <th>{{translate('details')}}</th>
-                    <th class="text-end">{{translate('amount')}}</th>
+                    <th>{{translate('Details')}}</th>
+                    <th class="text-end">{{translate('Amount')}}</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
                     <td class="text-center">1</td>
-                    <td>{{translate('total_expense_amount')}}</td>
+                    <td>{{translate('total_Expense_Amount')}}</td>
                     <td class="text-end">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['total_expense'])) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">2</td>
-                    <td>{{translate('free_delivery_amount')}}</td>
+                    <td>{{translate('free_Delivery_Amount')}}</td>
                     <td class="text-end" style="padding: 3px 0;">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['free_delivery'])) }}
                     </td>
                 </tr>
                 <tr>
                     <td class="text-center">3</td>
-                    <td>{{translate('coupon_discount_amount')}}</td>
+                    <td>{{translate('coupon_Discount_Amount')}}</td>
                     <td class="text-end" style="padding: 3px 0;">
                         {{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($data['coupon_discount'])) }}
                     </td>
@@ -386,12 +386,12 @@
             <div class="d-flex justify-content-center gap-2">
                 <div class="mb-2">
                     <i class="fa fa-phone"></i>
-                    {{translate('phone')}}
+                    {{translate('Phone')}}
                     : {{ $data['company_phone'] }}
                 </div>
                 <div class="mb-2">
                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                    {{translate('email')}}
+                    {{translate('Email')}}
                     : {{ $data['company_email'] }}
                 </div>
             </div>

@@ -13,9 +13,9 @@
                     <input type="hidden" name="ticket_id" id="modal_ticket_id">
                     @if(auth('admin')->user()?->isSuperAdmin())
                     <div class="form-group">
-                        <label>{{ translate('Select Department') }}</label>
+                        <label>{{ translate('Select_Department') }}</label>
                         <select class="form-control" name="department_id" id="ticket-department-id">
-                            <option value="">{{ translate('Select Department') }}</option>
+                            <option value="">{{ translate('Select_Department') }}</option>
                             @foreach($getDepartment as $dept)
                             <option value="{{ $dept->id }}">{{ $dept->getTranslatedField('name') }}</option>
                             @endforeach
@@ -24,9 +24,9 @@
                     @endif
 
                     <div class="form-group mt-2">
-                        <label>{{ translate('Select Employee') }}</label>
+                        <label>{{ translate('Select_Employee') }}</label>
                         <select class="form-control" name="employee_id" id="ticket-employee-id">
-                            <option value="">{{ translate('Select Employee') }}</option>
+                            <option value="">{{ translate('Select_Employee') }}</option>
                         </select>
                     </div>
 

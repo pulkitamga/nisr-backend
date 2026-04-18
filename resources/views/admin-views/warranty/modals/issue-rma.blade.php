@@ -20,7 +20,7 @@ $branches = \App\Models\Branch::where('id','!=',1)->get();
                     <div class="form-group">
                         <label>{{ translate('Return Branch') }}</label>
                         <select name="branch_id" class="form-control" required>
-                            <option value="">{{ translate('Select Branch') }}</option>
+                            <option value="">{{ translate('Select_Branch') }}</option>
                             @foreach($branches as $b)
                             <option value="{{ $b->id }}">{{ $b->branch_name }}</option>
                             @endforeach

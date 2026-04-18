@@ -33,7 +33,7 @@
                         <div class="media-body">
                             
                             <div class="d-block">
-                                <h2 class="mb-2 pb-1">{{ $seller->getTranslatedField('branch_name')? $seller->getTranslatedField('branch_name') : translate("shop_Name")." : ".translate("update_Please") }}</h2>
+                                <h2 class="mb-2 pb-1">{{ $seller->getTranslatedField('branch_name')? $seller->getTranslatedField('branch_name') : translate("Shop_Name")." : ".translate("update_Please") }}</h2>
                                  
                                  
                             </div>
@@ -45,13 +45,13 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="inactive">
-                                <button type="button" class="btn btn-danger px-5 form-alert" data-message="{{translate('want_to_reject_this_branch').'?'}}" data-id="reject-form">{{translate('reject')}}</button>
+                                <button type="button" class="btn btn-danger px-5 form-alert" data-message="{{translate('want_to_reject_this_branch').'?'}}" data-id="reject-form">{{translate('Reject')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.branch.updateStatus')}}" id="approve-form" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="active">
-                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_approve_this_branch').'?'}}" data-id="approve-form">{{translate('approve')}}</button>
+                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_approve_this_branch').'?'}}" data-id="approve-form">{{translate('Approve')}}</button>
                             </form>
                         </div>
                     @endif
@@ -71,7 +71,7 @@
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller['id']}}">
                                 <input type="hidden" name="status" value="active">
-                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_active_this_branch').'?'}}" data-id="active-form">{{translate('active')}}</button>
+                                <button type="button" class="btn btn-success px-5 form-alert" data-message="{{translate('want_to_active_this_branch').'?'}}" data-id="active-form">{{translate('Active')}}</button>
                             </form>
                         </div>
                     @endif
@@ -81,33 +81,33 @@
                     
                     <div class="row gy-3 flex-grow-1 w-100">
                         <div class="col-sm-6 col-xxl-3">
-                            <h4 class="mb-3 text-capitalize">{{translate('branch_information')}}</h4>
+                            <h4 class="mb-3 text-capitalize">{{translate('Branch_information')}}</h4>
 
                             <div class="pair-list">
                                 <div>
-                                    <span class="key text-nowrap">{{translate('branch_name')}}</span>
+                                    <span class="key text-nowrap">{{translate('Branch_Name')}}</span>
                                     <span>:</span>
                                     <span class="value ">{{$seller->getTranslatedField('branch_name')}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('phone')}}</span>
+                                    <span class="key">{{translate('Phone')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller->phone}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('address')}}</span>
+                                    <span class="key">{{translate('Address')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller->getTranslatedField('branch_address')}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('status')}}</span>
+                                    <span class="key">{{translate('Status')}}</span>
                                     <span>:</span>
                                     <span class="value">
                                         <span class="badge badge-{{$seller['status']=='active'? 'info' :'danger'}}">
-                                            {{ $seller['status']=='active'? translate('active') : translate('inactive') }}
+                                            {{ $seller['status']=='active'? translate('Active') : translate('Inactive') }}
                                         </span>
                                     </span>
                                 </div>
@@ -118,24 +118,24 @@
 
                             <div class="pair-list">
                                 <div>
-                                    <span class="key">{{translate('name')}}</span>
+                                    <span class="key">{{translate('Name')}}</span>
                                     <span>:</span>
                                     <span class="value text-capitalize">{{$seller['branch_name']}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('email')}}</span>
+                                    <span class="key">{{translate('Email')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller['email']}}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('phone')}}</span>
+                                    <span class="key">{{translate('Phone')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller['phone']}}</span>
                                 </div>
                                 <div>
-                                    <span class="key">{{translate('state')}}</span>
+                                    <span class="key">{{translate('State')}}</span>
                                     <span>:</span>
                                     <span class="value">{{$seller['branch_state'] ?? ''}}</span>
                                 </div>
@@ -144,33 +144,33 @@
                         @if ($seller['status']!="pending")
                             <div class="col-xxl-6">
                                 <div class="bg-light p-3 border border-primary-light rounded">
-                                    <h4 class="mb-3 text-capitalize">{{translate('bank_information')}}</h4>
+                                    <h4 class="mb-3 text-capitalize">{{translate('bank_Information')}}</h4>
 
                                     <div class="d-flex gap-5">
                                         <div class="pair-list">
                                             <div>
-                                                <span class="key text-nowrap">{{translate('bank_name')}}</span>
+                                                <span class="key text-nowrap">{{translate('bank_Name')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value ">{{ $seller['bank_name'] ?? translate('no_data_found') }}</span>
+                                                <span class="value ">{{ $seller['bank_name'] ?? translate('no_Data_found') }}</span>
                                             </div>
 
                                             <div>
-                                                <span class="key text-nowrap">{{translate('branch')}}</span>
+                                                <span class="key text-nowrap">{{translate('Branch')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['branch'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['branch'] ?? translate('no_Data_found') }}</span>
                                             </div>
                                         </div>
                                         <div class="pair-list">
                                             <div>
-                                                <span class="key text-nowrap">{{translate('holder_name')}}</span>
+                                                <span class="key text-nowrap">{{translate('holder_Name')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['holder_name'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['holder_name'] ?? translate('no_Data_found') }}</span>
                                             </div>
 
                                             <div>
                                                 <span class="key text-nowrap">{{translate('A/C_No')}}</span>
                                                 <span class="px-2">:</span>
-                                                <span class="value">{{ $seller['account_no'] ?? translate('no_data_found') }}</span>
+                                                <span class="value">{{ $seller['account_no'] ?? translate('no_Data_found') }}</span>
                                             </div>
                                         </div>
                                     </div>

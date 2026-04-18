@@ -34,13 +34,13 @@
                     <input type="hidden" name="price_{{ $combination['type'] }}"
                            value="{{ usdToDefaultCurrency(amount: $combination['price']) }}" min="0"
                            step="0.01"
-                           class="form-control" required placeholder="{{ translate('ex').': 100'}}">
+                           class="form-control" required placeholder="{{ translate('Ex').': 100'}}">
                     <input type="hidden" name="sku_{{ $combination['type'] }}" value="{{ $combination['sku'] }}"
                            class="form-control store-keeping-unit" required>
                 <td>
                     <input type="number" name="qty_{{ $combination['type'] }}"
                            value="{{ $combination['qty'] }}" min="0" max="100000" step="1"
-                           class="form-control" placeholder="{{ translate('ex') }}: {{ translate('5') }}"
+                           class="form-control" placeholder="{{ translate('Ex') }}: {{ translate('5') }}"
                            required>
                 </td>
             </tr>

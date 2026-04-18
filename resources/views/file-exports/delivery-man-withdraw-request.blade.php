@@ -21,7 +21,7 @@
         </th>
     </tr>
     <tr>
-        <th>{{translate('filter_Criteria')}}-</th>
+        <th>{{translate('Filter_Criteria')}}-</th>
         <th></th>
         <th> {{ucwords($data['filter'] ?? 'all')}}</th>
     </tr>
@@ -30,8 +30,8 @@
         <td> {{translate('first_Name')}}</td>
         <td> {{translate('last_Name')}}</td>
         <td> {{translate('request_Time')}}</td>
-        <td> {{translate('amount')}}</td>
-        <td> {{translate('status')}}</td>
+        <td> {{translate('Amount')}}</td>
+        <td> {{translate('Status')}}</td>
     </tr>
     @foreach ($data['withdraw_request'] as $key=>$item)
         <tr>

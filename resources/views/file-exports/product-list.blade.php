@@ -6,26 +6,26 @@
             </tr>
             <tr>
 
-                <th>{{ translate('filter_Criteria').' - ' }}</th>
+                <th>{{ translate('Filter_Criteria').' - ' }}</th>
                 <th></th>
                 <th>
                     @if(isset($data['vendor']))
-                        {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                        {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
                         <br>
                     @endif
-                    {{translate('category').' - '. ($data['category'] != 'all' ? $data['category']['name'] : $data['category'])  }}
+                    {{translate('Category').' - '. ($data['category'] != 'all' ? $data['category']['name'] : $data['category'])  }}
                     <br>
-                    {{translate('sub_Category').' - '. ($data['sub_category'] != 'all' ? $data['sub_category']['name'] : $data['sub_category'])  }}
+                    {{translate('Sub_Category').' - '. ($data['sub_category'] != 'all' ? $data['sub_category']['name'] : $data['sub_category'])  }}
                     <br>
                     {{translate('sub_Sub_Category').' - '. ($data['sub_sub_category'] != 'all' ? $data['sub_sub_category']['name'] : $data['sub_sub_category'])  }}
                     <br>
-                    {{translate('brand').' - '. ($data['brand'] != 'all' ? $data['brand']['defaultName'] : $data['brand'])  }}
+                    {{translate('Brand').' - '. ($data['brand'] != 'all' ? $data['brand']['defaultName'] : $data['brand'])  }}
 
                     @if($data['type']=='seller')
                         <br>
-                        {{translate('store').' - '. ($data['seller']?->shop->name ?? translate('all'))}}
+                        {{translate('store').' - '. ($data['seller']?->shop->name ?? translate('All'))}}
                         <br>
-                        {{translate('status').' - '. ($data['status']==0 ? translate('pending') : ($data['status'] == 1 ? translate('approved') : translate('denied')) )}}
+                        {{translate('Status').' - '. ($data['status']==0 ? translate('Pending') : ($data['status'] == 1 ? translate('Approved') : translate('Denied')) )}}
                     @endif
                     <br>
                     {{translate('search_Bar_Content').' - '. (!empty($data['searchValue']) ?  ucwords($data['searchValue']) : 'N/A') }}
@@ -36,27 +36,27 @@
                 <td> {{translate('SL')}}</td>
                 <td> {{translate('product_Image')}}	</td>
                 <td> {{translate('image_URL')}}	</td>
-                <td> {{translate('product_Name')}}	</td>
+                <td> {{translate('Product_name')}}	</td>
                 <td> {{translate('product_SKU')}}</td>
-                <td> {{translate('description')}}</td>
+                <td> {{translate('Description')}}</td>
 
                 <td>
                     @if($data['type']=='seller')
-                        {{translate('store_Name')}}
+                        {{translate('Store_Name')}}
                     @endif
                 </td>
                 <td> {{translate('category_Name')}}</td>
                 <td> {{translate('sub_Category_Name')}}</td>
                 <td> {{translate('sub_Sub_Category_Name')}}</td>
-                <td> {{translate('brand')}}</td>
+                <td> {{translate('Brand')}}</td>
                 <td> {{translate('product_Type')}}</td>
-                <td> {{translate('price')}}</td>
-                <td> {{translate('tax')}}</td>
-                <td> {{translate('discount')}}</td>
-                <td> {{translate('discount_Type')}}</td>
-                <td> {{translate('rating')}}</td>
+                <td> {{translate('Price')}}</td>
+                <td> {{translate('Tax')}}</td>
+                <td> {{translate('Discount')}}</td>
+                <td> {{translate('Discount_Type')}}</td>
+                <td> {{translate('Rating')}}</td>
                 <td> {{translate('product_Tags')}}</td>
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['products'] as $key=>$item)
                 <tr>

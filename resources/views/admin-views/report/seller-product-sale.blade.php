@@ -47,18 +47,18 @@
                         <div class="col-sm-6 col-md-3" id="from_div">
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{$from}}" id="from_date" class="form-control">
-                                <label>{{translate('start_date')}}</label>
+                                <label>{{translate('Start_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{$to}}" name="to" id="to_date" class="form-control">
-                                <label>{{translate('end_date')}}</label>
+                                <label>{{translate('End_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3 filter-btn">
                             <button type="submit" class="btn btn--primary px-4 px-md-5">
-                                {{translate('filter')}}
+                                {{translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/products.svg')}}" alt="back-end/img">
                     <div class="info">
                         <h4 class="subtitle">{{ $total_product }}</h4>
-                        <h6 class="subtext">{{translate('products')}}</h6>
+                        <h6 class="subtext">{{translate('Products')}}</h6>
                     </div>
                 </div>
                 <div class="left-content-card">
@@ -87,7 +87,7 @@
                             <div class="d-flex justify-content-center">
                                 <span>{{translate('canceled')}}</span>
                                 <span class="ms-2" data-toggle="tooltip" data-placement="top"
-                                      title="{{translate('this_count_is_the_summation_of')}} {{translate('failed_to_deliver')}}, {{translate('canceled')}}, {{translate('and')}} {{translate('returned_orders')}}">
+                                      title="{{translate('this_count_is_the_summation_of')}} {{translate('Failed_to_Deliver')}}, {{translate('canceled')}}, {{translate('_and')}} {{translate('returned_orders')}}">
                                     <img class="info-img"
                                          src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                          alt="img">
@@ -99,7 +99,7 @@
                             <div class="d-flex justify-content-center">
                                 <span>{{translate('ongoing')}}</span>
                                 <span class="ms-2" data-toggle="tooltip" data-placement="top"
-                                      title="{{translate('this_count_is_the_summation_of')}} {{translate('pending')}}, {{translate('confirmed')}}, {{translate('packaging')}}, {{translate('out_for_delivery_orders')}}">
+                                      title="{{translate('this_count_is_the_summation_of')}} {{translate('Pending')}}, {{translate('confirmed')}}, {{translate('Packaging')}}, {{translate('out_for_delivery_orders')}}">
                                     <img class="info-img"
                                          src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                          alt="img">
@@ -126,7 +126,7 @@
                         <h4 class="subtitle">
                             {{ $deliveryman }}
                         </h4>
-                        <h6 class="subtext">{{translate('total_Deliveryman')}}</h6>
+                        <h6 class="subtext">{{translate('Total_Delivery_Man')}}</h6>
                     </div>
                 </div>
             </div>
@@ -171,9 +171,9 @@
                             <input type="hidden" name="from" value="{{ $from }}">
                             <input type="hidden" name="to" value="{{ $to }}">
                             <input id="datatableSearch_" type="search" value="{{ $search }}" name="search"
-                                   class="form-control" placeholder="{{translate('search_by_vendor_info')}}" aria-label="{{ translate('Search orders') }}"
+                                   class="form-control" placeholder="{{translate('search_by_vendor_info')}}" aria-label="{{ translate('search_orders') }}"
                                    required="">
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -191,11 +191,11 @@
                         <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{ translate('vendor-Info') }}</th>
+                            <th>{{ translate('vendor_Info') }}</th>
                             <th>{{translate('total_Order')}}</th>
                             <th>{{translate('commission')}}</th>
                             <th class="text-center">{{translate('refund_Rate')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>

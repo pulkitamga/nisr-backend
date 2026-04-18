@@ -387,7 +387,7 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>{{ translate('product') }}</th>
+                        <th>{{ translate('Product') }}</th>
                         <th class="text-center">{{ translate('claims') }}</th>
                     </tr>
                 </thead>

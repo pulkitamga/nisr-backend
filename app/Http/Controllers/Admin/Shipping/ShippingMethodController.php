@@ -120,7 +120,7 @@ class ShippingMethodController extends BaseController
     {
         $adminShipping = $this->shippingTypeRepo->getFirstWhere(params: ['seller_id' => 0]);
         if ($adminShipping && $adminShipping->shipping_type !== 'order_wise') {
-            Toastr::error(translate('access_denied'));
+            Toastr::error(translate('access_Denied'));
             return redirect()->back();
         }
 
@@ -203,7 +203,7 @@ class ShippingMethodController extends BaseController
     {
         $this->shippingMethodRepo->update(id: $id, data: $this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
         $this->translationRepo->update(request: $request, model: 'App\Models\ShippingMethod', id: $id);
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return redirect()->route(ShippingMethod::INDEX[ROUTE]);
     }
 
@@ -215,7 +215,7 @@ class ShippingMethodController extends BaseController
     public function updateArea(ShippingMethodAreaRequest $request, string|int $id): RedirectResponse
     {
         $this->shippingMethodAreaRepo->update(id: $id, data: $this->shippingMethodAreaService->addShippingMethodAreaData(request: $request, addedBy: 'admin'));
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return redirect()->route(ShippingMethod::INDEX[ROUTE]);
     }
 
@@ -263,7 +263,7 @@ class ShippingMethodController extends BaseController
     public function updateShippingResponsibility(Request $request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'shipping_method', value: $request['shipping_method']);
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return redirect()->back();
     }
 

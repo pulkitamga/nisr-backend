@@ -3,7 +3,7 @@
     <tr>
         <th scope="col">#</th>
         <th scope="col">
-            {{translate('product_Name')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>
+            {{translate('Product_name')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>
         </th>
         <th scope="col">
             {{translate('total_Stock')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>

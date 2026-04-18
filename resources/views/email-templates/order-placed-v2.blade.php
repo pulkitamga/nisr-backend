@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ translate('Order Placed') }}</title>
+    <title>{{ translate('Order_Placed') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -79,7 +79,7 @@ if ($order->is_guest) {
             <td class="width-50 mt-1">
 
                 <div class="text-start mt-1">
-                    <strong class="text-capitalize">{{ translate('vendor_details') }}  </strong>
+                    <strong class="text-capitalize">{{ translate('Vendor_details') }}  </strong>
                     <br>
                     @if ($order->seller_is == 'seller')
 
@@ -94,7 +94,7 @@ if ($order->is_guest) {
                     @else
                         <div class="d-flex align-items-center mt-1">
                         <span>
-                            {{ translate('inhouse_products') }}
+                            {{ translate('in-House_Products') }}
                         </span>
                         </div>
                     @endif
@@ -138,7 +138,7 @@ if ($order->is_guest) {
                 <tr class="table-header-items">
                     <th>{{ translate('SL') }}</th>
                     <th>{{ translate('Ordered_Items') }}</th>
-                    <th>{{ translate('Unit_price') }}</th>
+                    <th>{{ translate('Unit_Price') }}</th>
                     <th>{{ translate('QTY') }}</th>
                     <th>{{ translate('Total') }}</th>
                 </tr>
@@ -155,7 +155,7 @@ if ($order->is_guest) {
                             <br>
                             @if ($details['variant']!=null)
                                 <span>
-                                    {{ translate('variation') }} : {{$details['variant']}}
+                                    {{ translate('Variation') }} : {{$details['variant']}}
                                   </span>
                             @endif
 
@@ -187,11 +187,11 @@ if ($order->is_guest) {
                 <table class="text-capitalize calculation-section">
                     <tbody>
                     <tr>
-                        <th class="pb-2">{{ translate('sub_total') }} :</th>
+                        <th class="pb-2">{{ translate('Subtotal') }} :</th>
                         <td class="pb-2">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['subTotal']) }}</td>
                     </tr>
                     <tr>
-                        <td class="pb-2">{{ translate('tax') }} :</td>
+                        <td class="pb-2">{{ translate('Tax') }} :</td>
                         <td class="pb-2">{{ webCurrencyConverter(amount: $orderTotalPriceSummary['taxTotal']) }}</td>
                     </tr>
                     @if($order->order_type == 'default_type')
@@ -201,7 +201,7 @@ if ($order->is_guest) {
                         </tr>
                     @endif
                     <tr>
-                        <td class="pb-2">{{ translate('coupon_discount') }} :</td>
+                        <td class="pb-2">{{ translate('Coupon_Discount') }} :</td>
                         <td class="pb-2">
                             - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['couponDiscount']) }}
                         </td>
@@ -214,14 +214,14 @@ if ($order->is_guest) {
                     </tr>
                     @if ($order->order_type != 'default_type')
                         <tr class="border-bottom pb-2">
-                            <th class="pb-2">{{ translate('extra_discount') }} :</th>
+                            <th class="pb-2">{{ translate('extra_Discount') }} :</th>
                             <td class="pb-2">
                                 - {{ webCurrencyConverter(amount: $orderTotalPriceSummary['extraDiscount']) }}
                             </td>
                         </tr>
                     @endif
                     <tr class="bg-primary">
-                        <th class="pb-2">{{ translate('total') }} :</th>
+                        <th class="pb-2">{{ translate('Total') }} :</th>
                         <td class="pb-2 ps-3">
                             {{ webCurrencyConverter(amount: $orderTotalPriceSummary['totalAmount']) }}
                         </td>
@@ -265,9 +265,9 @@ if ($order->is_guest) {
         </tr>
         <tr>
             <th class="text-start">
-                <div> {{ translate('phone') }} : {{ $companyPhone }}</div>
-                <div> {{ translate('website') }} : {{ url('/') }}</div>
-                <div> {{ translate('email') }} : {{ $companyEmail }}</div>
+                <div> {{ translate('Phone') }} : {{ $companyPhone }}</div>
+                <div> {{ translate('_website') }} : {{ url('/') }}</div>
+                <div> {{ translate('Email') }} : {{ $companyEmail }}</div>
             </th>
         </tr>
         <tr>

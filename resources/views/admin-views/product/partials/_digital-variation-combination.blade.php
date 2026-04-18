@@ -50,7 +50,7 @@
                             <input type="number" name="digital_product_price[{{ $combination['unique_key'] }}]"
                                    value="{{ usdToDefaultCurrency(amount: $combination['price']) }}" min="0" step="0.01"
                                    class="form-control variation-price-input remove-symbol" required
-                                   placeholder="{{ translate('ex').': 100' }}">
+                                   placeholder="{{ translate('Ex').': 100' }}">
                         </td>
                         <td>
                             <input type="text" name="digital_product_sku[{{ $combination['unique_key'] }}]"
@@ -133,11 +133,11 @@
                         <input type="file" class="custom-file-input" name="digital_file_ready"
                                id="inputGroupFile01" aria-describedby="inputGroupFileAddon01">
                         <label class="custom-file-label" for="inputGroupFile01">
-                            {{ translate('choose_file') }}
+                            {{ translate('choose_File') }}
                         </label>
                     </div>
                 </div>
-                <div class="mt-2">{{ translate('file_type') }}: {{ "jpg, jpeg, png, gif, zip, pdf" }}</div>
+                <div class="mt-2">{{ translate('File_Type') }}: {{ "jpg, jpeg, png, gif, zip, pdf" }}</div>
             </div>
         </div>
     @endif

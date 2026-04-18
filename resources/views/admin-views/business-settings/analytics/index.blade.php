@@ -104,7 +104,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -175,7 +175,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -247,7 +247,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -317,7 +317,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                     class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}">
-                                    {{ translate('submit') }}
+                                    {{ translate('Submit') }}
                                 </button>
                             </div>
                         </form>
@@ -389,7 +389,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -461,7 +461,7 @@
 
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -532,7 +532,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -603,7 +603,7 @@
                                 </div>
                                 <button type="{{ env('APP_MODE') != 'demo' ? 'submit' : 'button' }}"
                                         class="btn btn--primary px-5 {{ env('APP_MODE') != 'demo' ? '' : 'call-demo' }}"
-                                        >{{ translate('submit') }}</button>
+                                        >{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -633,7 +633,7 @@
                     '.toggle-switch-with-text .toggle-switch-indicator span');
 
                 function updateIndicator() {
-                    indicator.textContent = toggleSwitch.checked ? '{{ translate('On') }}' : '{{ translate('Off') }}';
+                    indicator.textContent = toggleSwitch.checked ? '{{ translate('On') }}' : '{{ translate('OFF') }}';
                 }
 
                 updateIndicator();

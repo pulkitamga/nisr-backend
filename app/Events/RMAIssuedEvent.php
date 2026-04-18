@@ -16,7 +16,7 @@ class RMAIssuedEvent
     {
         $data = [
             'userName' => $this->claim->warranty->user->name ?? 'Customer',
-            'subject' => translate('RMA Issued'),
+            'subject' => translate('rma_issued'),
             'title' => translate('Your RMA #') . $this->claim->rma_number,
             'rmaNumber' => $this->claim->rma_number,
             'instructions' => 'Return to branch. Deadline: ' . $this->claim->rma_deadline,

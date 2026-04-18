@@ -6,7 +6,7 @@
 
 <div class="modal-body">
     <button class="radius-50 border-0 font-weight-bold text-black-50 position-absolute top-3 z-index-99"
-        style="inset-inline-end: .75rem;" type="button" data-bs-dismiss="modal" aria-label="{{ translate('close') }}">
+        style="inset-inline-end: .75rem;" type="button" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
         <span aria-hidden="true">×</span>
     </button>
     <div class="row gy-3">
@@ -15,7 +15,7 @@
                 <img class="img-responsive w-100 rounded aspect-1"
                     src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
                     data-zoom="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
-                    alt="{{ translate('product_image') }}">
+                    alt="{{ translate('product_Image') }}">
                 <div class="cz-image-zoom-pane"></div>
             </div>
 
@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
-                    <div class="font-weight-bold text-dark">{{ translate('brand') }}:</div>
+                    <div class="font-weight-bold text-dark">{{ translate('Brand') }}:</div>
                     <div>{{ $product->brand->name ?? translate('not_found') }}</div>
                 </div>
 
@@ -94,7 +94,7 @@
                             <!-- Color Selection -->
                             @if (count(json_decode($product->colors)) > 0)
                                 <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
-                                    <strong class="text-dark">{{ translate('color') }}</strong>
+                                    <strong class="text-dark">{{ translate('Color') }}</strong>
                                     <div class="color-select d-flex gap-2 flex-wrap" id="option1">
                                         @foreach (json_decode($product->colors) as $key => $color)
                                             <input class="btn-check action-color-change" type="radio"
@@ -145,9 +145,9 @@
                             role="alert">
                             <img class="mb-1"
                                 src="{{ dynamicAsset(path: 'public/assets/back-end/img/warning-icon.png') }}"
-                                alt="{{ translate('warning') }}">
+                                alt="{{ translate('Warning') }}">
                             <div class="w-0">
-                                <h6>{{ translate('warning') }}</h6>
+                                <h6>{{ translate('Warning') }}</h6>
                                 <div class="product-stock-message"></div>
                             </div>
                             <a href="javascript:" class="align-items-center close-alert-message">
@@ -156,7 +156,7 @@
                         </div>
                         <div class="default-quantity-system d-none">
                             <div class="d-flex gap-2 align-items-center mt-3">
-                                <strong class="text-dark">{{ translate('qty') }}:</strong>
+                                <strong class="text-dark">{{ translate('QTY') }}:</strong>
                                 <div class="product-quantity d-flex align-items-center">
                                     <div class="d-flex align-items-center">
                                         <span class="product-quantity-group">
@@ -179,7 +179,7 @@
                         </div>
                         <div class="in-cart-quantity-system d--none">
                             <div class="d-flex gap-2 align-items-center mt-3">
-                                <strong class="text-dark">{{ translate('qty') }}:</strong>
+                                <strong class="text-dark">{{ translate('QTY') }}:</strong>
                                 <div class="product-quantity d-flex align-items-center">
                                     <div class="d-flex align-items-center">
                                         <span class="product-quantity-group">
@@ -208,7 +208,7 @@
                             <div class="product-price c1">
                                 <strong class="product-details-chosen-price-amount"></strong>
                                 <span class="text-muted fz-10 tax-container">
-                                    ( {{ ($product->tax_model == 'include' ? '' : '+') . ' ' . translate('tax') }}
+                                    ( {{ ($product->tax_model == 'include' ? '' : '+') . ' ' . translate('Tax') }}
                                     <span class="set-product-tax"></span>)</span>
                             </div>
                         </div>

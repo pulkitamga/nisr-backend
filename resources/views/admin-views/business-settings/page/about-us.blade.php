@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('about_us'))
+@section('title', translate('About_us'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -29,7 +29,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" width="20" alt="">
-            {{translate('pages')}}
+            {{translate('Pages')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -37,7 +37,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">{{translate('about_us')}}</h5>
+                    <h5 class="mb-0">{{translate('About_us')}}</h5>
                 </div>
                 <form action="{{route('admin.business-settings.about-update')}}" method="post">
                     @csrf
@@ -75,7 +75,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             @endforeach
                         </div>
                         <div class="form-group mb-2">
-                            <input class="btn btn--primary btn-block" type="submit" name="btn" value="{{ translate('submit') }}">
+                            <input class="btn btn--primary btn-block" type="submit" name="btn" value="{{ translate('Submit') }}">
                         </div>
                     </div>
                 </form>

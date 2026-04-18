@@ -39,23 +39,23 @@
                                         <div class="form-group {{$lang != $defaultLanguage ? 'd-none':''}} lang-form"
                                              id="{{$lang}}-form">
                                             <input type="text" name="deal_type" value="flash_deal" class="d-none">
-                                            <label for="name" class="title-color">{{ translate('title')}}
+                                            <label for="name" class="title-color">{{ translate('Title')}}
                                                 ({{strtoupper($lang)}})</label>
                                             <input type="text" name="title[]" class="form-control" id="title"
                                                    value="{{$lang==$defaultLanguage ? $deal->getRawOriginal('title') : $deal->getTranslatedField('title', $lang, '')}}"
-                                                   placeholder="{{translate('ex').':'.' '.translate('LUX')}}"
+                                                   placeholder="{{translate('Ex').':'.' '.translate('LUX')}}"
                                                     {{$lang == $defaultLanguage? 'required':''}}>
                                         </div>
                                         <input type="hidden" name="lang[]" value="{{$lang}}" id="lang">
                                     @endforeach
                                     <div class="form-group">
-                                        <label for="name" class="title-color">{{ translate('start_date')}}</label>
+                                        <label for="name" class="title-color">{{ translate('Start_Date')}}</label>
                                         <input type="date" value="{{date('Y-m-d',strtotime($deal['start_date']))}}"
                                                name="start_date" id="start-date-time" required
                                                class="form-control">
                                     </div>
                                     <div class="form-group">
-                                        <label for="name" class="title-color">{{ translate('end_date')}}</label>
+                                        <label for="name" class="title-color">{{ translate('End_Date')}}</label>
                                         <input type="date" value="{{date('Y-m-d', strtotime($deal['end_date']))}}"
                                                name="end_date" id="end-date-time" required
                                                class="form-control">
@@ -72,7 +72,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="name" class="title-color">{{translate('upload_Image')}}</label>
+                                            <label for="name" class="title-color">{{translate('Upload_Image')}}</label>
                                             <span class="text-info ms-0">( {{translate('ratio').' '.'5:1'}})</span>
                                             <div class="custom-file text-start">
                                                 <input type="file" name="image" id="custom-file-upload"
@@ -87,8 +87,8 @@
                             </div>
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary">{{ translate('update')}}</button>
+                                        class="btn btn-secondary">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Update')}}</button>
                             </div>
                         </form>
                     </div>

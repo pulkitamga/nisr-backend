@@ -105,7 +105,7 @@ class RobotsMetaContentController extends BaseController
         $getOldData = $this->robotsMetaContentRepo->getFirstWhere(params: ['page_name' => $request['page_name']]);
         $getContentData = $this->SEOSettingsService->getRobotsMetaContentData(request: $request, oldData: $getOldData ?? null);
         $this->robotsMetaContentRepo->updateOrInsert(params: ['page_name' => $request['page_name']], data: $getContentData);
-        Toastr::success(translate('successfully_update'));
+        Toastr::success(translate('Successfully_Update'));
         return redirect()->route('admin.seo-settings.robots-meta-content.index');
     }
 

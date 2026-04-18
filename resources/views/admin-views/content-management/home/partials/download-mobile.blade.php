@@ -52,7 +52,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         <div class="row">
             <input type="hidden" name="lang[]" value="{{ $lang }}">
             <div class="col-lg-6">
-                <label class="title-color">{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
+                <label class="title-color">{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
                     value="{{ $lang == $defaultLanguage ? ($content['heading'] ?? '') : ($translations[$lang]['heading'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
@@ -63,8 +63,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
     @endforeach
 
     <div class="d-flex justify-content-end gap-2 mt-4">
-        <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+        <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
     </div>
 </form>
 </div>
@@ -212,7 +212,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                 <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
                                     <div class="d-flex flex-column justify-content-center align-items-center">
                                         <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                        <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                        <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                                     </div>
                                 </div>
                             </div>

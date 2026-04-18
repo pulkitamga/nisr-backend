@@ -177,7 +177,7 @@ class SystemLoginSetupController extends BaseController
 
             if ($anotherLoginUrl != $currentUrl) {
                 $this->businessSettingRepo->updateOrInsert(type: $request['type'], value: $currentUrl);
-                Toastr::success(translate('Updated_successfully'));
+                Toastr::success(translate('Updated_Successfully'));
             } else {
                 Toastr::error(translate('admin_and_employee_URL_cannot_be_same'));
             }

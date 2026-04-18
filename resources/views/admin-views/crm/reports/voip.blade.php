@@ -104,15 +104,15 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}
+                                    {{ translate('this_Year') }}
                                 </option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}
+                                    {{ translate('this_Month') }}
                                 </option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}
+                                    {{ translate('this_Week') }}
                                 </option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}
@@ -125,18 +125,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('direction') }}</label>
                             <select class="form-control" name="direction">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="inbound"
                                     {{ ($filters['direction'] ?? '') === 'inbound' ? 'selected' : '' }}>
                                     {{ translate('inbound') }}
@@ -148,9 +148,9 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('status') }}</label>
+                            <label class="form-label mb-1">{{ translate('Status') }}</label>
                             <select class="form-control" name="status">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="ringing" {{ ($filters['status'] ?? '') === 'ringing' ? 'selected' : '' }}>
                                     {{ translate('ringing') }}
                                 </option>
@@ -166,7 +166,7 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('agent') }}</label>
                             <select class="form-control" name="agent_id">
-                                <option value="0">{{ translate('all') }}</option>
+                                <option value="0">{{ translate('All') }}</option>
                                 @foreach ($filterAgents as $agent)
                                     <option value="{{ (int) $agent->agent_id }}"
                                         {{ (int) ($filters['agent_id'] ?? 0) === (int) $agent->agent_id ? 'selected' : '' }}>
@@ -176,9 +176,9 @@
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.ucm.insights-report') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.ucm.insights-report', array_merge(request()->query(), ['download' => 'excel'])) }}"
                                 class="btn btn-outline-success"> <i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>

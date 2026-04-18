@@ -104,7 +104,7 @@ class PhoneVerificationController extends Controller
             ], 200);
         } else {
             return response()->json(['errors' => [
-                ['message' => translate('please_try_again_after') . ' ' . CarbonInterval::seconds($time_differance)->cascade()->forHumans()]
+                ['message' => translate('please_try_again_after_') . ' ' . CarbonInterval::seconds($time_differance)->cascade()->forHumans()]
             ]], 403);
         }
 
@@ -134,7 +134,7 @@ class PhoneVerificationController extends Controller
 
 
                 return response()->json(['errors' => [
-                    ['message' => translate('please_try_again_after') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans()]
+                    ['message' => translate('please_try_again_after_') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans()]
                 ]], 403);
             }
 
@@ -145,7 +145,7 @@ class PhoneVerificationController extends Controller
 
             $token = app(ApiAccessTokenService::class)->issueForUser($user);
             return response()->json([
-                'message' => translate('otp_verified'),
+                'message' => translate('OTP_verified'),
                 'token' => $token
             ], 200);
         } else {
@@ -155,7 +155,7 @@ class PhoneVerificationController extends Controller
                 if (isset($verification->temp_block_time) && Carbon::parse($verification->temp_block_time)->diffInSeconds() <= $temp_block_time) {
                     $time = $temp_block_time - Carbon::parse($verification->temp_block_time)->diffInSeconds();
 
-                    $message = translate('please_try_again_after') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans();
+                    $message = translate('please_try_again_after_') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans();
 
                 } elseif ($verification->is_temp_blocked == 1 && isset($verification->created_at) && Carbon::parse($verification->created_at)->diffInSeconds() >= $temp_block_time) {
                     $verification->otp_hit_count = 1;
@@ -173,7 +173,7 @@ class PhoneVerificationController extends Controller
                     $verification->save();
 
                     $time = $temp_block_time - Carbon::parse($verification->temp_block_time)->diffInSeconds();
-                    $message = translate('too_many_attempts') . translate('please_try_again_after') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans();
+                    $message = translate('too_many_attempts') . translate('please_try_again_after_') . ' ' . CarbonInterval::seconds($time)->cascade()->forHumans();
 
                 } else {
                     $verification->otp_hit_count += 1;

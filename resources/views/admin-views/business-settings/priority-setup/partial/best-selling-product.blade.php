@@ -92,7 +92,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="best-selling-product" id="best-selling-product-stock-out-default"
                                             {{isset($bestSellingProductListPriority?->out_of_stock_product) ? ($bestSellingProductListPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0" for="best-selling-product-stock-out-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -115,7 +115,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="best-selling-product" id="best-selling-product-temporary-close-default"
                                             {{isset($bestSellingProductListPriority?->temporary_close_sorting) ?($bestSellingProductListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="best-selling-product-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -123,7 +123,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

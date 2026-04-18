@@ -90,7 +90,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="featured-product-alphabetic-order"
                                             {{isset($featureProductPriority?->sort_by) && $featureProductPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="featured-product-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -98,7 +98,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="featured-product-alphabetic-order-reverse"
                                             {{isset($featureProductPriority?->sort_by) && $featureProductPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="featured-product-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -122,7 +122,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="featured-product" id="featured-product-stock-out-default"
                                             {{isset($featureProductPriority?->out_of_stock_product) ? ($featureProductPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0" for="featured-product-stock-out-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -147,7 +147,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="featured-product" id="featured-product-temporary-close-default"
                                             {{isset($featureProductPriority?->temporary_close_sorting) ?($featureProductPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="featured-product-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -156,7 +156,7 @@
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="submit" class="btn btn-primary px-5">
-                            {{ translate('save') }}
+                            {{ translate('Save') }}
                         </button>
                     </div>
                 </form>

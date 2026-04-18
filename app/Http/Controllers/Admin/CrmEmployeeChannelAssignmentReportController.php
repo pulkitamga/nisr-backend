@@ -338,7 +338,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             ->map(function ($row) {
                 $row->report_date = (string)$row->report_date;
                 $row->employee_id = (int)$row->employee_id;
-                $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
+                $row->employee_name = (string)($row->employee_name ?: translate('Unassigned'));
                 $row->channel = strtolower(trim((string)$row->channel));
                 $row->total_count = (int)$row->total_count;
                 return $row;
@@ -839,7 +839,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
             'department' => $this->resolveSelectedDepartmentLabel($departmentIds),
             'employee' => $this->resolveSelectedEmployeeLabel($employeeIds),
             'channel' => empty($channels)
-                ? translate('all')
+                ? translate('All')
                 : collect($this->sortChannelsForDisplay($channels))
                 ->map(fn(string $channel) => (string)($channelLabels[$channel] ?? $this->getChannelLabel($channel)))
                 ->implode(', '),
@@ -849,7 +849,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
     private function resolveSelectedDepartmentLabel(array $departmentIds): string
     {
         if (empty($departmentIds)) {
-            return translate('all');
+            return translate('All');
         }
 
         $names = Departments::query()
@@ -866,7 +866,7 @@ class CrmEmployeeChannelAssignmentReportController extends BaseController
     private function resolveSelectedEmployeeLabel(array $employeeIds): string
     {
         if (empty($employeeIds)) {
-            return translate('all');
+            return translate('All');
         }
 
         $names = Admin::query()

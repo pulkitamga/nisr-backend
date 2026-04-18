@@ -102,32 +102,32 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                     <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" name="date_type" id="date_type">
-                            <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                            <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                            <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                            <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>{{ translate('this_Year') }}</option>
+                            <option value="this_month" {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>{{ translate('this_Month') }}</option>
+                            <option value="this_week" {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>{{ translate('this_Week') }}</option>
                             <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
                             <option value="custom_date" {{ ($filters['date_type'] ?? '') == 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                         </select>
                     </div>
                     <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('from') }}</label>
+                        <label class="form-label mb-1">{{ translate('From') }}</label>
                         <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                     </div>
                     <div class="col-md-2 custom-date-range" style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('to') }}</label>
+                        <label class="form-label mb-1">{{ translate('To') }}</label>
                         <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('sla_type') }}</label>
                         <select class="form-control" name="sla_type">
-                            <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>{{ translate('all') }}</option>
+                            <option value="all" {{ ($filters['sla_type'] ?? 'all') === 'all' ? 'selected' : '' }}>{{ translate('All') }}</option>
                             <option value="response" {{ ($filters['sla_type'] ?? '') === 'response' ? 'selected' : '' }}>{{ translate('first_response_sla') }}</option>
                             <option value="resolution" {{ ($filters['sla_type'] ?? '') === 'resolution' ? 'selected' : '' }}>{{ translate('resolution_sla') }}</option>
                         </select>
                     </div>
                     <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                        <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                        <a href="{{ route('admin.warranty.report.sla') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                        <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
+                        <a href="{{ route('admin.warranty.report.sla') }}" class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                         <a href="{{ route('admin.warranty.report.sla', array_merge(request()->query(), ['download' => 'excel'])) }}" class="btn btn-outline-success"> <i class="tio-download-to me-1"></i> {{ translate('excel') }}</a>
                         <a href="#" class="btn btn-outline-danger" id="pdf-download-btn"> <i class="tio-download-to me-1"></i> PDF</a>
                     </div>
@@ -215,7 +215,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
     <div class="card chart-card mb-3">
         <div class="card-header border-0 d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ translate('sla_trend') }}</h4>
-            <span class="badge-soft">{{ translate('total') }} / {{ translate('breached') }}</span>
+            <span class="badge-soft">{{ translate('Total') }} / {{ translate('breached') }}</span>
         </div>
         <div class="card-body chart-holder">
             <canvas id="sla-trend-chart"></canvas>
@@ -235,10 +235,10 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                         <th>{{ translate('sla_type') }}</th>
                         <th>{{ translate('claim_number') }}</th>
                         <th>{{ translate('serial_no') }}</th>
-                        <th>{{ translate('product') }}</th>
+                        <th>{{ translate('Product') }}</th>
                         <th>{{ translate('due_date') }}</th>
                         <th>{{ translate('completed_at') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th>{{ translate('Status') }}</th>
                         <th>{{ translate('claim_status') }}</th>
                     </tr>
                 </thead>
@@ -264,7 +264,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_data_found') }}</td>
+                        <td colspan="9" class="text-center py-4 text-muted">{{ translate('no_Data_found') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

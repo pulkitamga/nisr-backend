@@ -20,19 +20,19 @@
                 <div class="timeline-info">
                     <p class="timeline-title">
                         @if($history->status == 'pending')
-                            {{translate('pending')}}
+                            {{translate('Pending')}}
                         @elseif($history->status == 'confirmed')
                             {{translate('confirmed')}}
                         @elseif($history->status == 'processing')
-                            {{translate('packaging')}}
+                            {{translate('Packaging')}}
                         @elseif($history->status == 'out_for_delivery')
-                            {{translate('out_for_Delivery')}}
+                            {{translate('out_For_Delivery')}}
                         @elseif($history->status == 'delivered')
-                            {{translate('delivered')}}
+                            {{translate('Delivered')}}
                         @elseif($history->status == 'returned')
-                            {{translate('returned')}}
+                            {{translate('Returned')}}
                         @elseif($history->status == 'failed')
-                            {{translate('failed_to_Deliver')}}
+                            {{translate('Failed_to_Deliver')}}
                         @elseif($history->status == 'canceled')
                             {{translate('canceled')}}
                         @endif
@@ -58,6 +58,6 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('close') }}</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Close') }}</button>
 </div>
 

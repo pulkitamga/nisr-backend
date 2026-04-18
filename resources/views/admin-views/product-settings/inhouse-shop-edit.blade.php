@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('inhouse_shop'))
+@section('title', translate('in-house_Shop'))
 
 @section('content')
     <div class="content container-fluid">
@@ -23,7 +23,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
-                        <h5 class="text-primary mb-0">{{ translate('note') }}</h5>
+                        <h5 class="text-primary mb-0">{{ translate('Note') }}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -37,7 +37,7 @@
                     @csrf
                     <div class="border rounded border-color-c1 px-4 py-3 d-flex justify-content-between mb-1">
                         <h5 class="mb-0 d-flex gap-1 c1">
-                            {{ translate('temporary_close') }}
+                            {{ translate('temporary_Close') }}
                         </h5>
                         <div class="position-relative">
                             <label class="switcher">
@@ -68,14 +68,14 @@
                 <div class="d-flex flex-wrap gap-3 justify-content-between mb-4">
                     <div class="d-flex flex-column gap-1">
                         <h3 class="mb-0 d-flex gap-2 flex-wrap">{{ translate('shop_details') }}</h3>
-                        <p class="mb-0">{{ translate('created_at') }} {{ date('d M, Y', strtotime($admin['updated_at']) ) }}</p>
+                        <p class="mb-0">{{ translate('Created_At') }} {{ date('d M, Y', strtotime($admin['updated_at']) ) }}</p>
                     </div>
                     <div class="d-flex flex-wrap gap-3">
                         <button class="btn btn-outline--primary" data-toggle="modal" data-target="#vacation_mode_modal">
                             {{ translate('go_to_Vacation_Mode') }}
                         </button>
                         <a href="{{ route('admin.product-settings.inhouse-shop') }}"
-                           class="btn btn--primary d-flex gap-2 align-items-center">{{ translate('back') }}</a>
+                           class="btn btn--primary d-flex gap-2 align-items-center">{{ translate('Back') }}</a>
                     </div>
                 </div>
 
@@ -117,12 +117,12 @@
                                              role="tabpanel">
                                             <div class="form-group mb-0">
                                                 <label class="title-color d-flex">
-                                                    {{ translate('shop_name') }} ({{ strtoupper($lang) }})
+                                                    {{ translate('Shop_Name') }} ({{ strtoupper($lang) }})
                                                     @if($lang == $defaultLanguage)<span class="text-danger">*</span>@endif
                                                 </label>
                                                 <input class="form-control" type="text" name="company_name[]"
                                                        value="{{ $companyNameTranslations[$lang] ?? '' }}"
-                                                       placeholder="{{ translate('shop_name') }}">
+                                                       placeholder="{{ translate('Shop_Name') }}">
                                             </div>
                                             <input type="hidden" name="basic_lang[]" value="{{ $lang }}">
                                         </div>
@@ -263,8 +263,8 @@
                             </div>
 
                             <div class="text-end gap-5 mt-2">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('close') }}</button>
-                                <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Close') }}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
                             </div>
                         </div>
                     </form>

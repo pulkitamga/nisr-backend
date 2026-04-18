@@ -15,7 +15,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_serial'),
             'aria_label' => translate('search_by_serial'),
@@ -27,7 +27,7 @@
 
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -91,9 +91,9 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('serial_number') }}</th>
-                            <th>{{ translate('reason') }}</th>
+                            <th>{{ translate('Reason') }}</th>
                             <th>{{ translate('blacklisted_at') }}</th>
-                            <th>{{ translate('action') }}</th>
+                            <th>{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,7 +106,7 @@
                                     <form action="{{ route('admin.warranty.blacklist.remove', $item->id) }}" method="POST" onsubmit="return confirm('{{ translate('Are you sure you want to remove this item from blacklist?') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">{{ translate('remove') }}</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">{{ translate('Remove') }}</button>
                                     </form>
                                 </td>
                             </tr>

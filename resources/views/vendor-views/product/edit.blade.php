@@ -62,7 +62,7 @@
                         <div class="{{ $language != $activeLanguage ? 'd-none' : ''}} form-system-language-form" id="{{ $language}}-form">
                             <div class="form-group">
                                 <label class="title-color" for="{{ $language}}_name">
-                                    {{ translate('product_name') }}
+                                    {{ translate('Product_name') }}
                                     ({{strtoupper($language) }})
                                     @if($language == $defaultLanguage)
                                         <span class="input-required-icon">*</span>
@@ -75,7 +75,7 @@
                             </div>
                             <input type="hidden" name="lang[]" value="{{ $language}}">
                             <div class="form-group pt-4">
-                                <label class="title-color">{{ translate('description') }}
+                                <label class="title-color">{{ translate('Description') }}
                                     ({{strtoupper($language) }})</label>
                                 <textarea name="description[]" class="summernote"
                                 >{!! $language == $defaultLanguage ? $product['details'] : $product->getTranslatedField('description', $language, '') !!}</textarea>
@@ -97,7 +97,7 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <label for="name" class="title-color">
-                                    {{ translate('category') }}
+                                    {{ translate('Category') }}
                                     <span class="input-required-icon">*</span>
                                 </label>
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control action-get-request-onchange"
@@ -106,7 +106,7 @@
                                         data-url-prefix="{{ url('/vendor/products/get-categories?parent_id=') }}"
                                         data-element-id="sub-category-select"
                                         data-element-type="select">
-                                    <option value="0" selected disabled>---{{ translate('select') }}---</option>
+                                    <option value="0" selected disabled>---{{ translate('Select') }}---</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category['id']}}" {{ $category->id==$product['category_id'] ? 'selected' : ''}}>{{ $category['defaultName']}}</option>
                                     @endforeach
@@ -115,7 +115,7 @@
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('sub_Category') }}</label>
+                                <label class="title-color">{{ translate('Sub_Category') }}</label>
                                 <select
                                     class="js-example-basic-multiple js-states js-example-responsive form-control action-get-request-onchange"
                                     name="sub_category_id" id="sub-category-select"
@@ -140,13 +140,13 @@
                             <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show">
                                 <div class="form-group">
                                     <label class="title-color">
-                                        {{ translate('brand') }}
+                                        {{ translate('Brand') }}
                                         <span class="input-required-icon">*</span>
                                     </label>
                                     <select
                                         class="js-example-basic-multiple js-states js-example-responsive form-control"
                                         name="brand_id">
-                                        <option value="{{null}}" selected disabled>---{{ translate('select') }}---
+                                        <option value="{{null}}" selected disabled>---{{ translate('Select') }}---
                                         </option>
                                         @foreach($brands as $brand)
                                             <option
@@ -159,7 +159,7 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <label class="title-color">
-                                    {{ translate('product_type') }}
+                                    {{ translate('product_Type') }}
                                     <span class="input-required-icon">*</span>
                                 </label>
                                 <select name="product_type" id="product_type" class="form-control" required>
@@ -208,7 +208,7 @@
                                         required>
                                     <option value="{{ old('category_id') }}"
                                             {{ !$product['digital_product_type'] ? 'selected' : ''}} disabled>
-                                        ---{{ translate('select') }}---
+                                        ---{{ translate('Select') }}---
                                     </option>
                                     <option
                                         value="ready_after_sell" {{ $product['digital_product_type'] == 'ready_after_sell' ? 'selected' : ''}}>{{ translate("ready_After_Sell") }}</option>
@@ -240,7 +240,7 @@
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('unit') }}</label>
+                                <label class="title-color">{{ translate('Unit') }}</label>
                                 <select
                                     class="js-example-basic-multiple js-states js-example-responsive form-control"
                                     name="unit">
@@ -304,7 +304,7 @@
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color">
-                                        {{ translate('unit_price') }}
+                                        {{ translate('Unit_Price') }}
                                         ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                                         <span class="input-required-icon">*</span>
                                     </label>
@@ -316,7 +316,7 @@
                                 </div>
 
                                 <input type="number" min="0" step="0.01"
-                                       placeholder="{{ translate('unit_price') }}"
+                                       placeholder="{{ translate('Unit_Price') }}"
                                        name="unit_price" class="form-control"
                                        value={{ usdToDefaultCurrency($product['unit_price']) }} required>
                             </div>
@@ -354,7 +354,7 @@
                                     </span>
                                 </div>
                                 <input type="number" min="0" value={{ $product['current_stock'] }} step="1"
-                                       placeholder="{{ translate('quantity') }}"
+                                       placeholder="{{ translate('Quantity') }}"
                                        name="current_stock" id="current_stock" class="form-control" required>
                             </div>
                         </div>
@@ -362,7 +362,7 @@
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color" for="discount_Type">
-                                        {{ translate('discount_Type') }}
+                                        {{ translate('Discount_Type') }}
                                     </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
@@ -383,7 +383,7 @@
                             <div class="form-group">
                                 <div class="d-flex gap-2">
                                     <label class="title-color" for="discount">
-                                        {{ translate('discount_amount') }}
+                                        {{ translate('Discount_Amount') }}
                                         <span class="discount_amount_symbol">({{ $product->discount_type=='flat'? getCurrencySymbol(currencyCode: getCurrencyCode()) : '%' }})</span>
                                     </label>
 
@@ -414,7 +414,7 @@
                                 </div>
 
                                 <input type="number" min="0" value={{ $product->tax ?? 0 }} step="0.01"
-                                       placeholder="{{ translate('tax') }}" name="tax" id="tax"
+                                       placeholder="{{ translate('Tax') }}" name="tax" id="tax"
                                        class="form-control" required>
                                 <input name="tax_type" value="percent" class="d-none">
                             </div>
@@ -668,7 +668,7 @@
                                     </div>
 
                                     <p class="text-muted mt-2">{{ translate('image_format') }} : {{ "Jpg, png, jpeg, webp" }} <br>
-                                        {{ translate('image_size') }} : {{ translate('max') }} {{ "2 MB" }}</p>
+                                        {{ translate('image_size') }} : {{ translate('Max') }} {{ "2 MB" }}</p>
                                 </div>
 
                             </div>
@@ -682,7 +682,7 @@
                                     <label for="name"
                                            class="title-color text-capitalize font-weight-bold mb-0">{{ translate('colour_wise_product_image') }}</label>
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                          title="{{ translate('add_color_wise_product_images_here') }}.">
+                                          title="{{ translate('add_color-wise_product_images_here') }}.">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
@@ -924,7 +924,7 @@
                                 <p class="text-muted mt-2 fz-12">
                                     {{ translate('Format') }} : {{ " pdf, mp4, mp3" }}
                                     <br>
-                                    {{ translate('image_size') }} : {{ translate('max') }} {{ "10 MB" }}</p>
+                                    {{ translate('image_size') }} : {{ translate('Max') }} {{ "10 MB" }}</p>
                             </div>
                         </div>
                     </div>
@@ -953,7 +953,7 @@
                         <span class="text-info"> ( {{ translate('optional_please_provide_embed_link_not_direct_link') }}. )</span>
                     </div>
                     <input type="text" value="{{ $product['video_url']}}" name="video_url"
-                           placeholder="{{ translate('ex') }} : https://www.youtube.com/embed/5R06LRdUCSE"
+                           placeholder="{{ translate('Ex') }} : https://www.youtube.com/embed/5R06LRdUCSE"
                            class="form-control" required>
                 </div>
             </div>
@@ -977,7 +977,7 @@
                         <div class="col-md-8">
                             <div class="form-group">
                                 <label class="title-color">
-                                    {{ translate('meta_Title') }}
+                                    {{ translate('Meta_Title') }}
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           data-placement="top"
                                           title="{{ translate('add_the_products_title_name_taglines_etc_here').' '.translate('this_title_will_be_seen_on_Search_Engine_Results_Pages_and_while_sharing_the_products_link_on_social_platforms') .' [ '. translate('character_Limit') }} : 100 ]">
@@ -1085,13 +1085,13 @@
     <span id="image-path-of-product-upload-icon" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}"></span>
     <span id="image-path-of-product-upload-icon-two" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg') }}"></span>
     <span id="message-enter-choice-values" data-text="{{ translate('enter_choice_values') }}"></span>
-    <span id="message-upload-image" data-text="{{ translate('upload_Image') }}"></span>
-    <span id="message-are-you-sure" data-text="{{ translate('are_you_sure') }}"></span>
-    <span id="message-yes-word" data-text="{{ translate('yes') }}"></span>
-    <span id="message-no-word" data-text="{{ translate('no') }}"></span>
+    <span id="message-upload-image" data-text="{{ translate('Upload_Image') }}"></span>
+    <span id="message-are-you-sure" data-text="{{ translate('Are_you_sure') }}"></span>
+    <span id="message-yes-word" data-text="{{ translate('Yes') }}"></span>
+    <span id="message-no-word" data-text="{{ translate('No') }}"></span>
     <span id="message-want-to-add-or-update-this-product" data-text="{{ translate('want_to_update_this_product') }}"></span>
     <span id="message-please-only-input-png-or-jpg" data-text="{{ translate('please_only_input_png_or_jpg_type_file') }}"></span>
-    <span id="message-product-added-successfully" data-text="{{ translate('product_added_successfully') }}"></span>
+    <span id="message-product-added-successfully" data-text="{{ translate('Product_added_successfully') }}"></span>
     <span id="message-product-name-in-english-required" data-text="{{ translate('The_name_in_english_is_required') }}"></span>
     <span id="message-product-description-in-english-required" data-text="{{ translate('The_description_in_english_is_required') }}"></span>
     <span id="message-discount-will-not-larger-then-variant-price" data-text="{{ translate('the_discount_price_will_not_larger_then_Variant_Price') }}"></span>

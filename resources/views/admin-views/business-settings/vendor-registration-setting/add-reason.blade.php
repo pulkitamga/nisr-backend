@@ -18,11 +18,11 @@
             <thead class="thead-light thead-50 text-capitalize">
             <tr>
                 <th>{{translate('SL')}}</th>
-                <th>{{translate('title')}}</th>
-                <th>{{translate('description')}}</th>
-                <th class="text-center">{{translate('priority')}}</th>
-                <th class="text-center">{{translate('status')}}</th>
-                <th class="text-center">{{translate('action')}}</th>
+                <th>{{translate('Title')}}</th>
+                <th>{{translate('Description')}}</th>
+                <th class="text-center">{{translate('Priority')}}</th>
+                <th class="text-center">{{translate('Status')}}</th>
+                <th class="text-center">{{translate('Action')}}</th>
             </tr>
             </thead>
             <tbody>
@@ -59,13 +59,13 @@
                     </td>
                     <td>
                         <div class="d-flex justify-content-center gap-10">
-                            <a class="btn btn-outline-info btn-sm square-btn vendor-registration-reason-update-view" title="{{translate('edit')}}"
+                            <a class="btn btn-outline-info btn-sm square-btn vendor-registration-reason-update-view" title="{{translate('Edit')}}"
                                data-action="{{route('admin.business-settings.vendor-registration-reason.update',['id'=>$reason['id']])}}">
                                 <i class="tio-edit"></i>
                             </a>
                             <a href="javascript:" class="btn btn-outline-danger btn-sm square-btn delete-data-without-form"
                                data-action="{{route('admin.business-settings.vendor-registration-reason.delete')}}"
-                               data-id="{{$reason['id']}}" title="{{translate('delete')}}">
+                               data-id="{{$reason['id']}}" title="{{translate('Delete')}}">
                                 <i class="tio-delete"></i>
                             </a>
                         </div>

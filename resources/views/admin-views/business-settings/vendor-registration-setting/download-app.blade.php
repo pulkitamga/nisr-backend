@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('download_app'))
+@section('title', translate('download_App'))
 @section('content')
     <div class="content container-fluid">
         @include('admin-views.business-settings.vendor-registration-setting.partial.inline-menu')
@@ -17,20 +17,20 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}}</label>
+                                        <label class="title-color">{{translate('Title')}}</label>
                                         <input type="text" name="title" class="form-control" value="{{$downloadVendorApp?->title}}" placeholder="{{translate('enter_title')}}">
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="title-color text-capitalize">{{translate('sub_title')}}</label>
+                                        <label class="title-color text-capitalize">{{translate('Sub_Title')}}</label>
                                         <input type="text" name="sub_title" class="form-control" value="{{$downloadVendorApp?->sub_title}}" placeholder="{{translate('enter_title')}}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mx-auto max-w-150">
                                         <div class="mb-3 text-center">
-                                            <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('image')}}</label>
-                                            <span class="badge badge-soft-info">{{'('.translate('size').' 1:1'.')'}}</span>
+                                            <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('Image')}}</label>
+                                            <span class="badge badge-soft-info">{{'('.translate('Size').' 1:1'.')'}}</span>
                                         </div>
 
                                         <div class="custom_upload_input">
@@ -51,7 +51,7 @@
                                                     class="d-flex flex-column justify-content-center align-items-center">
                                                     <img alt="" class="w-50"
                                                         src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                                    <h5 class="text-muted text-capitalize">{{ translate('upload_image') }}</h5>
+                                                    <h5 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h5>
                                                 </div>
                                             </div>
                                         </div>
@@ -59,7 +59,7 @@
                                         <p class="text-muted text-center fz-12 mt-2">
                                             {{ translate('image_format').' : '.'Jpg, png, jpeg, webp,'}}
                                             <br>
-                                            {{ translate('image_size').' : '.translate('max').' ' .'2 MB'}}</p>
+                                            {{ translate('image_size').' : '.translate('Max').' ' .'2 MB'}}</p>
                                     </div>
                                 </div>
                             </div>
@@ -122,7 +122,7 @@
                                         </div>
                                         <input type="url" name="download_apple_app" class="form-control"
                                                value="{{ $downloadVendorApp?->download_apple_app }}"
-                                               placeholder="{{translate('ex').':'.'https://www.apple.com/app-store/'}}">
+                                               placeholder="{{translate('Ex').':'.'https://www.apple.com/app-store/'}}">
                                     </div>
                                 </div>
                             </div>

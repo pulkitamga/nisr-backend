@@ -216,7 +216,7 @@ $direction = Session::get('direction');
             <div
                 class="mb-1">{{translate('thank_you_for_choosing_').$companyName.'! '.translate('your_digital_product_is_ready_for_download').'.'.translate('to_download_your_product').','.translate('_use_your_email_')}}
                 <span style="color: #0a53be;">{{$data['order']->customer['email']}}</span>{{translate('_and')}}
-                <strong>{{translate('_order').'# '.$data['order']->id. translate('_below')}}</strong></div>
+                <strong>{{translate('Order').'# '.$data['order']->id. translate('_below')}}</strong></div>
             <br>
             <table class="order-body-table" style="width: 100%;background: #E9F6FF">
                 <tr>
@@ -225,7 +225,7 @@ $direction = Session::get('direction');
                              src="{{ getStorageImages(path:$companyLogo, type:'backend-logo') }}"
                              id="logoViewer" alt="">
                         <br>
-                        <h3 class="title text-capitalize">{{translate('order_info')}}</h3>
+                        <h3 class="title text-capitalize">{{translate('order_Info')}}</h3>
                         <p>
                             {{translate('to_verify_when_download_your_product').','.translate('_use_your_order_info').'.'}}
                         </p>
@@ -240,7 +240,7 @@ $direction = Session::get('direction');
                             </tr>
                             <tr>
                                 <td colspan="2" style="padding:5px 15px">
-                                    <h4 style="margin:0 0 8px;">{{translate('products')}}</h4>
+                                    <h4 style="margin:0 0 8px;">{{translate('Products')}}</h4>
                                     @foreach($data['order']->details as $details)
                                         @php($product = json_decode($details['product_details']))
                                         @if($product->product_type == 'digital')
@@ -275,7 +275,7 @@ $direction = Session::get('direction');
             <hr>
             <div class="mb-2" id="mail-footer">
                 {{ translate('please_')}}
-                <a href="{{route('contacts')}}" target="_blank">{{ translate('_contact_us')}}</a>
+                <a href="{{route('contacts')}}" target="_blank">{{ translate('Contact_Us')}}</a>
                 {{ translate('_for_any_queries').','.translate('_we_are_always_happy_to_help').'.' }}
             </div>
             <div>

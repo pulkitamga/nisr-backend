@@ -117,7 +117,7 @@
                             <div class="js-form-message form-group mt-5">
                                 <label class="input-label" for="forgotVendorPassword" tabindex="0">
                                     <span class="d-flex justify-content-between align-items-center">
-                                            {{translate('phone')}}
+                                            {{translate('Phone')}}
                                             <a href="{{route('vendor.auth.login')}}">
                                                 {{translate('back_to_login')}}
                                             </a>
@@ -146,7 +146,7 @@
                     <div class="card-footer">
                         <div class="row">
                             <div class="col-10">
-                                <span id="admin-email" data-email="{{ \App\Enums\DemoConstant::VENDOR['email'] }}">{{translate('email')}} : {{ \App\Enums\DemoConstant::VENDOR['email'] }}</span><br>
+                                <span id="admin-email" data-email="{{ \App\Enums\DemoConstant::VENDOR['email'] }}">{{translate('Email')}} : {{ \App\Enums\DemoConstant::VENDOR['email'] }}</span><br>
                                 <span id="admin-password"
                                       data-password="{{ \App\Enums\DemoConstant::VENDOR['password'] }}">{{translate('password')}} : {{ \App\Enums\DemoConstant::VENDOR['password'] }}</span>
                             </div>
@@ -174,7 +174,7 @@
                 <div class="d-flex flex-column align-items-center text-center gap-2 mb-2">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/password-reset.png') }}" width="70"
                          class="mb-3 mb-20" alt="">
-                    <h5 class="modal-title">{{ translate('password_reset_successfully') }}</h5>
+                    <h5 class="modal-title">{{ translate('Password_reset_successfully') }}</h5>
                     <div
                         class="text-center">{{ translate('a_password_reset_mail_has_sent_to_your_email').'. '.translate('please_check_your_email').'.'}}</div>
                 </div>

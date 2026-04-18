@@ -512,18 +512,20 @@
                         <img src="{{ getStorageImages(path: $web_config['footer_logo'], type: 'logo') }}" alt="{{ $web_config['company_name'] }}">
                     </a>
                     @php($brand_text = richTextToPlainText((string) (getWebConfig(name: 'footer_description_text') ?? ($web_config['footer_description'] ?? ''))))
+                    @php($ios_app = is_array($web_config['ios'] ?? null) ? $web_config['ios'] : ['status' => 0, 'link' => ''])
+                    @php($android_app = is_array($web_config['android'] ?? null) ? $web_config['android'] : ['status' => 0, 'link' => ''])
                     @if($brand_text !== '')
                         <p class="nisr-ft-tagline" dir="auto">{{ str($brand_text)->limit(130) }}</p>
                     @endif
-                    @if($web_config['ios']['status'] || $web_config['android']['status'])
+                    @if($ios_app['status'] || $android_app['status'])
                         <div class="nisr-ft-apps">
-                            @if($web_config['ios']['status'])
-                                <a href="{{ $web_config['ios']['link'] }}" aria-label="{{ translate('download_our_app') }} iOS">
+                            @if($ios_app['status'])
+                                <a href="{{ $ios_app['link'] }}" aria-label="{{ translate('download_our_app') }} iOS">
                                     <img src="{{ dynamicAsset(path: 'public/assets/front-end/png/apple_app.png') }}" alt="{{ translate('App_Store') }}">
                                 </a>
                             @endif
-                            @if($web_config['android']['status'])
-                                <a href="{{ $web_config['android']['link'] }}" aria-label="{{ translate('download_our_app') }} Android">
+                            @if($android_app['status'])
+                                <a href="{{ $android_app['link'] }}" aria-label="{{ translate('download_our_app') }} Android">
                                     <img src="{{ dynamicAsset(path: 'public/assets/front-end/png/google_app.png') }}" alt="{{ translate('Google_Play') }}">
                                 </a>
                             @endif

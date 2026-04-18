@@ -103,8 +103,8 @@ class CrmSalesReportController extends Controller
         'from' => $data['filters']['from'] ?? '-',
         'to' => $data['filters']['to'] ?? '-',
         'date_type' => $data['filters']['date_type'] ?? 'this_year',
-        'sale_type' => $data['filters']['sale_type'] ? translate($data['filters']['sale_type']) : translate('all'),
-        'agent' => $data['filters']['agent_id'] ? Admin::find($data['filters']['agent_id'])->name : translate('all'),
+        'sale_type' => $data['filters']['sale_type'] ? translate($data['filters']['sale_type']) : translate('All'),
+        'agent' => $data['filters']['agent_id'] ? Admin::find($data['filters']['agent_id'])->name : translate('All'),
     ];
 
     return app(ReportPdfService::class)->download(
@@ -406,7 +406,7 @@ class CrmSalesReportController extends Controller
         $extended = $agents->values();
         $extended->push((object)[
             'id' => 0,
-            'name' => translate('unassigned'),
+            'name' => translate('Unassigned'),
         ]);
 
         return $extended;

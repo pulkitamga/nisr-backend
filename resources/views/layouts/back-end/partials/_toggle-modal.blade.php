@@ -11,8 +11,8 @@
                     <div class="text-center" id="toggle-modal-message"></div>
                 </div>
                 <div class="d-flex justify-content-center gap-3">
-                    <button type="button" class="btn btn--primary min-w-120" id="toggle-modal-ok-button" data-dismiss="modal">{{translate('ok')}}</button>
-                    <button type="button" class="btn btn-danger-light min-w-120" data-bs-dismiss="modal">{{ translate('cancel') }}</button>
+                    <button type="button" class="btn btn--primary min-w-120" id="toggle-modal-ok-button" data-dismiss="modal">{{translate('OK')}}</button>
+                    <button type="button" class="btn btn-danger-light min-w-120" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                 </div>
             </div>
         </div>
@@ -35,8 +35,8 @@
                     <div class="text-center" id="toggle-status-modal-message"></div>
                 </div>
                 <div class="d-flex justify-content-center gap-3">
-                    <button type="button" class="btn btn--primary min-w-120" id="toggle-status-modal-ok-button" data-dismiss="modal">{{translate('ok')}}</button>
-                    <button type="button" class="btn btn-danger-light min-w-120" data-bs-dismiss="modal">{{ translate('cancel') }}</button>
+                    <button type="button" class="btn btn--primary min-w-120" id="toggle-status-modal-ok-button" data-dismiss="modal">{{translate('OK')}}</button>
+                    <button type="button" class="btn btn-danger-light min-w-120" data-bs-dismiss="modal">{{ translate('Cancel') }}</button>
                 </div>
             </div>
         </div>

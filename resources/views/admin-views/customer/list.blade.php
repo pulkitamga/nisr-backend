@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('customer_List'))
+@section('title', translate('Customer_List'))
 
 @push('css_or_js')
 <style>
@@ -50,7 +50,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
-            {{translate('customer_list')}}
+            {{translate('Customer_List')}}
             <span class="badge badge-soft-dark radius-50">{{ $totalCustomers }}</span>
         </h2>
     </div>
@@ -59,7 +59,7 @@
             <form action="{{ url()->current() }}" method="GET">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('order_date') }}</label>
+                        <label class="form-label">{{ translate('Order_Date') }}</label>
                         <div class="position-relative">
                             <span class="tio-calendar icon-absolute-on-right"></span>
                             <input type="text" name="order_date" class="js-daterangepicker-with-range form-control cursor-pointer {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" value="{{request('order_date')}}" placeholder="{{ translate('select_date') }}" autocomplete="off" readonly>
@@ -82,16 +82,16 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('sort_by') }}</label>
+                        <label class="form-label">{{translate('Sort_By') }}</label>
                         <select class="form-control js-select2-custom" name="sort_by">
                             <option disabled {{ is_null(request('sort_by')) ? 'selected' : '' }}>{{ translate('select_customer_sorting_order') }}</option>
-                            <option value="order_amount" {{ request('sort_by') === 'order_amount' ? 'selected' : '' }}>{{ translate('sort_by_order_amount') }}</option>
-                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{translate('sort_by_oldest')}}</option>
-                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{translate('sort_by_newest')}}</option>
+                            <option value="order_amount" {{ request('sort_by') === 'order_amount' ? 'selected' : '' }}>{{ translate('Sort_By_Order_Amount') }}</option>
+                            <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{translate('Sort_By_Oldest')}}</option>
+                            <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{translate('Sort_By_Newest')}}</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">{{translate('choose_first')}}</label>
+                        <label class="form-label">{{translate('Choose_First')}}</label>
                         <input type="number" class="form-control {{ $direction === 'rtl' ? 'text-end' : 'text-start' }}" min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('100')}}" name="choose_first">
                     </div>
                     <div class="col-md-4">
@@ -99,7 +99,7 @@
                         <div class="btn--container justify-content-end">
                             <a href="{{ route('admin.customer.list') }}"
                                 class="btn btn-secondary px-5">
-                                {{ translate('reset') }}
+                                {{ translate('Reset') }}
                             </a>
                             <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
                         </div>
@@ -111,7 +111,7 @@
     <div class="card">
         <div class="card-header gap-3 align-items-center customer-list-toolbar">
             <h5 class="mb-0 me-auto">
-                {{translate('customer_list')}}
+                {{translate('Customer_List')}}
                 <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $customers->total() }}</span>
             </h5>
 
@@ -128,8 +128,8 @@
                         </div>
                     </div>
                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                        placeholder="{{ translate('search_by_name_or_email_or_phone')}}" aria-label="{{ translate('search') }}" value="{{ request('searchValue') }}">
-                    <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
+                        placeholder="{{ translate('Search_by_Name_or_Email_or_Phone')}}" aria-label="{{ translate('Search') }}" value="{{ request('searchValue') }}">
+                    <button type="submit" class="btn btn--primary">{{ translate('Search')}}</button>
                 </div>
             </form>
             <div class="dropdown">
@@ -146,11 +146,11 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('customer_name')}}</th>
-                        <th>{{translate('contact_info')}}</th>
+                        <th>{{translate('Customer_Name')}}</th>
+                        <th>{{translate('_contact_info')}}</th>
                         <th>{{translate('total_Order')}} </th>
-                        <th class="text-center">{{translate('block')}} / {{translate('unblock')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{translate('Block')}} / {{translate('unblock')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,7 +186,7 @@
                         <td>
                             @if($customer['email'] == 'walking@customer.com')
                             <div class="text-center">
-                                <div class="badge badge-soft-version">{{ translate('default') }}</div>
+                                <div class="badge badge-soft-version">{{ translate('Default') }}</div>
                             </div>
                             @else
                             <form action="{{route('admin.customer.status-update')}}" method="post"
@@ -213,13 +213,13 @@
 
                         <td>
                             <div class="d-flex justify-content-center gap-2">
-                                <a title="{{translate('view')}}"
+                                <a title="{{translate('View')}}"
                                     class="btn btn-outline-info btn-sm square-btn"
                                     href="{{route('admin.customer.view',[$customer['id']])}}">
                                     <i class="tio-invisible"></i>
                                 </a>
                                 @if($customer['id'] != '0')
-                                <a title="{{translate('delete')}}"
+                                <a title="{{translate('Delete')}}"
                                     class="btn btn-outline-danger btn-sm delete square-btn delete-data" href="javascript:"
                                     data-id="customer-{{$customer['id']}}">
                                     <i class="tio-delete"></i>

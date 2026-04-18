@@ -321,7 +321,7 @@ class PagesController extends BaseController
         }
 
         clearWebConfigCacheKeys();
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 

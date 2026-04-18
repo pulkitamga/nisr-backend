@@ -66,9 +66,9 @@
 </div>
 <div class="d-flex justify-content-center gap-3 mt-3">
     <button type="button" class="btn btn--primary min-w-120" data-dismiss="modal">
-        {{ translate('ok') }}
+        {{ translate('OK') }}
     </button>
     <button type="button" class="btn btn-danger-light min-w-120" data-dismiss="modal">
-        {{ translate('cancel') }}
+        {{ translate('Cancel') }}
     </button>
 </div>

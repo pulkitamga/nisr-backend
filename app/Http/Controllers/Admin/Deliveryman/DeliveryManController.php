@@ -75,7 +75,7 @@ class DeliveryManController extends Controller
     public function updateStatus(Request $request): JsonResponse
     {
         $this->deliveryManRepo->update(id:$request['id'], data: ['is_active'=>$request->get('status', 0)]);
-        return response()->json(['message'=>translate("status_updated_successfully")], 200);
+        return response()->json(['message'=>translate("Status_updated_successfully")], 200);
     }
 
     public function exportList(Request $request): BinaryFileResponse

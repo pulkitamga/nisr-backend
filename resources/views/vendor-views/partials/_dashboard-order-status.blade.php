@@ -2,7 +2,7 @@
     <a class="order-stats order-stats_pending" href="{{route('vendor.orders.list',['pending'])}}">
         <div class="order-stats__content">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/pending.png')}}" alt="">
-            <h6 class="order-stats__subtitle">{{translate('pending')}}</h6>
+            <h6 class="order-stats__subtitle">{{translate('Pending')}}</h6>
         </div>
         <span class="order-stats__title">{{$orderStatus['pending']}}</span>
     </a>
@@ -20,7 +20,7 @@
     <a class="order-stats order-stats_packaging" href="{{route('vendor.orders.list',['processing'])}}">
         <div class="order-stats__content">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/packaging.png')}}" alt="">
-            <h6 class="order-stats__subtitle">{{translate('packaging')}}</h6>
+            <h6 class="order-stats__subtitle">{{translate('Packaging')}}</h6>
         </div>
         <span class="order-stats__title">{{$orderStatus['processing']}}</span>
     </a>
@@ -40,7 +40,7 @@
     <a class="order-stats order-stats_delivered" href="{{route('vendor.orders.list',['delivered'])}}">
         <div class="order-stats__content">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/delivered.png')}}" alt="">
-            <h6 class="order-stats__subtitle">{{translate('delivered')}}</h6>
+            <h6 class="order-stats__subtitle">{{translate('Delivered')}}</h6>
         </div>
         <span class="order-stats__title">{{$orderStatus['delivered']}}</span>
     </a>
@@ -58,7 +58,7 @@
     <a class="order-stats order-stats_returned" href="{{route('vendor.orders.list',['returned'])}}">
         <div class="order-stats__content">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/returned.png')}}" alt="">
-            <h6 class="order-stats__subtitle">{{translate('returned')}}</h6>
+            <h6 class="order-stats__subtitle">{{translate('Returned')}}</h6>
         </div>
         <span class="order-stats__title">{{$orderStatus['returned']}}</span>
     </a>

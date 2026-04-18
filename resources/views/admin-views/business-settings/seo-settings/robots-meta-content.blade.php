@@ -139,7 +139,7 @@
                             </div>
                             <div class="mb-3 btn--container justify-content-end">
                                 <button type="{{env('APP_MODE')!='demo'? 'submit' : 'button' }}" class="btn btn--primary {{env('APP_MODE')!='demo'? '' : 'call-demo' }}">
-                                    {{ translate('save') }}
+                                    {{ translate('Save') }}
                                 </button>
                             </div>
                         </form>

@@ -20,7 +20,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_save_information_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -54,14 +54,14 @@
                                 </div>
                                 <input class="form-control" type="text" name="stock_limit" id="stock_limit"
                                        value="{{ $stockLimit['value'] }}"
-                                       placeholder="{{translate('ex').':'.'10'}}">
+                                       placeholder="{{translate('Ex').':'.'10'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="form-group">
                                 <div class="d-flex justify-content-between align-items-center gap-10 form-control">
                                     <span class="title-color text-capitalize">
-                                        {{translate('services')}}
+                                        {{translate('Services')}}
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
                                               title="{{translate('if_enabled_services_are_shown_in_website') }}">
@@ -140,7 +140,7 @@
                         </div>
                         <div class="col-12">
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>

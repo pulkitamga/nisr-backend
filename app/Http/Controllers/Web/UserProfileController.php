@@ -109,7 +109,7 @@ class UserProfileController extends Controller
             'password' => strlen($request['password']) > 5 ? bcrypt($request['password']) : auth('customer')->user()->password,
         ]);
 
-        Toastr::info(translate('updated_successfully'));
+        Toastr::info(translate('Updated_Successfully'));
         return redirect()->back();
     }
 
@@ -213,7 +213,7 @@ class UserProfileController extends Controller
             return redirect()->route('home');
         }
 
-        Toastr::warning(translate('access_denied') . '!!');
+        Toastr::warning(translate('access_Denied') . '!!');
         return back();
     }
 
@@ -341,7 +341,7 @@ class UserProfileController extends Controller
         if (isset($shippingAddress)) {
             return view(VIEW_FILE_NAMES['account_address_edit'], compact('shippingAddress', 'country_restrict_status', 'zip_restrict_status', 'delivery_countries', 'delivery_zipcodes', 'countriesName', 'countriesCode', 'deliveryRestriction'));
         } else {
-            Toastr::warning(translate('access_denied'));
+            Toastr::warning(translate('access_Denied'));
             return back();
         }
     }
@@ -797,7 +797,7 @@ class UserProfileController extends Controller
         }
 
         $productDetails = json_decode($orderDetail->product_details, true);
-        $productName = $productDetails['name'] ?? $orderDetail?->productAllStatus?->name ?? translate('product');
+        $productName = $productDetails['name'] ?? $orderDetail?->productAllStatus?->name ?? translate('Product');
 
         $descriptionLines = [
             'Order ID: #' . $order->id,
@@ -883,7 +883,7 @@ class UserProfileController extends Controller
         ])));
 
         $contact = Contact::create([
-            'name' => $customerName !== '' ? $customerName : ($customer?->name ?? translate('customer')),
+            'name' => $customerName !== '' ? $customerName : ($customer?->name ?? translate('Customer')),
             'email' => $customer?->email ?? '',
             'mobile_number' => $customer?->phone ?? '',
             'subject' => $ticket->subject,

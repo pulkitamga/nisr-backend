@@ -310,7 +310,7 @@ class SupportTicketController extends BaseController
         );
 
         return response()->json([
-            'message' => translate('status_updated_successfully'),
+            'message' => translate('Status_updated_successfully'),
             'new_status_name' => $nextStatus?->name ?? $currentStatus?->name,
             'reopen_count' => $ticket->reopen_count ?? 0,
         ]);

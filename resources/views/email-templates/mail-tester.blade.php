@@ -11,7 +11,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ translate('test_Mail') }} - {{ translate('mail_configuration_check') }}</title>
+    <title>{{ translate('test_Mail') }} - {{ translate('Mail_Configuration_Check') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -63,7 +63,7 @@
     <div class="footer">
         <p>{{ translate('best_regards') }},</p>
         <p>{{ $companyName }}</p>
-        <p><strong>{{ translate('phone') }}:</strong> {{ $companyPhone }}</p>
+        <p><strong>{{ translate('Phone') }}:</strong> {{ $companyPhone }}</p>
         <p><strong>{{ translate('Email') }}:</strong> {{ $companyEmail }}</p>
     </div>
 </div>

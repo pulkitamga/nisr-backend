@@ -346,10 +346,10 @@ class CustomerAuthController extends Controller
 
                 $ajaxMessage = [
                     'status' => 'error',
-                    'message' => translate('too_many_attempts._please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans(),
+                    'message' => translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans(),
                     'redirect_url' => ''
                 ];
-                Toastr::error(translate('too_many_attempts._please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans());
+                Toastr::error(translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans());
             } else {
                 $ajaxMessage = [
                     'status' => 'error',

@@ -11,7 +11,7 @@ $companyLogo = getWebConfig(name: 'company_web_logo');
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ translate('Maintenance_mode_start') }}</title>
+    <title>{{ translate('Maintenance_Mode_start') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,7 +62,7 @@ $companyLogo = getWebConfig(name: 'company_web_logo');
     <div class="footer">
         <p>{{ translate('best_regards') }},</p>
         <p>{{ $companyName }}</p>
-        <p><strong>{{ translate('phone') }}:</strong> {{ $companyPhone }}</p>
+        <p><strong>{{ translate('Phone') }}:</strong> {{ $companyPhone }}</p>
         <p><strong>{{ translate('Email') }}:</strong> {{ $companyEmail }}</p>
     </div>
 </div>

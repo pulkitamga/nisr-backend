@@ -3,8 +3,8 @@
         <tr>
             <th>{{ translate('SL') }}</th>
             <th>{{ translate('Subject') }}</th>
-            <th>{{ translate('Party Type') }}</th>
-            <th>{{ translate('Party Name') }}</th>
+            <th>{{ translate('Party_Type') }}</th>
+            <th>{{ translate('Party_Name') }}</th>
             <th>{{ translate('Contact Email') }}</th>
             <th>{{ translate('Contact Phone') }}</th>
             <th>{{ translate('Owner') }}</th>
@@ -12,7 +12,7 @@
             <th>{{ translate('Employee') }}</th>
             <th>{{ translate('Priority') }}</th>
             <th>{{ translate('Status') }}</th>
-            <th>{{ translate('Created At') }}</th>
+            <th>{{ translate('Created_At') }}</th>
 
         </tr>
     </thead>

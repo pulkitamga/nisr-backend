@@ -14,7 +14,7 @@
         {{ translate('we_have_updated_our_website_theme') }}! {{ translate('please_take_a_moment_to_review_the_changes_in_your_shop.') }}{{ translate('if_you_come_across_any_image_size_issues_kindly_resize_and_upload_them_to_ensure_a_refreshed_look_for_your_shop.') }}
     </p>
 
-    <p class="mb-5 px-5"><span class="text-danger">{{ translate('note') }} :</span>
+    <p class="mb-5 px-5"><span class="text-danger">{{ translate('Note') }} :</span>
         {{ translate('your_attention_to_detail_and_effort_in_maintaining_the_visual_integrity_of_our_website_are_invaluable.') }}
     </p>
 

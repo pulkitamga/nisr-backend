@@ -14,7 +14,7 @@
 
             <div class="d-flex justify-content-end flex-wrap gap-10">
                 <a href="{{ route('admin.delivery-man.list') }}" class="btn btn--primary">
-                    <i class="tio-back-ui"></i> {{translate('back')}}
+                    <i class="tio-back-ui"></i> {{translate('Back')}}
                 </a>
             </div>
         </div>
@@ -26,7 +26,7 @@
                             <img
                                 class="avatar avatar-xxl avatar-4by3 me-4"
                                 src="{{ getStorageImages(path:$deliveryMan->image_full_url , type: 'backend-basic') }}"
-                                alt="{{translate('image_description')}}">
+                                alt="{{translate('image_Description')}}">
                             <div class="d-block">
                                 <h4 class="display-2 text-dark mb-0">
                                     {{number_format($averageRating, 2, '.', ' ')}}
@@ -117,8 +117,8 @@
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                    placeholder="{{ translate('search_by_Order_ID') }}"
-                                   aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}" required>
-                            <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                   aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}" required>
+                            <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                         </div>
                     </form>
                 </div>
@@ -129,7 +129,7 @@
 
                     <div class="col-md-3">
                         <div>
-                            <label for="from" class="title-color d-flex">{{ translate('from') }}</label>
+                            <label for="from" class="title-color d-flex">{{ translate('From') }}</label>
                             <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}"
                                    class="form-control"
                                    title="{{ translate('from_date') }}">
@@ -138,7 +138,7 @@
 
                     <div class="col-md-3">
                         <div>
-                            <label for="to_date" class="title-color d-flex">{{ translate('to') }}</label>
+                            <label for="to_date" class="title-color d-flex">{{ translate('To') }}</label>
                             <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}"
                                    class="form-control"
                                    title="{{ ucfirst(translate('to_date')) }}">
@@ -168,7 +168,7 @@
                         <div>
                             <button id="filter" type="submit" class="btn btn--primary btn-block filter">
                                 <i class="tio-filter-list nav-icon"></i>
-                                {{ translate('filter') }}
+                                {{ translate('Filter') }}
                             </button>
                         </div>
                     </div>
@@ -183,10 +183,10 @@
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('order_ID')}}</th>
+                        <th>{{translate('Order_ID')}}</th>
                         <th>{{translate('reviewer')}}</th>
-                        <th>{{translate('review')}}</th>
-                        <th>{{translate('date')}}</th>
+                        <th>{{translate('Review')}}</th>
+                        <th>{{translate('DATE')}}</th>
                     </tr>
                     </thead>
 

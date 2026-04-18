@@ -10,7 +10,7 @@
             </h2>
 
             <a class="btn btn-outline-secondary" href="{{ url()->previous() }}">
-                <i class="tio-back-ui me-1"></i>{{ translate('back') }}
+                <i class="tio-back-ui me-1"></i>{{ translate('Back') }}
             </a>
         </div>
 
@@ -24,7 +24,7 @@
 
                         <div class="col-sm-6 col-lg-3">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('date') }}</label>
+                                <label class="title-color">{{ translate('DATE') }}</label>
                                 <select class="form-control" name="date_type" id="date_type">
                                     <option value="this_year"
                                         {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
@@ -52,7 +52,7 @@
 
                         <div class="col-sm-6 col-lg-3" id="from_div">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('from') }}</label>
+                                <label class="title-color">{{ translate('From') }}</label>
                                 <input type="date" name="from" id="from_date" class="form-control"
                                     value="{{ $filters['from'] ?? '' }}">
                             </div>
@@ -60,7 +60,7 @@
 
                         <div class="col-sm-6 col-lg-3" id="to_div">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('to') }}</label>
+                                <label class="title-color">{{ translate('To') }}</label>
                                 <input type="date" name="to" id="to_date" class="form-control"
                                     value="{{ $filters['to'] ?? '' }}">
                             </div>
@@ -68,9 +68,9 @@
 
                         <div class="col-sm-6 col-lg-3 filter-btn">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('category') }}</label>
+                                <label class="title-color">{{ translate('Category') }}</label>
                                 <select class="js-select2-custom form-control" name="category_id">
-                                    <option value="">{{ translate('select_category') }}</option>
+                                    <option value="">{{ translate('select_Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}"
                                             {{ (int) ($filters['category_id'] ?? 0) === (int) $category['id'] ? 'selected' : '' }}>
@@ -83,9 +83,9 @@
 
                         <div class="col-sm-6 col-lg-3">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('product') }}</label>
+                                <label class="title-color">{{ translate('Product') }}</label>
                                 <select class="js-select2-custom form-control" name="product_id">
-                                    <option value="">{{ translate('select_product') }}</option>
+                                    <option value="">{{ translate('select_Product') }}</option>
                                     @foreach ($productsForFilter as $listProduct)
                                         @if (!empty(trim($listProduct->name)))
                                             <option value="{{ $listProduct->id }}"
@@ -109,12 +109,12 @@
 
                                 <!-- Filter Button -->
                                 <button type="submit" class="btn btn--primary px-5">
-                                    {{ translate('filters') }}
+                                    {{ translate('Filters') }}
                                 </button>
 
                                 <!-- Reset Button -->
                                 <a href="{{ route('admin.products.stock-report') }}" class="btn btn-secondary px-5">
-                                    {{ translate('reset') }}
+                                    {{ translate('Reset') }}
                                 </a>
 
                                 @if ($reportReady)

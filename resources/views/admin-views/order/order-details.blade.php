@@ -1,5 +1,5 @@
 @extends('layouts.back-end.app')
-@section('title', translate('order_Details'))
+@section('title', translate('Order_details'))
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -271,8 +271,8 @@
         $outForDeliveryStageDate = $outForDeliveryStageDate ?? $processingStageDate;
         $deliveredStageDate = $deliveredStageDate ?? $outForDeliveryStageDate;
         $orderStatusLabel = match ($order->order_status) {
-            'processing' => translate('packaging'),
-            'failed' => translate('failed_to_Deliver'),
+            'processing' => translate('Packaging'),
+            'failed' => translate('Failed_to_Deliver'),
             default => translate(str_replace('_', ' ', $order->order_status)),
         };
         $paymentStatusLabel = $order->payment_status === 'paid' ? translate('paid') : translate('unpaid');
@@ -299,8 +299,8 @@
             ];
         $nextOrderStatus = $nextOrderStatusMap[$order->order_status] ?? null;
         $nextOrderStatusLabel = match ($nextOrderStatus) {
-            'processing' => translate('packaging'),
-            'failed' => translate('failed_to_Deliver'),
+            'processing' => translate('Packaging'),
+            'failed' => translate('Failed_to_Deliver'),
             default => $nextOrderStatus ? translate(str_replace('_', ' ', $nextOrderStatus)) : null,
         };
         $isMultiVendorMode = getWebConfig(name: 'business_mode') === 'multi';
@@ -315,7 +315,7 @@
         <div class="mb-4">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/all-orders.png') }}" alt="">
-                {{ translate('order_Details') }}
+                {{ translate('Order_details') }}
             </h2>
         </div>
 
@@ -323,7 +323,7 @@
             <div class="card-body">
                 <div class="order-summary-section__header">
                     <div>
-                        <h4 class="mb-1">{{ translate('order_summary') }}</h4>
+                        <h4 class="mb-1">{{ translate('order_Summary') }}</h4>
                         <p class="order-action-status-note mb-0">
                             {{ translate('review_the_current_order_state_before_applying_operational_changes') }}
                         </p>
@@ -352,11 +352,11 @@
 
                         <div class="order-summary-hero__chips">
                             <span class="crm-list-toolbar__chip">
-                                <span class="crm-list-toolbar__chip-label">{{ translate('status') }}</span>
+                                <span class="crm-list-toolbar__chip-label">{{ translate('Status') }}</span>
                                 <span>{{ $orderStatusLabel }}</span>
                             </span>
                             <span class="crm-list-toolbar__chip">
-                                <span class="crm-list-toolbar__chip-label">{{ translate('payment_status') }}</span>
+                                <span class="crm-list-toolbar__chip-label">{{ translate('Payment_Status') }}</span>
                                 <span>{{ $paymentStatusLabel }}</span>
                             </span>
                             <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
@@ -371,11 +371,11 @@
 
                         <div class="order-summary-hero__facts">
                             <div class="order-summary-hero__fact">
-                                <span class="order-summary-hero__fact-label">{{ translate('payment_Method') }}</span>
+                                <span class="order-summary-hero__fact-label">{{ translate('Payment_Method') }}</span>
                                 <span class="order-summary-hero__fact-value">{{ translate($order['payment_method']) }}</span>
                             </div>
                             <div class="order-summary-hero__fact">
-                                <span class="order-summary-hero__fact-label">{{ translate('delivery_man') }}</span>
+                                <span class="order-summary-hero__fact-label">{{ translate('delivery_Man') }}</span>
                                 <span class="order-summary-hero__fact-value">{{ $assignedDeliveryManLabel }}</span>
                             </div>
                             <div class="order-summary-hero__fact">
@@ -414,7 +414,7 @@
                             href="{{ route('admin.orders.generate-invoice', [$order['id']]) }}">
                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
                                 alt="" class="me-1">
-                            {{ translate('print_Invoice') }}
+                            {{ translate('print__Invoice') }}
                         </a>
                     </div>
                 </div>
@@ -475,14 +475,14 @@
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
                                         <th>{{ translate('SL') }}</th>
-                                        <th>{{ translate('Branch_stock') }}</th>
+                                        <th>{{ translate('Branch_Stock') }}</th>
                                         <th>{{ translate('item_details') }}</th>
-                                        <th>{{ translate('item_price') }}</th>
-                                        <th>{{ translate('tax') }}</th>
+                                        <th>{{ translate('Item_Price') }}</th>
+                                        <th>{{ translate('Tax') }}</th>
                                         <th>{{ translate('Inst._Charges') }}</th>
                                         <th>{{ translate('Exc._Charges') }}</th>
-                                        <th>{{ translate('item_discount') }}</th>
-                                        <th>{{ translate('total_price') }}</th>
+                                        <th>{{ translate('Item_Discount') }}</th>
+                                        <th>{{ translate('total_Price') }}</th>
                                     </tr>
                                 </thead>
 
@@ -516,23 +516,23 @@
                                                             <h6 class="title-color">
                                                                 {{ substr($productDetails->name, 0, 30) }}{{ strlen($productDetails->name) > 10 ? '...' : '' }}
                                                             </h6>
-                                                            <div><strong>{{ translate('qty') }} :</strong>
+                                                            <div><strong>{{ translate('QTY') }} :</strong>
                                                                 {{ $detail['qty'] }}
                                                             </div>
                                                             <div>
-                                                                <strong>{{ translate('unit_price') }} :</strong>
+                                                                <strong>{{ translate('Unit_Price') }} :</strong>
                                                                 {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'])) }}
                                                                 @if ($detail->tax_model == 'include')
                                                                     ({{ translate('tax_incl.') }})
                                                                 @else
-                                                                    ({{ translate('tax') . ':' . $productDetails->tax }}{{ $productDetails->tax_type === 'percent' ? '%' : '' }})
+                                                                    ({{ translate('Tax') . ':' . $productDetails->tax }}{{ $productDetails->tax_type === 'percent' ? '%' : '' }})
                                                                 @endif
 
                                                             </div>
                                                             @if ($detail->variant)
                                                                 <div>
                                                                     <strong>
-                                                                        {{ translate('variation') }} :
+                                                                        {{ translate('Variation') }} :
                                                                     </strong>
                                                                     {{ $detail['variant'] }}
                                                                 </div>
@@ -551,7 +551,7 @@
                                                         <button type="button" class="btn btn-sm btn--primary mt-2"
                                                             title="{{ translate('file_upload') }}" data-toggle="modal"
                                                             data-target="#fileUploadModal-{{ $detail->id }}">
-                                                            <i class="tio-file-outlined"></i> {{ translate('file') }}
+                                                            <i class="tio-file-outlined"></i> {{ translate('File') }}
                                                         </button>
                                                     @endif
                                                 </td>
@@ -615,8 +615,8 @@
                                                                         <span
                                                                             data-file-path="{{ $downloadPathExist ? $detail->digital_file_after_sell_full_url['path'] : 'javascript:' }}"
                                                                             class="getDownloadFileUsingFileUrl btn btn-success btn-sm {{ $downloadPathExist ? '' : 'download-path-not-found' }}"
-                                                                            title="{{ translate('download') }}">
-                                                                            {{ translate('download') }} <i
+                                                                            title="{{ translate('Download') }}">
+                                                                            {{ translate('Download') }} <i
                                                                                 class="tio-download"></i>
                                                                         </span>
                                                                     </div>
@@ -627,14 +627,14 @@
                                                                         <span
                                                                             data-file-path="{{ file_exists($downloadPath) ? $downloadPath : 'javascript:' }}"
                                                                             class="getDownloadFileUsingFileUrl btn btn-success btn-sm {{ file_exists($downloadPath) ? $downloadPath : 'download-path-not-found' }}"
-                                                                            title="{{ translate('download') }}">
-                                                                            {{ translate('download') }} <i
+                                                                            title="{{ translate('Download') }}">
+                                                                            {{ translate('Download') }} <i
                                                                                 class="tio-download"></i>
                                                                         </span>
                                                                     </div>
                                                                 @else
                                                                     <h4 class="text-center">
-                                                                        {{ translate('file_not_found') . '!' }}</h4>
+                                                                        {{ translate('File_not_found') . '!' }}</h4>
                                                                 @endif
                                                                 @if ($product_details->added_by == 'admin' && $detail->seller_id == 1)
                                                                     <div class="inputDnD">
@@ -647,7 +647,7 @@
                                                                         </div>
                                                                     </div>
                                                                     <div class="mt-1 text-info">
-                                                                        {{ translate('file_type') . ' ' . ':' . ' ' . 'jpg, jpeg, png, gif, zip, pdf' }}
+                                                                        {{ translate('File_Type') . ' ' . ':' . ' ' . 'jpg, jpeg, png, gif, zip, pdf' }}
                                                                     </div>
                                                                     <input type="hidden" value="{{ $detail->id }}"
                                                                         name="order_id">
@@ -659,10 +659,10 @@
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary"
-                                                                    data-dismiss="modal">{{ translate('close') }}</button>
+                                                                    data-dismiss="modal">{{ translate('Close') }}</button>
                                                                 @if ($product_details->added_by == 'admin' && $detail->seller_id == 1)
                                                                     <button type="submit"
-                                                                        class="btn btn--primary">{{ translate('upload') }}</button>
+                                                                        class="btn btn--primary">{{ translate('Upload') }}</button>
                                                                 @endif
                                                             </div>
                                                         </form>
@@ -680,16 +680,16 @@
                         <div class="row justify-content-md-end mb-3">
                             <div class="col-md-9 col-lg-8">
                                 <dl class="row gy-1 text-start">
-                                    <dt class="col-5">{{ translate('item_price') }}</dt>
+                                    <dt class="col-5">{{ translate('Item_Price') }}</dt>
                                     <dd class="col-6 title-color">
                                         <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemPrice']), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
-                                    <dt class="col-5 text-capitalize">{{ translate('item_discount') }}</dt>
+                                    <dt class="col-5 text-capitalize">{{ translate('Item_Discount') }}</dt>
                                     <dd class="col-6 title-color">
                                         <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
                                     @if ($orderTotalPriceSummary['extraDiscount'] > 0)
-                                        <dt class="col-5 text-capitalize">{{ translate('extra_discount') }}</dt>
+                                        <dt class="col-5 text-capitalize">{{ translate('extra_Discount') }}</dt>
                                         <dd class="col-6 title-color">
                                             <strong>-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                         </dd>
@@ -707,14 +707,14 @@
                                         </dd>
                                     @endif
                                     <dt class="col-5 text-nowrap">
-                                        {{ translate('coupon_discount') }}
+                                        {{ translate('Coupon_Discount') }}
                                         <br>
                                         {{ !in_array($order['coupon_code'], [0, null]) ? '(' . translate('expense_bearer_') . ($order['coupon_discount_bearer'] == 'inhouse' ? 'admin' : ($order['coupon_discount_bearer'] == 'seller' ? 'vendor' : $order['coupon_discount_bearer'])) . ')' : '' }}
                                     </dt>
                                     <dd class="col-6 title-color">
                                         -<strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
-                                    <dt class="col-5 text-uppercase">{{ translate('vat') }}/{{ translate('tax') }}</dt>
+                                    <dt class="col-5 text-uppercase">{{ translate('VAT') }}/{{ translate('Tax') }}</dt>
                                     <dd class="col-6 title-color">
                                         <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
@@ -727,7 +727,7 @@
                                         <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['shippingTotal']), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
 
-                                    <dt class="col-5"><strong>{{ translate('total') }}</strong></dt>
+                                    <dt class="col-5"><strong>{{ translate('Total') }}</strong></dt>
                                     <dd class="col-6 title-color">
                                         <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}</strong>
                                     </dd>
@@ -753,7 +753,7 @@
                                 <table>
                                     <tbody>
                                         <tr>
-                                            <td>{{ translate('payment_Method') }}</td>
+                                            <td>{{ translate('Payment_Method') }}</td>
                                             <td class="py-1 px-2">:</td>
                                             <td><strong>{{ translate($order['payment_method']) }}</strong></td>
                                         </tr>
@@ -803,11 +803,11 @@
                                 </div>
                                 <div class="order-action-chip-grid crm-list-toolbar__summary">
                                     <span class="crm-list-toolbar__chip">
-                                        <span class="crm-list-toolbar__chip-label">{{ translate('status') }}</span>
+                                        <span class="crm-list-toolbar__chip-label">{{ translate('Status') }}</span>
                                         <span>{{ $orderStatusLabel }}</span>
                                     </span>
                                     <span class="crm-list-toolbar__chip">
-                                        <span class="crm-list-toolbar__chip-label">{{ translate('payment_status') }}</span>
+                                        <span class="crm-list-toolbar__chip-label">{{ translate('Payment_Status') }}</span>
                                         <span>{{ $paymentStatusLabel }}</span>
                                     </span>
                                     <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
@@ -815,7 +815,7 @@
                                         <span>{{ $assignedBranchLabel }}</span>
                                     </span>
                                     <span class="crm-list-toolbar__chip crm-list-toolbar__chip--muted">
-                                        <span class="crm-list-toolbar__chip-label">{{ translate('delivery_man') }}</span>
+                                        <span class="crm-list-toolbar__chip-label">{{ translate('delivery_Man') }}</span>
                                         <span>{{ $assignedDeliveryManLabel }}</span>
                                     </span>
                                     @if ($physicalProduct)
@@ -829,7 +829,7 @@
                             <div class="order-action-section">
                                 <div class="order-action-section__header">
                                     <div>
-                                        <h5 class="mb-1">{{ translate('branch') }}</h5>
+                                        <h5 class="mb-1">{{ translate('Branch') }}</h5>
                                         <p class="order-action-status-note mb-0">
                                             {{ translate('select_the_branch_before_moving_to_delivery_stages') }}
                                         </p>
@@ -839,7 +839,7 @@
                                     <select name="order_delivered_from_branch" id="order_delivered_from_branch"
                                         class="status form-control js-select2-custom" data-id="{{ $order['id'] }}" required>
                                         <option value="" {{ (int) ($order->transfer_from_branch ?? 0) <= 0 ? 'selected' : '' }} disabled>
-                                            {{ translate('select_branch') }}
+                                            {{ translate('Select_Branch') }}
                                         </option>
                                         @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}"
@@ -864,13 +864,13 @@
                                 <div class="order-action-field__action">
                                     <select name="order_status" id="order_status" class="status form-control"
                                         data-id="{{ $order['id'] }}" data-current-status="{{ $order->order_status }}">
-                                        <option value="pending" {{ $order->order_status == 'pending' ? 'selected' : '' }}>{{ translate('pending') }}</option>
+                                        <option value="pending" {{ $order->order_status == 'pending' ? 'selected' : '' }}>{{ translate('Pending') }}</option>
                                         <option value="confirmed" {{ $order->order_status == 'confirmed' ? 'selected' : '' }}>{{ translate('confirmed') }}</option>
-                                        <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>{{ translate('packaging') }}</option>
-                                        <option class="text-capitalize" value="out_for_delivery" {{ $order->order_status == 'out_for_delivery' ? 'selected' : '' }}>{{ translate('out_for_delivery') }}</option>
-                                        <option value="delivered" {{ $order->order_status == 'delivered' ? 'selected' : '' }}>{{ translate('delivered') }}</option>
-                                        <option value="returned" {{ $order->order_status == 'returned' ? 'selected' : '' }}>{{ translate('returned') }}</option>
-                                        <option value="failed" {{ $order->order_status == 'failed' ? 'selected' : '' }}>{{ translate('failed_to_Deliver') }}</option>
+                                        <option value="processing" {{ $order->order_status == 'processing' ? 'selected' : '' }}>{{ translate('Packaging') }}</option>
+                                        <option class="text-capitalize" value="out_for_delivery" {{ $order->order_status == 'out_for_delivery' ? 'selected' : '' }}>{{ translate('out_For_Delivery') }}</option>
+                                        <option value="delivered" {{ $order->order_status == 'delivered' ? 'selected' : '' }}>{{ translate('Delivered') }}</option>
+                                        <option value="returned" {{ $order->order_status == 'returned' ? 'selected' : '' }}>{{ translate('Returned') }}</option>
+                                        <option value="failed" {{ $order->order_status == 'failed' ? 'selected' : '' }}>{{ translate('Failed_to_Deliver') }}</option>
                                         <option value="canceled" {{ $order->order_status == 'canceled' ? 'selected' : '' }}>{{ translate('canceled') }}</option>
                                     </select>
                                     <button type="button" class="btn btn-outline-primary"
@@ -900,7 +900,7 @@
                             <div class="order-action-section">
                                 <div class="order-action-section__header">
                                     <div>
-                                        <h5 class="mb-1">{{ translate('payment_status') }}</h5>
+                                        <h5 class="mb-1">{{ translate('Payment_Status') }}</h5>
                                         <p class="order-action-status-note mb-0">
                                             {{ translate('complete_payment_confirmation_as_a_separate_action') }}
                                         </p>
@@ -922,7 +922,7 @@
                             <div class="order-action-section">
                                 <div class="order-action-section__header">
                                     <div>
-                                        <h5 class="mb-1">{{ translate('delivery') }}</h5>
+                                        <h5 class="mb-1">{{ translate('Delivery') }}</h5>
                                         <p class="order-action-status-note mb-0">
                                             {{ translate('keep_delivery_changes_grouped_and_apply_them_explicitly') }}
                                         </p>
@@ -959,11 +959,11 @@
                                     </div>
 
                                     <div class="choose_delivery_man">
-                                        <label class="font-weight-bold title-color fz-14">{{ translate('delivery_man') }}</label>
+                                        <label class="font-weight-bold title-color fz-14">{{ translate('delivery_Man') }}</label>
                                         <div class="order-action-field__action">
                                             <select class="form-control text-capitalize js-select2-custom" name="delivery_man_id"
                                                 id="addDeliveryMan" data-order-id="{{ $order['id'] }}">
-                                                <option value="0" {{ isset($order->deliveryMan) ? 'disabled' : '' }}>{{ translate('select') }}</option>
+                                                <option value="0" {{ isset($order->deliveryMan) ? 'disabled' : '' }}>{{ translate('Select') }}</option>
                                                 @foreach ($deliveryMen as $deliveryMan)
                                                     <option value="{{ $deliveryMan['id'] }}"
                                                         {{ $order['delivery_man_id'] == $deliveryMan['id'] ? 'selected' : '' }}>
@@ -972,7 +972,7 @@
                                                 @endforeach
                                             </select>
                                             <button type="button" class="btn btn-outline-primary"
-                                                data-order-action="assign-delivery-man">{{ translate('assign') }}</button>
+                                                data-order-action="assign-delivery-man">{{ translate('Assign') }}</button>
                                         </div>
 
                                         @if (isset($order->deliveryMan))
@@ -1017,10 +1017,10 @@
                                                 <input type="number"
                                                     value="{{ usdToDefaultCurrency(amount: $order->deliveryman_charge) }}"
                                                     name="deliveryman_charge" data-order-id="{{ $order['id'] }}"
-                                                    class="form-control" placeholder="{{ translate('ex') . ': 20' }}"
+                                                    class="form-control" placeholder="{{ translate('Ex') . ': 20' }}"
                                                     {{ $order['order_status'] == 'delivered' ? 'readonly' : '' }} required>
                                                 <button
-                                                    class="btn btn--primary {{ $order['order_status'] == 'delivered' ? 'disabled deliveryman-charge-alert' : 'deliveryman-charge' }}">{{ translate('update') }}</button>
+                                                    class="btn btn--primary {{ $order['order_status'] == 'delivered' ? 'disabled deliveryman-charge-alert' : 'deliveryman-charge' }}">{{ translate('Update') }}</button>
                                             </div>
                                         </div>
                                         <div class="choose_delivery_man">
@@ -1040,7 +1040,7 @@
                                             <div class="media m-1 gap-3">
                                                 <img class="avatar rounded-circle"
                                                     src="{{ dynamicAsset(path: 'public/assets/back-end/img/third-party-delivery.png') }}"
-                                                    alt="{{ translate('image') }}">
+                                                    alt="{{ translate('Image') }}">
                                                 <div class="media-body">
                                                     <h5 class="">
                                                         {{ $order->delivery_service_name ?? translate('not_assign_yet') }}
@@ -1063,7 +1063,7 @@
                                 <h4 class="d-flex gap-2">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png') }}"
                                         alt="">
-                                    {{ translate('customer_information') }}
+                                    {{ translate('customer_Information') }}
                                 </h4>
                             </div>
                             <div class="order-sidebar-media">
@@ -1076,7 +1076,7 @@
                                     <span class="title-color"><strong dir="auto">{{ $order->customer['f_name'] . ' ' . $order->customer['l_name'] }}
                                         </strong></span>
                                     <span class="title-color"> <strong>{{ $orderCount }}</strong>
-                                        {{ translate('orders') }}</span>
+                                        {{ translate('Orders') }}</span>
                                     <span
                                         class="title-color break-all"><strong class="bidi-ltr d-inline-block">{{ formatPhoneForDisplay($order->customer['phone']) }}</strong></span>
                                     <span class="title-color break-all" dir="auto">{{ $order->customer['email'] }}</span>
@@ -1104,40 +1104,40 @@
                                 </div>
                                 <div class="order-contact-details">
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('name') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Name') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $shippingAddress->contact_person_name }}</strong>
                                         @if ($order->is_guest)
                                             <span class="text-muted">{{ translate('guest_customer') }}</span>
                                         @endif
                                     </div>
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('contact') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Contact') }}</span>
                                         <strong class="order-contact-details__value bidi-ltr d-inline-block">{{ $shippingAddress->phone }}</strong>
                                     </div>
                                     @if ($order->is_guest && $shippingAddress->email)
                                         <div class="order-contact-details__row">
-                                            <span class="order-contact-details__label">{{ translate('email') }}</span>
+                                            <span class="order-contact-details__label">{{ translate('Email') }}</span>
                                             <strong class="order-contact-details__value" dir="auto">{{ $shippingAddress->email }}</strong>
                                         </div>
                                     @endif
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('country') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Country') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['country'] }}</strong>
                                     </div>
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('state') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('State') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['state'] }}</strong>
                                     </div>
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('city') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('City') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['city'] }}</strong>
                                     </div>
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('area') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Area') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $shippingAddressDisplay['area'] }}</strong>
                                     </div>
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('address') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Address') }}</span>
                                         <div class="order-contact-details__address">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
                                                 alt="">
@@ -1168,7 +1168,7 @@
                                 </h4>
                                 @if ($order['order_status'] != 'delivered')
                                     <button class="btn btn-outline-primary btn-sm square-btn billing-address-update-modal"
-                                        title="{{ translate('edit') }}" data-toggle="modal"
+                                        title="{{ translate('Edit') }}" data-toggle="modal"
                                         data-target="#billingAddressUpdateModal">
                                         <i class="tio-edit"></i>
                                     </button>
@@ -1176,40 +1176,40 @@
                             </div>
                             <div class="order-contact-details">
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('name') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('Name') }}</span>
                                     <strong class="order-contact-details__value" dir="auto">{{ $billing->contact_person_name }}</strong>
                                     @if ($order->is_guest)
                                         <span class="text-muted">{{ translate('guest_customer') }}</span>
                                     @endif
                                 </div>
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('contact') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('Contact') }}</span>
                                     <strong class="order-contact-details__value bidi-ltr d-inline-block">{{ $billing->phone }}</strong>
                                 </div>
                                 @if ($order->is_guest && $billing->email)
                                     <div class="order-contact-details__row">
-                                        <span class="order-contact-details__label">{{ translate('email') }}</span>
+                                        <span class="order-contact-details__label">{{ translate('Email') }}</span>
                                         <strong class="order-contact-details__value" dir="auto">{{ $billing->email }}</strong>
                                     </div>
                                 @endif
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('country') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('Country') }}</span>
                                     <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['country'] }}</strong>
                                 </div>
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('state') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('State') }}</span>
                                     <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['state'] }}</strong>
                                 </div>
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('city') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('City') }}</span>
                                     <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['city'] }}</strong>
                                 </div>
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('area') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('Area') }}</span>
                                     <strong class="order-contact-details__value" dir="auto">{{ $billingDisplay['area'] }}</strong>
                                 </div>
                                 <div class="order-contact-details__row">
-                                    <span class="order-contact-details__label">{{ translate('address') }}</span>
+                                    <span class="order-contact-details__label">{{ translate('Address') }}</span>
                                     <div class="order-contact-details__address">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/location.png') }}"
                                             alt="">
@@ -1269,7 +1269,7 @@
                                         <div class="text-center p-4 w-100">
                                             <img class="w-25"
                                                 src="{{ dynamicAsset(path: 'public/assets/back-end/img/empty-state-icon/shop-not-found.png') }}"
-                                                alt="{{ translate('image_description') }}">
+                                                alt="{{ translate('image_Description') }}">
                                             <p class="mb-0">{{ translate('no_shop_found') . '!' }}</p>
                                         </div>
                                     @endif
@@ -1305,7 +1305,7 @@
                                 <div class="col-12">
                                     <div class="d-flex justify-content-end gap-3">
                                         <button type="button" class="btn btn-secondary px-5"
-                                            data-dismiss="modal">{{ translate('close') }}</button>
+                                            data-dismiss="modal">{{ translate('Close') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1338,16 +1338,16 @@
                                             class="title-color">{{ translate('contact_person_name') }}</label>
                                         <input type="text" name="name" id="name" class="form-control"
                                             value="{{ ($shippingAddress ?? null) ? $shippingAddress->contact_person_name : '' }}"
-                                            placeholder="{{ translate('ex') }}: {{ translate('john_doe') }}" required>
+                                            placeholder="{{ translate('Ex') }}: {{ translate('John_Doe') }}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="phone_number"
-                                            class="title-color">{{ translate('phone_number') }}</label>
+                                            class="title-color">{{ translate('phone_Number') }}</label>
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                             type="tel" value="{{ ($shippingAddress ?? null) ? $shippingAddress->phone : '' }}"
-                                            placeholder="{{ translate('ex') . ': 017xxxxxxxx' }}" required>
+                                            placeholder="{{ translate('Ex') . ': 017xxxxxxxx' }}" required>
                                         <div class="">
                                             <input type="text" class="country-picker-phone-number w-50"
                                                 value="{{ ($shippingAddress ?? null) ? $shippingAddress->phone : '' }}"
@@ -1357,7 +1357,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="country" class="title-color">{{ translate('country') }}</label>
+                                        <label for="country" class="title-color">{{ translate('Country') }}</label>
                                         <select name="country_code" id="country" class="form-control">
                                             @foreach ($countries as $country)
                                                 <option value="{{ $country['code'] }}"
@@ -1375,7 +1375,7 @@
 
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="state">{{ translate('state') }}</label>
+                                        <label for="state">{{ translate('State') }}</label>
                                         <select name="state_id" id="state_dropdown" class="form-control">
                                             <option value="">{{ translate('select_state') }}</option>
                                         </select>
@@ -1385,7 +1385,7 @@
 
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="city">{{ translate('city') }}</label>
+                                        <label for="city">{{ translate('City') }}</label>
                                         <select name="city_id" id="city_dropdown" class="form-control">
                                             <option value="">{{ translate('select_city') }}</option>
                                         </select>
@@ -1395,7 +1395,7 @@
 
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="area">{{ translate('area') }}</label>
+                                        <label for="area">{{ translate('Area') }}</label>
                                         <select name="area" id="area_dropdown" class="form-control">
                                             <option value="">{{ translate('select_area') }}</option>
                                         </select>
@@ -1418,15 +1418,15 @@
                                         @else
                                             <input type="text" class="form-control"
                                                 value="{{ ($shippingAddress ?? null) ? $shippingAddress->zip : '' }}"
-                                                id="zip" name="zip" placeholder="{{ translate('ex') }}: 1216">
+                                                id="zip" name="zip" placeholder="{{ translate('Ex') }}: 1216">
                                         @endif
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label for="address" class="title-color">{{ translate('address') }}</label>
+                                        <label for="address" class="title-color">{{ translate('Address') }}</label>
                                         <textarea name="address" id="address" name="address" rows="3" class="form-control"
-                                            placeholder="{{ translate('ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ ($shippingAddress ?? null) ? $shippingAddress->address : '' }}</textarea>
+                                            placeholder="{{ translate('Ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ ($shippingAddress ?? null) ? $shippingAddress->address : '' }}</textarea>
                                     </div>
                                 </div>
                                 <input type="hidden" id="latitude" name="latitude" class="form-control d-inline"
@@ -1447,9 +1447,9 @@
                                 <div class="col-12">
                                     <div class="d-flex justify-content-end gap-3">
                                         <button type="button" class="btn btn-secondary px-5"
-                                            data-dismiss="modal">{{ translate('cancel') }}</button>
+                                            data-dismiss="modal">{{ translate('Cancel') }}</button>
                                         <button type="submit"
-                                            class="btn btn--primary px-5">{{ translate('update') }}</button>
+                                            class="btn btn--primary px-5">{{ translate('Update') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1483,18 +1483,18 @@
                                                     class="title-color">{{ translate('contact_person_name') }}</label>
                                                 <input type="text" name="name" id="name" class="form-control"
                                                     value="{{ $billing ? $billing->contact_person_name : '' }}"
-                                                    placeholder="{{ translate('ex') }}: {{ translate('john_doe') }}"
+                                                    placeholder="{{ translate('Ex') }}: {{ translate('John_Doe') }}"
                                                     required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="phone_number"
-                                                    class="title-color">{{ translate('phone_number') }}</label>
+                                                    class="title-color">{{ translate('phone_Number') }}</label>
                                                 <input
                                                     class="form-control form-control-user phone-input-with-country-picker-2"
                                                     type="tel" value="{{ $billing ? $billing->phone : '' }}"
-                                                    placeholder="{{ translate('ex') . ': 017xxxxxxxx' }}" required>
+                                                    placeholder="{{ translate('Ex') . ': 017xxxxxxxx' }}" required>
                                                 <div class="">
                                                     <input type="text" class="country-picker-phone-number-2 w-50"
                                                         value="{{ $billing ? $billing->phone : '' }}"
@@ -1505,7 +1505,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="billing_country"
-                                                    class="title-color">{{ translate('country') }}</label>
+                                                    class="title-color">{{ translate('Country') }}</label>
                                                 <select name="billing_country_code" id="billing_country"
                                                     class="form-control">
                                                     @forelse($countries as $country)
@@ -1525,7 +1525,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="billing_state">{{ translate('state') }}</label>
+                                                <label for="billing_state">{{ translate('State') }}</label>
                                                 <select name="billing_state_id" id="billing_state_dropdown"
                                                     class="form-control">
                                                     <option value="">{{ translate('select_state') }}</option>
@@ -1536,7 +1536,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="billing_city">{{ translate('city') }}</label>
+                                                <label for="billing_city">{{ translate('City') }}</label>
                                                 <select name="billing_city_id" id="billing_city_dropdown"
                                                     class="form-control">
                                                     <option value="">{{ translate('select_city') }}</option>
@@ -1547,7 +1547,7 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="billing_area">{{ translate('area') }}</label>
+                                                <label for="billing_area">{{ translate('Area') }}</label>
                                                 <select name="billing_area" id="billing_area_dropdown"
                                                     class="form-control">
                                                     <option value="">{{ translate('select_area') }}</option>
@@ -1566,14 +1566,14 @@
                                                                 {{ isset($billing) && $code->zipcode == $billing->zip ? 'selected' : '' }}>
                                                                 {{ $code->zipcode }}</option>
                                                         @empty
-                                                            <option value="">{{ translate('no_zip_to_deliver') }}
+                                                            <option value="">{{ translate('No_zip_to_deliver') }}
                                                             </option>
                                                         @endforelse
                                                     </select>
                                                 @else
                                                     <input type="text" class="form-control"
                                                         value="{{ $billing ? $billing->zip : '' }}" id="zip"
-                                                        name="zip" placeholder="{{ translate('ex') . ': 1216' }}"
+                                                        name="zip" placeholder="{{ translate('Ex') . ': 1216' }}"
                                                         {{ $billing ? '' : '' }}>
                                                 @endif
                                             </div>
@@ -1581,17 +1581,17 @@
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label for="address"
-                                                    class="title-color">{{ translate('address') }}</label>
+                                                    class="title-color">{{ translate('Address') }}</label>
                                                 <textarea name="address" id="billing_address" rows="3" class="form-control"
-                                                    placeholder="{{ translate('ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ $billing ? $billing->address : '' }}</textarea>
+                                                    placeholder="{{ translate('Ex') }} : {{ translate('street_1,_street_2,_street_3,_street_4') }}">{{ $billing ? $billing->address : '' }}</textarea>
                                             </div>
                                         </div>
                                         <input type="hidden" id="billing_latitude" name="latitude"
                                             class="form-control d-inline"
-                                            placeholder="{{ translate('ex') }} : -94.22213"
+                                            placeholder="{{ translate('Ex') }} : -94.22213"
                                             value="{{ $billing->latitude ?? 0 }}" required readonly>
                                         <input type="hidden" name="longitude" class="form-control"
-                                            placeholder="{{ translate('ex') }} : 103.344322" id="billing_longitude"
+                                            placeholder="{{ translate('Ex') }} : 103.344322" id="billing_longitude"
                                             value="{{ $billing->longitude ?? 0 }}" required readonly>
                                         @if (getWebConfig('map_api_status') == 1)
                                             <div class="col-12 ">
@@ -1606,9 +1606,9 @@
                                         <div class="col-12">
                                             <div class="d-flex justify-content-end gap-3">
                                                 <button type="button" class="btn btn-secondary px-5"
-                                                    data-dismiss="modal">{{ translate('cancel') }}</button>
+                                                    data-dismiss="modal">{{ translate('Cancel') }}</button>
                                                 <button type="submit"
-                                                    class="btn btn--primary px-5">{{ translate('update') }}</button>
+                                                    class="btn btn--primary px-5">{{ translate('Update') }}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1634,7 +1634,7 @@
                     <div>
                         <div class="row">
                             <div class="col-md-12 rounded border p-3">
-                                <div class="h3 text-cyan-blue text-center">{{ translate('order') }}
+                                <div class="h3 text-cyan-blue text-center">{{ translate('Order') }}
                                     #{{ $order->id }}</div>
                                 <ul class="nav nav-tabs border-0 media-tabs nav-justified order-track-info">
                                     <li class="nav-item">
@@ -1647,7 +1647,7 @@
                                                 <div class="media-body">
                                                     <div class="text-sm-center text-start">
                                                         <h6 class="media-tab-title text-nowrap mb-0 text-capitalize fs-14">
-                                                            {{ translate('order_placed') }}</h6>
+                                                            {{ translate('Order_Placed') }}</h6>
                                                     </div>
                                                     <div
                                                         class="d-flex align-items-center justify-content-sm-center gap-1 mt-2">
@@ -1856,7 +1856,7 @@
                                                         <div class="text-sm-center text-start">
                                                             <h6
                                                                 class="media-tab-title text-nowrap mb-0 text-capitalize fs-14">
-                                                                {{ translate('order') }}
+                                                                {{ translate('Order') }}
                                                                 {{ translate($order['order_status']) }}
                                                             </h6>
                                                         </div>
@@ -1951,7 +1951,7 @@
                                             value="{{ $order['third_party_delivery_tracking_id'] }}" readonly
                                             id="">
                                     </div>
-                                    <button class="btn btn--primary" type="submit">{{ translate('update') }}</button>
+                                    <button class="btn btn--primary" type="submit">{{ translate('Update') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -1977,7 +1977,7 @@
                                 <input type="hidden" name="order_id" value="{{ $order['id'] }}">
                                 <div class="card-body">
                                     <div class="form-group">
-                                        <label for="">{{ translate('product_info') }}</label>
+                                        <label for="">{{ translate('product_Info') }}</label>
                                         <textarea class="form-control" type="text" name="exchange_product_info" required>{{ $order['exchange_product_info'] }}</textarea>
                                     </div>
                                     <div class="form-group">
@@ -1985,7 +1985,7 @@
                                         <input class="form-control" type="number" name="exchange_amount"
                                             value="{{ $order['exchange_amount'] }}" id="" required>
                                     </div>
-                                    <button class="btn btn--primary" type="submit">{{ translate('update') }}</button>
+                                    <button class="btn btn--primary" type="submit">{{ translate('Update') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -2006,7 +2006,7 @@
     <span id="exchange-status-message" data-title="{{ translate('confirm_exchange_before_change_the_status') . '.' }}"
         data-message="{{ translate('change_the_status_yes_only_when_you_received_the_exchange_product_from_customer') . translate('_once_you_change_the_status_to_yes') . ',' . translate('_you_cannot_change_the_status_again') . '!' }}"></span>
     <span id="message-status-confirm-text" data-text="{{ translate('yes_change_it') }}!"></span>
-    <span id="message-status-cancel-text" data-text="{{ translate('cancel') }}"></span>
+    <span id="message-status-cancel-text" data-text="{{ translate('Cancel') }}"></span>
     <span id="message-status-success-text" data-text="{{ translate('status_change_successfully') }}"></span>
     <span id="message-status-warning-text"
         data-text="{{ translate('account_has_been_deleted_you_can_not_change_the_status') }}"></span>
@@ -2022,7 +2022,7 @@
         data-text="{{ translate('before_delivered_you_need_to_make_payment_status_paid') }}!"></span>
     <span id="message-branch-required-before-delivery-status-text"
         data-text="{{ translate('branch_is_required!') }}"></span>
-    <span id="message-order-generic-error-text" data-text="{{ translate('something_went_wrong') }}"></span>
+    <span id="message-order-generic-error-text" data-text="{{ translate('Something_went_wrong') }}"></span>
     <span id="order-status-url" data-url="{{ route('admin.orders.status') }}"></span>
     <span id="order-transfer-delivery-branch-url"
         data-url="{{ route('admin.orders.transfer-delivered-branch') }}"></span>
@@ -2110,7 +2110,7 @@
                 $.get(getStatesURL, {
                     country: code
                 }, function(states) {
-                    $('#state_dropdown').html(`<option value="">{{ __('Select State') }}</option>`);
+                    $('#state_dropdown').html(`<option value="">{{ __('select_state') }}</option>`);
                     states.forEach(state => {
                         const isSelected = state.name.toLowerCase().trim() === selectedState
                             .toLowerCase().trim();
@@ -2138,7 +2138,7 @@
                 $.get(getCitiesURL, {
                     state_id: stateId
                 }, function(cities) {
-                    $('#city_dropdown').html(`<option value="">{{ __('Select City') }}</option>`);
+                    $('#city_dropdown').html(`<option value="">{{ __('select_city') }}</option>`);
                     cities.forEach(city => {
                         const isSelected = city.name.toLowerCase().trim() === selectedCity
                             .toLowerCase().trim();
@@ -2166,7 +2166,7 @@
                 $.get(getAreasURL, {
                     city_id: cityId
                 }, function(areas) {
-                    $('#area_dropdown').html(`<option value="">{{ __('Select Area') }}</option>`);
+                    $('#area_dropdown').html(`<option value="">{{ __('select_area') }}</option>`);
                     areas.forEach(area => {
                         const isSelected = area.toLowerCase().trim() === selectedArea.toLowerCase()
                             .trim();
@@ -2225,7 +2225,7 @@
                 $.get(getStatesURL, {
                     country: code
                 }, function(states) {
-                    $('#billing_state_dropdown').html(`<option value="">{{ __('Select State') }}</option>`);
+                    $('#billing_state_dropdown').html(`<option value="">{{ __('select_state') }}</option>`);
                     states.forEach(state => {
                         const isSelected = state.name.toLowerCase().trim() === selectedState
                             .toLowerCase().trim();
@@ -2253,7 +2253,7 @@
                 $.get(getCitiesURL, {
                     state_id: stateId
                 }, function(cities) {
-                    $('#billing_city_dropdown').html(`<option value="">{{ __('Select City') }}</option>`);
+                    $('#billing_city_dropdown').html(`<option value="">{{ __('select_city') }}</option>`);
                     cities.forEach(city => {
                         const isSelected = city.name.toLowerCase().trim() === selectedCity
                             .toLowerCase().trim();
@@ -2281,7 +2281,7 @@
                 $.get(getBillingAreasURL, {
                     city_id: cityId
                 }, function(areas) {
-                    $('#billing_area_dropdown').html(`<option value="">{{ __('Select Area') }}</option>`);
+                    $('#billing_area_dropdown').html(`<option value="">{{ __('select_area') }}</option>`);
                     areas.forEach(area => {
                         const isSelected = area.toLowerCase().trim() === selectedArea.toLowerCase()
                             .trim();

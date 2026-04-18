@@ -30,15 +30,15 @@
                     <thead class="thead-light text-capitalize">
                         <tr>
                             <th class="text-center">#</th>
-                            <th>{{ translate('Order ID') }}</th>
+                            <th>{{ translate('Order_ID') }}</th>
                             <th>{{ translate('Customer') }}</th>
                             <th>{{ translate('Products') }}</th>
-                            <th>{{ translate('Total Qty') }}</th>
+                            <th>{{ translate('total_qty') }}</th>
                             <th>{{ translate('Amount') }}</th>
-                            <th>{{ translate('Order Status') }}</th>
-                            <th>{{ translate('Delivery Status') }}</th>
+                            <th>{{ translate('Order_Status') }}</th>
+                            <th>{{ translate('Delivery_Status') }}</th>
                             <th>{{ translate('Return') }}</th>
-                            <th>{{ translate('Date') }}</th>
+                            <th>{{ translate('DATE') }}</th>
                         </tr>
                     </thead>
                     <tbody>

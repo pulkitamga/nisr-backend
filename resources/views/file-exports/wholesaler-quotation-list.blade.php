@@ -11,14 +11,14 @@
             <th>
                 {{translate('filter_By').' '.'-'.' '.ucwords($data['filter'])}}
                 <br>
-                {{translate('total_request').' '.'-'.' '.count($data['quotation'])}}
+                {{translate('total__Request').' '.'-'.' '.count($data['quotation'])}}
 
             </th>
         </tr>
 
         <tr>
             <td>{{translate('SL')}}</td>
-            <td>{{translate('Date')}}</td>
+            <td>{{translate('DATE')}}</td>
             <td>{{translate('Order_No')}}</td>
             <td>{{translate('Quotation_No')}}</td>
             <td>{{translate('Wholesaler')}}</td>

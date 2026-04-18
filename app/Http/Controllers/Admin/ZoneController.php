@@ -287,7 +287,7 @@ class ZoneController extends Controller
                 (string) ($zone->display_name ?? $zone->name),
                 (int) ($zone->restaurants_count ?? 0),
                 (int) ($zone->deliverymen_count ?? 0),
-                $zone->status ? translate('active') : translate('inactive'),
+                $zone->status ? translate('Active') : translate('Inactive'),
             ];
         })->values()->all();
 
@@ -295,11 +295,11 @@ class ZoneController extends Controller
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('name'),
+                    translate('Name'),
                     translate('display_name'),
                     translate('restaurants'),
-                    translate('deliverymen'),
-                    translate('status'),
+                    translate('delivery_men'),
+                    translate('Status'),
                 ],
                 title: translate('zone_list'),
                 locale: LocalizedExport::locale(),
@@ -308,7 +308,7 @@ class ZoneController extends Controller
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('search', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('search', '')) ?: translate('All')),
                 columnWidths: ['A' => 24, 'B' => 24, 'C' => 16, 'D' => 16, 'E' => 14],
                 centerColumns: ['C', 'D', 'E'],
                 sumColumns: ['C', 'D']

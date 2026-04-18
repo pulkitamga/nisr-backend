@@ -3,7 +3,7 @@
     <div class="model-sm modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-            	<h3>{{ __('Select Department') }}</h3>
+            	<h3>{{ __('Select_Department') }}</h3>
                 <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                 	<i class="tio-clear"></i>
                 </button>
@@ -17,7 +17,7 @@
                             <div class="form-group">
                                 <select class="js-select2-custom form-control" name="department_id" id="department-id">
                                     <option value="0" selected
-                                            disabled>{{ translate('select_department') }}</option>
+                                            disabled>{{ translate('Select_Department') }}</option>
                                     @foreach ($departments as $dept)
                                         <option value="{{ $dept['id'] }}">
                                             {{ $dept['name'] }}

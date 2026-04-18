@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/deliveryman.png')}}" alt="">
-                {{translate('add_new_deliveryman')}}
+                {{translate('add_new_delivery_man')}}
             </h2>
         </div>
         <form action="{{route('vendor.delivery-man.index')}}" method="post" enctype="multipart/form-data" id="add-delivery-man-form">
@@ -17,15 +17,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="title-color" for="exampleFormControlInput1">{{translate('first_name')}}</label>
-                                <input type="text" value="{{old('f_name')}}" name="f_name" class="form-control" placeholder="{{translate('first_name')}}" required>
+                                <label class="title-color" for="exampleFormControlInput1">{{translate('first_Name')}}</label>
+                                <input type="text" value="{{old('f_name')}}" name="f_name" class="form-control" placeholder="{{translate('first_Name')}}" required>
                             </div>
                             <div class="form-group">
-                                <label class="title-color" for="exampleFormControlInput1">{{translate('last_name')}}</label>
-                                <input type="text" value="{{old('l_name')}}" name="l_name" class="form-control" placeholder="{{translate('last_name')}}" required>
+                                <label class="title-color" for="exampleFormControlInput1">{{translate('last_Name')}}</label>
+                                <input type="text" value="{{old('l_name')}}" name="l_name" class="form-control" placeholder="{{translate('last_Name')}}" required>
                             </div>
                             <div class="form-group">
-                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                                 <div class="input-group mb-3">
                                     <div>
                                         <select class="js-example-basic-multiple js-states js-example-responsive form-control"
@@ -35,30 +35,30 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <input type="text" value="{{old('phone')}}" name="phone" class="form-control" placeholder="{{translate('ex')}} : 017********"
+                                    <input type="text" value="{{old('phone')}}" name="phone" class="form-control" placeholder="{{translate('Ex')}} : 017********"
                                            required>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="title-color" for="exampleFormControlInput1">{{translate('identity_type')}}</label>
+                                <label class="title-color" for="exampleFormControlInput1">{{translate('identity_Type')}}</label>
                                 <select name="identity_type" class="form-control">
                                     <option value="passport">{{translate('passport')}}</option>
-                                    <option value="driving_license">{{translate('driving_license')}}</option>
-                                    <option value="nid">{{translate('nid')}}</option>
-                                    <option value="company_id">{{translate('company_id')}}</option>
+                                    <option value="driving_license">{{translate('driving_License')}}</option>
+                                    <option value="nid">{{translate('NID')}}</option>
+                                    <option value="company_id">{{translate('company_ID')}}</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label class="title-color" for="exampleFormControlInput1">{{translate('identity_number')}}</label>
+                                <label class="title-color" for="exampleFormControlInput1">{{translate('identity_Number')}}</label>
                                 <input value="{{old('identity_number')}}" type="text" name="identity_number" class="form-control"
                                         placeholder="Ex : DH-23434-LS"
                                         required>
                             </div>
                             <div class="form-group">
-                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('address')}}</label>
+                                <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Address')}}</label>
                                 <div class="input-group mb-3">
                                     <textarea name="address" class="form-control" id="address" rows="1" placeholder="Address">{{old('address')}}</textarea>
                                 </div>
@@ -69,7 +69,7 @@
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <label class="title-color">{{translate('deliveryman_image')}}</label>
+                                <label class="title-color">{{translate('delivery_Man_Image')}}</label>
                                 <span class="text-info">* ( {{translate('ratio')}} 1:1 )</span>
                                 <div class="custom-file">
                                     <input type="file" name="image" id="customFileEg1" class="title-color custom-file-input"
@@ -79,7 +79,7 @@
                                     </label>
                                 </div>
                                 <div class="mt-4 text-center">
-                                    <img class="upload-img-view" id="viewer" src="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg')}}" alt="{{translate('delivery_man_image')}}"/>
+                                    <img class="upload-img-view" id="viewer" src="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg')}}" alt="{{translate('delivery_Man_Image')}}"/>
                                 </div>
 
                             </div>
@@ -101,8 +101,8 @@
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <label class="title-color">{{translate('email')}}</label>
-                                <input type="email" value="{{old('email')}}" name="email" class="form-control" placeholder="{{translate('ex')}} : ex@example.com" autocomplete="off"
+                                <label class="title-color">{{translate('Email')}}</label>
+                                <input type="email" value="{{old('email')}}" name="email" class="form-control" placeholder="{{translate('Ex')}} : ex@example.com" autocomplete="off"
                                         required>
                             </div>
                         </div>
@@ -159,9 +159,9 @@
                     <span class="d-none" id="placeholderImg" data-img="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img3.png')}}"></span>
 
                     <div class="d-flex gap-3 justify-content-end">
-                        <button type="reset" id="reset" class="btn btn-secondary">{{translate('reset')}}</button>
+                        <button type="reset" id="reset" class="btn btn-secondary">{{translate('Reset')}}</button>
                         <button type="button" class="btn btn--primary form-submit" data-form-id="add-delivery-man-form" data-redirect-route="{{route('vendor.delivery-man.list')}}"
-                                data-message="{{translate('want_to_add_this_delivery_man').'?'}}">{{translate('submit')}}</button>
+                                data-message="{{translate('want_to_add_this_delivery_man').'?'}}">{{translate('Submit')}}</button>
                     </div>
                 </div>
             </div>

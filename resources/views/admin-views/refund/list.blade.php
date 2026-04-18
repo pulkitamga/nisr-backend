@@ -1,6 +1,6 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
-@section('title',translate('refund_requests'))
+@section('title',translate('refund_Requests'))
 
 @section('content')
     <div class="content container-fluid">
@@ -25,8 +25,8 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                        placeholder="{{translate('search_by_order_id_or_refund_id')}}"
-                                       aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                       aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                     </div>
@@ -41,7 +41,7 @@
                             <select name="" id="" class="form-control w-auto"
                                     onchange="location.href='{{ url()->current()  }}?type='+this.value">
                                 <option
-                                    value="all" {{ request('type') == 'all' ?'selected':''}}>{{translate('all')}}</option>
+                                    value="all" {{ request('type') == 'all' ?'selected':''}}>{{translate('All')}}</option>
                                 <option
                                     value="admin" {{ request('type')== 'admin' ? 'selected':''}}>{{translate('inhouse_Requests')}}</option>
                                 <option
@@ -59,11 +59,11 @@
                     <tr>
                         <th>{{translate('SL')}}</th>
                         <th class="text-center">{{translate('refund_ID')}}</th>
-                        <th>{{translate('order_id')}} </th>
-                        <th>{{translate('product_info')}}</th>
-                        <th>{{translate('customer_info')}}</th>
-                        <th class="text-end">{{translate('total_amount')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('Order_ID')}} </th>
+                        <th>{{translate('product_Info')}}</th>
+                        <th>{{translate('Customer_Info')}}</th>
+                        <th class="text-end">{{translate('Total_Amount')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
 
@@ -131,7 +131,7 @@
                             <td>
                                 <div class="d-flex justify-content-center">
                                     <a class="btn btn-outline--primary btn-sm"
-                                       title="{{translate('view')}}"
+                                       title="{{translate('View')}}"
                                        href="{{route('admin.refund-section.refund.details',['id'=>$refund['id']])}}">
                                         <i class="tio-invisible"></i>
                                     </a>

@@ -107,15 +107,15 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}
+                                    {{ translate('this_Year') }}
                                 </option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}
+                                    {{ translate('this_Month') }}
                                 </option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}
+                                    {{ translate('this_Week') }}
                                 </option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}
@@ -128,18 +128,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('wholesaler') }}</label>
+                            <label class="form-label mb-1">{{ translate('Wholesaler') }}</label>
                             <select class="form-control" name="wholesaler_id">
-                                <option value="0">{{ translate('all') }}</option>
+                                <option value="0">{{ translate('All') }}</option>
                                 @foreach ($wholesalers as $wholesaler)
                                     <option value="{{ $wholesaler->id }}"
                                         {{ (int) ($filters['wholesaler_id'] ?? 0) === (int) $wholesaler->id ? 'selected' : '' }}>
@@ -149,9 +149,9 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('payment_status') }}</label>
+                            <label class="form-label mb-1">{{ translate('Payment_Status') }}</label>
                             <select class="form-control" name="payment_status">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="paid"
                                     {{ ($filters['payment_status'] ?? '') === 'paid' ? 'selected' : '' }}>
                                     {{ translate('paid') }}
@@ -163,12 +163,12 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('delivery_status') }}</label>
+                            <label class="form-label mb-1">{{ translate('Delivery_Status') }}</label>
                             <select class="form-control" name="delivery_status">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 <option value="pending"
                                     {{ ($filters['delivery_status'] ?? '') === 'pending' ? 'selected' : '' }}>
-                                    {{ translate('pending') }}
+                                    {{ translate('Pending') }}
                                 </option>
                                 <option value="partial"
                                     {{ ($filters['delivery_status'] ?? '') === 'partial' ? 'selected' : '' }}>
@@ -181,9 +181,9 @@
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.wholesale.dashboard.reports.revenue') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.wholesale.dashboard.reports.revenue', array_merge(request()->query(), ['download' => 'excel'])) }}"
                                 class="btn btn-outline-success"><i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>
@@ -281,9 +281,9 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>{{ translate('wholesaler') }}</th>
-                                    <th>{{ translate('company') }}</th>
-                                    <th class="text-end">{{ translate('orders') }}</th>
+                                    <th>{{ translate('Wholesaler') }}</th>
+                                    <th>{{ translate('Company') }}</th>
+                                    <th class="text-end">{{ translate('Orders') }}</th>
                                     <th class="text-end">{{ translate('revenue') }}</th>
                                     <th class="text-end">{{ translate('collection') }}</th>
                                 </tr>
@@ -295,7 +295,7 @@
                                         $companyName = $user?->wholesalerBusiness?->company_name ?? '-';
                                         $displayName =
                                             $user?->name ??
-                                            ($user?->f_name ?? translate('wholesaler') . ' #' . $row->wholesaler_id);
+                                            ($user?->f_name ?? translate('Wholesaler') . ' #' . $row->wholesaler_id);
                                         $collection =
                                             (float) $row->total_revenue > 0
                                                 ? ((float) $row->paid_revenue / (float) $row->total_revenue) * 100

@@ -11,16 +11,16 @@
             <form action="{{ route('admin.warranty.transfer') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label>{{ translate('Serial Number') }}</label>
+                    <label>{{ translate('serial_number') }}</label>
                     <div class="input-group">
-                        <input type="text" id="transferWarrantySerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                        <input type="text" id="transferWarrantySerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter Serial Number') }}" required>
                         <div class="input-group-append">
                             @include('partials.serial-scan-button', ['targetInput' => '#transferWarrantySerialNumber'])
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('From Branch') }}</label>
+                    <label>{{ translate('From_branch') }}</label>
                     <select name="from_branch_id" class="form-control" required>
                         @foreach($branches as $branch)
                             <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
@@ -28,7 +28,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('To Branch') }}</label>
+                    <label>{{ translate('to_branch') }}</label>
                     <select name="to_branch_id" class="form-control" required>
                         @foreach($branches as $branch)
                             <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>

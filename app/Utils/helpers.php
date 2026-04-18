@@ -664,9 +664,21 @@ class helpers
         }
         $default = getWebConfig(name: 'system_default_currency');
         $current = \session('system_default_currency_info');
-        if (session()->has('system_default_currency_info') == false || $default != $current['id']) {
+        $currentId = is_array($current) ? ($current['id'] ?? null) : ($current?->id);
+
+        if (session()->has('system_default_currency_info') == false || $default != $currentId) {
             $id = getWebConfig(name: 'system_default_currency');
+            if (blank($id)) {
+                session()->forget(['system_default_currency_info', 'currency_code', 'currency_symbol', 'currency_exchange_rate', 'usd', 'default']);
+                return;
+            }
+
             $currency = Currency::find($id);
+            if (!$currency) {
+                session()->forget(['system_default_currency_info', 'currency_code', 'currency_symbol', 'currency_exchange_rate', 'usd', 'default']);
+                return;
+            }
+
             session()->put('system_default_currency_info', $currency);
             session()->put('currency_code', $currency->code);
             session()->put('currency_symbol', $currency->symbol);
@@ -998,6 +1010,8 @@ class helpers
     public static function get_language_name($key)
     {
         $values = getWebConfig(name: 'language');
+        $values = is_array($values) ? $values : [];
+
         foreach ($values as $value) {
             if ($value['code'] == $key) {
                 $key = $value['name'];

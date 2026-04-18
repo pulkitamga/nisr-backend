@@ -31,7 +31,7 @@
                         <div class="row">
                             @foreach($languages as $lang)
                             <div class="col-12 form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang}}-form">
-                                <label class="title-color" for="exampleFormControlInput1">{{ translate('sub_sub_category_name') }}
+                                <label class="title-color" for="exampleFormControlInput1">{{ translate('sub_Sub_Category_Name') }}
                                     <span class="text-danger">*</span>
                                     ({{strtoupper($lang) }})</label>
                                 <input type="text" name="name[]" class="form-control" placeholder="{{ translate('new_Sub_Sub_Category') }}">
@@ -54,7 +54,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="title-color text-capitalize" for="name">
-                                        {{ translate('sub_category_Name') }}<span class="text-danger">*</span>
+                                        {{ translate('sub_Category_Name') }}<span class="text-danger">*</span>
                                     </label>
                                     <select name="parent_id" id="parent_id" class="form-control">
                                         <option value="" disabled selected>
@@ -66,7 +66,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="title-color text-capitalize" for="priority">
-                                        {{ translate('priority') }}
+                                        {{ translate('Priority') }}
                                         <span>
                                             <i class="tio-info-outined" data-toggle="tooltip" data-placement="top" title="{{ translate('the_lowest_number_will_get_the_highest_priority') }}"></i>
                                         </span>
@@ -90,10 +90,10 @@
                             <div class="col-12">
                                 <div class="d-flex flex-wrap gap-2 justify-content-end">
                                     <button type="reset" class="btn btn-secondary">
-                                        {{ translate('reset') }}
+                                        {{ translate('Reset') }}
                                     </button>
                                     <button type="submit" class="btn btn--primary">
-                                        {{ translate('submit') }}
+                                        {{ translate('Submit') }}
                                     </button>
                                 </div>
                             </div>
@@ -123,7 +123,7 @@
                                         </div>
                                     </div>
                                     <input id="" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_sub_sub_category_name') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                             <div class="dropdown">
@@ -140,13 +140,13 @@
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('ID') }}</th>
-                                <th>{{ translate('sub_sub_category_name') }}</th>
-                                <th>{{ translate('sub_category_name') }}</th>
-                                <th>{{ translate('category_name') }}</th>
-                                <th class="text-center">{{ translate('priority') }}</th>
+                                <th>{{ translate('sub_Sub_Category_Name') }}</th>
+                                <th>{{ translate('sub_Category_Name') }}</th>
+                                <th>{{ translate('category_Name') }}</th>
+                                <th class="text-center">{{ translate('Priority') }}</th>
                                 <th class="text-center">{{ translate('exchange_charge') }}</th>
                                 <th class="text-center">{{ translate('installation_charge') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -189,10 +189,10 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('edit') }}" href="{{ route('admin.sub-sub-category.update',[$category['id']]) }}">
+                                        <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('Edit') }}" href="{{ route('admin.sub-sub-category.update',[$category['id']]) }}">
                                             <i class="tio-edit"></i>
                                         </a>
-                                        <a class="btn btn-outline-danger btn-sm square-btn category-delete-button" title="{{ translate('delete') }}" id="{{ $category['id']}}">
+                                        <a class="btn btn-outline-danger btn-sm square-btn category-delete-button" title="{{ translate('Delete') }}" id="{{ $category['id']}}">
                                             <i class="tio-delete"></i>
                                         </a>
                                     </div>

@@ -25,9 +25,9 @@
                                     class="js-select2-custom form-control text-ellipsis"
                                     name="seller_id">
                                     <!-- <option
-                                            value="all" {{ $seller_id == 'all' ? 'selected' : '' }}>{{translate('all')}}</option> -->
+                                            value="all" {{ $seller_id == 'all' ? 'selected' : '' }}>{{translate('All')}}</option> -->
                                     <option
-                                        value="in_house" {{ $seller_id == 'in_house' ? 'selected' : '' }}>{{translate('in-House')}}</option>
+                                        value="in_house" {{ $seller_id == 'in_house' ? 'selected' : '' }}>{{translate('in_House')}}</option>
 
                                 </select>
                             </div>
@@ -45,7 +45,7 @@
                             </div>
                             <div class="col-md-4 col-lg-3 text-end text-md-left">
                                 <button type="submit" class="btn btn--primary px-4 px-md-5">
-                                    {{translate('filter')}}
+                                    {{translate('Filter')}}
                                 </button>
                             </div>
                         </div>
@@ -70,9 +70,9 @@
                                 <input type="hidden" value="{{ $seller_id }}" name="seller_id">
                                 <input type="hidden" value="{{ $sort }}" name="sort">
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                    placeholder="{{translate('search_Product_Name')}}" aria-label="{{ translate('Search orders') }}"
+                                    placeholder="{{translate('search_Product_Name')}}" aria-label="{{ translate('search_orders') }}"
                                     value="{{ $search }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                         <div class="dropdown">
@@ -93,13 +93,13 @@
                             <tr>
                                 <th>{{translate('SL')}}</th>
                                 <th>
-                                    {{translate('product_Name')}}
+                                    {{translate('Product_name')}}
                                 </th>
                                 <th>
-                                    {{translate('date')}}
+                                    {{translate('DATE')}}
                                 </th>
                                 <th class="text-center">
-                                    {{translate('total_in_Wishlist')}}
+                                    {{translate('total_In_Wishlist')}}
                                 </th>
                             </tr>
                         </thead>

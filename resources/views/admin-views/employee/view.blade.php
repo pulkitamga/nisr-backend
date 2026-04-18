@@ -83,7 +83,7 @@
                             @if(!($employee->roles->contains('name', config('permissions_admin.super_admin_role', 'Super Admin')) && !auth('admin')->user()?->isSuperAdmin()))
                                 <a href="{{route('admin.employee.update',[$employee['id']])}}" class="btn btn--primary px-5">
                                     <i class="tio-edit"></i>
-                                    {{translate('edit')}}
+                                    {{translate('Edit')}}
                                 </a>
                             @endif
                         @endcan

@@ -387,7 +387,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="text-start">{{ translate('total_orders') }}</td>
+                    <td class="text-start">{{ translate('total_Orders') }}</td>
                     <td class="text-end">{{ (int) ($statistics['total_orders'] ?? 0) }}</td>
                 </tr>
                 <tr>
@@ -417,8 +417,8 @@
                         <th class="text-end">{{ translate('wholesale_sales') }}</th>
                         <th class="text-end">{{ translate('total_sales') }}</th>
                         <th class="text-end">{{ translate('retail_orders') }}</th>
-                        <th class="text-end">{{ translate('wholesale_orders') }}</th>
-                        <th class="text-end">{{ translate('total_orders') }}</th>
+                        <th class="text-end">{{ translate('wholesale_Orders') }}</th>
+                        <th class="text-end">{{ translate('total_Orders') }}</th>
                         <th class="text-end">{{ translate('total_quantity') }}</th>
                     </tr>
                 </thead>
@@ -457,7 +457,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="no-data-message">{{ translate('no_data_found') }}</td>
+                            <td colspan="8" class="no-data-message">{{ translate('no_Data_found') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

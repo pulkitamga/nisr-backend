@@ -6,7 +6,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('earning_statement')}}
+                {{translate('earning_Statement')}}
             </h2>
         </div>
         @include('admin-views.delivery-man.pages-inline-menu')
@@ -18,7 +18,7 @@
                         <div class="col-md-4 col-lg-6 mb-2 mb-md-0">
 
                             <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
-                                {{ translate('order_list') }}
+                                {{ translate('Order_List') }}
                                 <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $orders->total() }}</span>
                             </h4>
                         </div>
@@ -31,10 +31,10 @@
                                                 <i class="tio-search"></i>
                                             </div>
                                         </div>
-                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                                        <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_order_no') }}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
                                         <input type="hidden" name="page_name" value="active_log">
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -57,7 +57,7 @@
                                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                                     <tr>
                                         <th>{{ translate('SL') }}</th>
-                                        <th>{{ translate('order_no') }}</th>
+                                        <th>{{ translate('Order_No') }}</th>
                                         <th class="text-center">{{ translate('current_status') }}</th>
                                         <th>{{ translate('history') }}</th>
                                     </tr>
@@ -69,7 +69,7 @@
                                             <td>{{ $orders->firstItem()+$key }}</td>
                                             <td>
                                                 <div class="media align-items-center gap-10 flex-wrap">
-                                                    <a class="title-color" title="{{translate('order_details')}}"
+                                                    <a class="title-color" title="{{translate('Order_details')}}"
                                                        href="{{route('admin.orders.details',['id'=>$order['id']])}}">
                                                         {{ $order->id }}
                                                     </a>

@@ -3,7 +3,7 @@
     <tr>
         <th scope="col">#</th>
         <th scope="col">
-            {{translate('product_Name')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>
+            {{translate('Product_name')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>
         </th>
         <th scope="col">
             {{translate('total_Sale')}} <label class="badge badge-success ms-3 cursor-pointer">{{translate('Asc/Dsc')}}</label>
@@ -63,7 +63,7 @@
         language: {
             zeroRecords: '<div class="text-center p-4">' +
                 '<img class="mb-3" src="{{dynamicAsset(path: 'public/assets/back-end')}}/svg/illustrations/sorry.svg" alt="Image Description" style="width: 7rem;">' +
-                '<p class="mb-0">{{ __('No data to show') }}</p>' +
+                '<p class="mb-0">{{ __('no_data_to_show') }}</p>' +
                 '</div>'
         }
     });

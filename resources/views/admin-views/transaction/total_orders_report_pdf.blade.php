@@ -8,7 +8,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ translate('order_report') }}</title>
+    <title>{{ translate('order_Report') }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -378,7 +378,7 @@
     <!-- Modern Header with Logo - Green like CRM -->
     <div class="report-header clearfix">
         <div class="header-content">
-            <h2>{{ translate('order_report') }}</h2>
+            <h2>{{ translate('order_Report') }}</h2>
             <p>{{ translate('report_period') }}: {{ $dateRange }}</p>
         </div>
         <div class="logo-container">
@@ -411,7 +411,7 @@
         <table class="kpi-table" cellpadding="0" cellspacing="0">
             <tr>
                 <td>
-                    <div class="kpi-label">{{ translate('total_orders') }}</div>
+                    <div class="kpi-label">{{ translate('total_Orders') }}</div>
                     <div class="kpi-value">
                         <strong>{{ number_format((int) ($data['order_count']['total_order'] ?? 0)) }}</strong>
                     </div>
@@ -461,7 +461,7 @@
                     @endif
                     @if (isset($data['total_tax']))
                         <td>
-                            <div class="kpi-label">{{ translate('total_tax') }}</div>
+                            <div class="kpi-label">{{ translate('total_Tax') }}</div>
                             <div class="kpi-value">
                                 <strong>{{ number_format((float) ($data['total_tax'] ?? 0), 2) }}</strong>
                             </div>
@@ -486,7 +486,7 @@
             @if (!empty($data['trend_chart']))
                 <div class="chart-trend">
                     <div class="chart-col">
-                        <div class="chart-title">{{ translate('order_statistics') }} ({{ $dateRange }})</div>
+                        <div class="chart-title">{{ translate('order_Statistics') }} ({{ $dateRange }})</div>
                         <img src="{{ $data['trend_chart'] }}" class="chart-image" alt="Order Statistics">
                     </div>
                 </div>
@@ -506,7 +506,7 @@
     <!-- Orders Details Table -->
     <div class="table-container" style="page-break-before: always;">
         <div class="table-header">
-            <h3>{{ translate('order_details') }} {{ $dateRange }}</h3>
+            <h3>{{ translate('Order_details') }} {{ $dateRange }}</h3>
         </div>
 
         @if ($hasData)
@@ -514,15 +514,15 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>{{ translate('order_id') }}</th>
-                        <th class="text-end">{{ translate('total_amount') }}</th>
-                        <th class="text-end">{{ translate('product_discount') }}</th>
-                        <th class="text-end">{{ translate('coupon_discount') }}</th>
-                        <th class="text-end">{{ translate('shipping_charge') }}</th>
+                        <th>{{ translate('Order_ID') }}</th>
+                        <th class="text-end">{{ translate('Total_Amount') }}</th>
+                        <th class="text-end">{{ translate('product_Discount') }}</th>
+                        <th class="text-end">{{ translate('Coupon_Discount') }}</th>
+                        <th class="text-end">{{ translate('shipping_Charge') }}</th>
                         <th class="text-end">{{ translate('vat/tax') }}</th>
                         <th class="text-end">{{ translate('commission') }}</th>
-                        <th class="text-end">{{ translate('deliveryman_incentive') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th class="text-end">{{ translate('delivery_man_incentive') }}</th>
+                        <th>{{ translate('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody>

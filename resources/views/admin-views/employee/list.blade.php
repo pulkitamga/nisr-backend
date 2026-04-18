@@ -31,9 +31,9 @@
                                             </div>
                                         </div>
                                         <input type="search" name="searchValue" class="form-control"
-                                                placeholder="{{translate('search_by_name_or_email_or_phone')}}"
+                                                placeholder="{{translate('Search_by_Name_or_Email_or_Phone')}}"
                                                 value="{{ request('searchValue') }}" required>
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -42,7 +42,7 @@
                                     <div class="d-flex gap-2 align-items-center text-start">
                                         <div class="">
                                             <select class="form-control text-ellipsis min-w-200" name="role_id">
-                                                <option value="all" {{ request('role_id', 'all') == 'all' ? 'selected' : '' }}>{{translate('all')}}</option>
+                                                <option value="all" {{ request('role_id', 'all') == 'all' ? 'selected' : '' }}>{{translate('All')}}</option>
                                                 @foreach($employee_roles as $employee_role)
                                                     <option value="{{ $employee_role['id'] }}" {{ request('role_id') == $employee_role['id'] ? 'selected' : '' }}>
                                                             {{ ucfirst($employee_role['name']) }}
@@ -52,7 +52,7 @@
                                         </div>
                                         <div class="">
                                             <button type="submit" class="btn btn--primary px-4 w-100 text-nowrap">
-                                                {{ translate('filter')}}
+                                                {{ translate('Filter')}}
                                             </button>
                                         </div>
                                     </div>
@@ -68,7 +68,7 @@
                                 <div class="">
                                     <a href="{{route('admin.employee.add-new')}}" class="btn btn--primary text-nowrap">
                                         <i class="tio-add"></i>
-                                        <span class="text ">{{translate('add_new')}}</span>
+                                        <span class="text ">{{translate('add_New')}}</span>
                                     </a>
                                 </div>
                             @endcan
@@ -82,12 +82,12 @@
                         <thead class="thead-light thead-50 text-capitalize table-nowrap">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('name')}}</th>
-                            <th>{{translate('email')}}</th>
-                            <th>{{translate('phone')}}</th>
+                            <th>{{translate('Name')}}</th>
+                            <th>{{translate('Email')}}</th>
+                            <th>{{translate('Phone')}}</th>
                             <th>{{translate('role')}}</th>
-                            <th>{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th>{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -134,7 +134,7 @@
                                             </form>
                                         @else
                                             <label class="badge {{ $employee->status ? 'badge-soft-success' : 'badge-soft-danger' }}">
-                                                {{ $employee->status ? translate('active') : translate('inactive') }}
+                                                {{ $employee->status ? translate('Active') : translate('Inactive') }}
                                             </label>
                                         @endcan
                                     @endif
@@ -145,7 +145,7 @@
                                             @if(!$isSuperAdminEmployee || auth('admin')->user()?->isSuperAdmin())
                                             <a href="{{route('admin.employee.update',[$employee['id']])}}"
                                                class="btn btn-outline--primary btn-sm square-btn"
-                                               title="{{translate('edit')}}">
+                                               title="{{translate('Edit')}}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             @endif

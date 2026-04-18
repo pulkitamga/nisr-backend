@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png') }}" alt="">
-                {{ translate('3rd_party') }}
+                {{ translate('3rd_Party') }}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -82,8 +82,8 @@
                         </div>
                         <div class="col-12">
                             <div class="d-flex flex-wrap justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="{{env('APP_MODE') != 'demo' ? 'submit' : 'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? '' : 'call-demo'}}">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="{{env('APP_MODE') != 'demo' ? 'submit' : 'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? '' : 'call-demo'}}">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>

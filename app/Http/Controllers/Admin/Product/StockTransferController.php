@@ -162,15 +162,15 @@ class StockTransferController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('To Branch'),
+                    translate('to_branch'),
                     translate('Transfer Date'),
                     translate('Products'),
                     translate('Category'),
                     translate('Variation'),
-                    translate('Qty'),
+                    translate('QTY'),
                     translate('Status'),
                 ],
-                title: translate('stock_transfer_list'),
+                title: translate('Stock_Transfer_List'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
@@ -178,16 +178,16 @@ class StockTransferController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('date') . ': ' . ($request->input('restock_date') ?: translate('all')),
-                    translate('category') . ': ' . ($request->input('category_id') ?: translate('all')),
-                    translate('brand') . ': ' . ($request->input('brand_id') ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('DATE') . ': ' . ($request->input('restock_date') ?: translate('All')),
+                    translate('Category') . ': ' . ($request->input('category_id') ?: translate('All')),
+                    translate('Brand') . ': ' . ($request->input('brand_id') ?: translate('All')),
                 ])),
                 columnWidths: ['A' => 20, 'B' => 16, 'C' => 28, 'D' => 20, 'E' => 26, 'F' => 12, 'G' => 14],
                 centerColumns: ['B', 'F', 'G'],
                 sumColumns: ['F']
             ),
-            LocalizedExport::fileName(translate('stock_transfer_list'))
+            LocalizedExport::fileName(translate('Stock_Transfer_List'))
         );
     }
   public function getStock(Request $request)

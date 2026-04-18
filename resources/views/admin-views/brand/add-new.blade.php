@@ -46,7 +46,7 @@
                                                 ({{strtoupper($lang) }})
                                             </label>
                                             <input type="text" name="name[]" class="form-control" id="name" value=""
-                                                   placeholder="{{ translate('ex') }} : {{translate('LUX') }}">
+                                                   placeholder="{{ translate('Ex') }} : {{translate('LUX') }}">
                                         </div>
                                         <input type="hidden" name="lang[]" value="{{$lang}}">
                                     @endforeach
@@ -57,7 +57,7 @@
                                             {{ translate('image_alt_text') }}
                                         </label>
                                         <input type="text" name="image_alt_text" class="form-control" value=""
-                                               placeholder="{{ translate('ex').' : '.translate('apex_Brand') }}">
+                                               placeholder="{{ translate('Ex').' : '.translate('apex_Brand') }}">
                                     </div>
                                 </div>
                             </div>
@@ -66,7 +66,7 @@
                                 <div class="card-body py-5">
                                     <div class="mx-auto text-center max-w-170px">
                                         <label class="d-block text-center font-weight-bold">
-                                            {{translate('image')}}  <small class="text-danger">{{'('.translate('size').': 1:1)'}}</small>
+                                            {{translate('Image')}}  <small class="text-danger">{{'('.translate('Size').': 1:1)'}}</small>
                                         </label>
 
                                         <label class="custom_upload_input d-block mx-2 cursor-pointer">
@@ -92,15 +92,15 @@
                                         <p class="text-muted mt-2 fz-12 m-0">
                                             {{ translate('image_format') }} : {{ "jpg, png, jpeg" }}
                                             <br>
-                                            {{ translate('image_size') }} : {{ translate('max') }} {{ "2 MB" }}</p>
+                                            {{ translate('image_size') }} : {{ translate('Max') }} {{ "2 MB" }}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="d-flex gap-3 justify-content-end">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary px-4">{{ translate('reset') }}</button>
-                                <button type="submit" class="btn btn--primary px-4">{{ translate('submit') }}</button>
+                                        class="btn btn-secondary px-4">{{ translate('Reset') }}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>

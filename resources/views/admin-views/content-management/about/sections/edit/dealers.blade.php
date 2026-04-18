@@ -77,7 +77,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                         class="form-control summernote">{!! $lang == $defaultLanguage ? ($model->description ?? '') : ($translations[$lang]['description'] ?? '') !!}</textarea>
                     <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                    <label class="mt-3">{{ translate('Dealer Name') }} ({{ strtoupper($lang)
+                    <label class="mt-3">{{ translate('dealer_name') }} ({{ strtoupper($lang)
                         }})</label>
                     <input type="text" name="dealer_name[]" class="form-control"
                         value="{{ $lang == $defaultLanguage ? $model->dealer_name : ($translations[$lang]['dealer_name'] ?? '') }}">

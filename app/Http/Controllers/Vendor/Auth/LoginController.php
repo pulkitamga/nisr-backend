@@ -65,7 +65,7 @@ class LoginController extends Controller
                         $response = Http::get($url);
                         $response = $response->json();
                         if (!isset($response['success']) || !$response['success']) {
-                            $fail(translate('recaptcha_failed'));
+                            $fail(translate('ReCAPTCHA_Failed'));
                         }
                     },
                 ],

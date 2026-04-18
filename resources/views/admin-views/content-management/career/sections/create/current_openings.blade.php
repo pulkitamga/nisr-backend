@@ -40,7 +40,7 @@ if (!in_array($baseLanguage, $language ?? [], true)) {
         <div class="form-system-language-form {{ $lang != $baseLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
             <div class="form-group">
                 <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
-                <input type="text" name="title[]" class="form-control" placeholder="{{ translate('Enter title') }}">
+                <input type="text" name="title[]" class="form-control" placeholder="{{ translate('enter_title') }}">
             </div>
 
             <div class="form-group">

@@ -233,7 +233,7 @@ class ProductController extends BaseController
 
         $this->productSeoRepo->add(data: $service->getProductSEOData(request: $request, product: $savedProduct, action: 'add'));
 
-        Toastr::success(translate('product_added_successfully'));
+        Toastr::success(translate('Product_added_successfully'));
         return redirect()->route('vendor.products.list', ['type' => 'all']);
     }
 
@@ -608,7 +608,7 @@ class ProductController extends BaseController
 
         return response()->json([
             'success' => $success,
-            'message' => $success ? translate("status_updated_successfully") : translate("status_updated_failed") . ' ' . translate("Product_must_be_approved"),
+            'message' => $success ? translate("Status_updated_successfully") : translate("status_updated_failed") . ' ' . translate("Product_must_be_approved"),
         ], 200);
     }
 

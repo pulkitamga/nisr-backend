@@ -30,7 +30,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <h4 class="mb-2">{{translate('products')}}</h4>
+                            <h4 class="mb-2">{{translate('Products')}}</h4>
                             @if(isset($data['order']))
                                 @foreach($data['order']->details as $key=> $detail)
                                     @php($product = json_decode($detail['product_details']))

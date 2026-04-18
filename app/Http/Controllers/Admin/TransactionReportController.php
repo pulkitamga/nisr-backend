@@ -1654,7 +1654,7 @@ class TransactionReportController extends Controller
                         'labels' => $translatedLabels,
                         'datasets' => [
                             [
-                                'label' => translate('Expense Amount'),
+                                'label' => translate('expense_Amount'),
                                 'data' => $values,
                                 'borderColor' => '#FF6B6B', // ✅ important for line
                                 'backgroundColor' => 'transparent', // optional

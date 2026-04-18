@@ -35,3 +35,5 @@ tmp/agency-agents/
 /review-screenshots/
 deployment/config.yml
 /scripts/
+config/access.php
+/storage/framework/

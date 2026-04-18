@@ -69,7 +69,7 @@
                         </div>
                         <div class="d-flex justify-content-center align-items-baseline flex-wrap gap-2">
                             <a class="btn btn-lg btn-block btn-secondary w-auto flex-grow-1" href="{{ route('vendor.auth.forgot-password.index') }}">
-                                {{ translate('back')}}
+                                {{ translate('Back')}}
                             </a>
                             <button type="submit" class="btn btn-lg btn-block btn--primary w-auto flex-grow-1" disabled>
                                 {{ translate('proceed')}}

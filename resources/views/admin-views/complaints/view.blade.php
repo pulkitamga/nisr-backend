@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
-                {{translate('complaint_ticket')}}
+                {{translate('complaint_Ticket')}}
             </h2>
         </div>
         @php($ticketEntity = $supportTicket->first())
@@ -28,7 +28,7 @@
                 <div class="d-flex align-items-center flex-wrap gap-3">
                     <div class="type font-weight-bold bg-soft--primary c1 px-2 rounded">{{translate(str_replace('_',' ',$ticket['type']))}}</div>
                     <div class="priority d-flex flex-wrap align-items-center gap-3">
-                        <span class="title-color">{{translate('priority')}}:</span>
+                        <span class="title-color">{{translate('Priority')}}:</span>
                         <span class="font-weight-bold badge-soft-info rounded px-2">{{translate(str_replace('_',' ',$ticket['priority']))}}</span>
                     </div>
                 </div>

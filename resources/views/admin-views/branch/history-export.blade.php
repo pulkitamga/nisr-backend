@@ -1,7 +1,7 @@
 <table>
     <thead>
         <tr>
-            <th>{{ __('Date') }}</th>
+            <th>{{ __('DATE') }}</th>
             <th>{{ __('Type') }}</th>
             <th>{{ __('Quantity') }}</th>
             <th>{{ __('Reference') }}</th>

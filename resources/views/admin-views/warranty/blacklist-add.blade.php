@@ -20,9 +20,9 @@
                 @csrf
 
                 <div class="form-group">
-                    <label>{{ translate('Serial Number') }}</label>
+                    <label>{{ translate('serial_number') }}</label>
                     <div class="input-group">
-                        <input type="text" id="blacklistSerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter serial number') }}" required>
+                        <input type="text" id="blacklistSerialNumber" name="serial_number" class="form-control" placeholder="{{ translate('Enter Serial Number') }}" required>
                         <div class="input-group-append">
                             @include('partials.serial-scan-button', ['targetInput' => '#blacklistSerialNumber'])
                         </div>

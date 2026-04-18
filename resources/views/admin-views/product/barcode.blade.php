@@ -23,10 +23,10 @@
                             <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                                 <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
-                                    <th>{{ translate('code') }}</th>
-                                    <th>{{ translate('name') }}</th>
-                                    <th>{{ translate('quantity') }}</th>
-                                    <th class="text-center">{{ translate('action') }}</th>
+                                    <th>{{ translate('Code') }}</th>
+                                    <th>{{ translate('Name') }}</th>
+                                    <th>{{ translate('Quantity') }}</th>
+                                    <th class="text-center">{{ translate('Action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -53,15 +53,15 @@
                                     <th>
                                         <div class="d-flex justify-content-center gap-2">
                                             <button class="btn btn-outline-info" type="submit">
-                                                {{ translate('generate_barcode') }}
+                                                {{ translate('generate_Barcode') }}
                                             </button>
                                             <a href="{{ route('admin.products.barcode', [$product['id']]) }}"
                                                class="btn btn-outline-danger">
-                                                {{ translate('reset') }}
+                                                {{ translate('Reset') }}
                                             </a>
                                             <button type="button" id="print_bar" data-value="print-area"
                                                     class="btn btn-outline--primary action-print-invoice">
-                                                {{ translate('print') }}
+                                                {{ translate('Print') }}
                                             </button>
                                         </div>
                                     </th>
@@ -103,7 +103,7 @@
                                 {!! DNS1D::getBarcodeHTML($product->code, 'C128') !!}
                             </div>
                             <div class="barcode_code text-capitalize">
-                                {{ translate('code') }} : {{ $product->code }}
+                                {{ translate('Code') }} : {{ $product->code }}
                             </div>
                         @else
                             <p class="text-danger">

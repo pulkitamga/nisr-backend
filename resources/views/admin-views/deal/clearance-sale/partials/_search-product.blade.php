@@ -67,7 +67,7 @@
 @else
     <div class="text-center p-4">
         <img class="mb-3 w-60px" src="{{dynamicAsset(path: 'public/assets/back-end/img/empty-state-icon/default.png')}}"
-             alt="{{translate('image_description')}}">
-        <p class="mb-0">{{ translate('no_product_found')}}</p>
+             alt="{{translate('image_Description')}}">
+        <p class="mb-0">{{ translate('No_Product_Found')}}</p>
     </div>
 @endif

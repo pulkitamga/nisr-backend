@@ -192,7 +192,7 @@
                 <i class="tio-email"></i> {{ translate('Send_to_company') }}
             </button>
             <button onclick="showPrintModal()" class="btn btn--primary">
-                <i class="tio-print"></i> {{ translate('Print Invoice') }}
+                <i class="tio-print"></i> {{ translate('print__Invoice') }}
             </button>
         </div>
         <div id="printModal" class="modal" style="display: none;">
@@ -227,21 +227,21 @@
                         </p>
                     </div>
                     <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
-                        <h6>{{ translate('Order Info') }}</h6>
+                        <h6>{{ translate('order_Info') }}</h6>
                         <p>
                             <strong>{{ translate('Invoice NO') }}:</strong> #<span class="bidi-ltr">{{ $order->invoice_no }}</span><br>
-                            <strong>{{ translate('Purchase Order NO') }}:</strong> #<span class="bidi-ltr">{{ $order->purchase_order_no }}</span><br>
-                            <strong>{{ translate('Quotation NO') }}:</strong> #<span class="bidi-ltr">{{ $order->quotation_no }}</span><br>
+                            <strong>{{ translate('Purchase_Order_No') }}:</strong> #<span class="bidi-ltr">{{ $order->purchase_order_no }}</span><br>
+                            <strong>{{ translate('Quotation_No') }}:</strong> #<span class="bidi-ltr">{{ $order->quotation_no }}</span><br>
                             @if($order->confirm_order_no)
                             <strong>{{ translate('Confirem Order NO') }}:</strong> #<span class="bidi-ltr">{{ $order->confirm_order_no }}</span><br>
                             @endif
-                            <strong>{{ translate('Date') }}:</strong> <span class="bidi-ltr">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span><br>
+                            <strong>{{ translate('DATE') }}:</strong> <span class="bidi-ltr">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span><br>
 
                         </p>
                     </div>
                 </div>
                 @php($totelTax=0)
-                <h6 class="mb-3">{{ translate('Product Details') }}</h6>
+                <h6 class="mb-3">{{ translate('product_details') }}</h6>
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
                         <thead class="thead-light">
@@ -251,7 +251,7 @@
                                 <th>{{ translate('Quantity') }}</th>
                                 <th>{{ translate('Price') }}</th>
                                 <th>{{ translate('Tax') }}</th>
-                                <th>{{ translate('Final Price') }}</th>
+                                <th>{{ translate('Final_price') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -277,7 +277,7 @@
                         <div class="p-3">
                             @if (isset($quotation) && !empty(strip_tags($quotation->terms_and_conditions)))
                             <div class="mt-4">
-                                <h4 class="font-weight-bold mb-1">{{ translate('Terms and Conditions') }}</h4>
+                                <h4 class="font-weight-bold mb-1">{{ translate('Terms_and_Conditions') }}</h4>
                                 <p>{!!getTranslatedValue($quotation, 'terms_and_conditions', $quotation->terms_and_conditions) !!}</p>
 
                             </div>
@@ -294,7 +294,7 @@
                     <div class="col-md-5 ms-auto">
                         <div class="p-3">
                             <h6 class="mb-3 font-weight-bold text-center border py-lg-2 bg-dark text-white">
-                                {{ translate('Sub Total') }}
+                                {{ translate('Subtotal') }}
                             </h6>
                             <ul class="list-unstyled mb-3">
                                 <li class="d-flex justify-content-between mb-1">
@@ -315,7 +315,7 @@
                             @if (isset($quotation) && !empty(strip_tags($quotation->wholesaler_discount_amount)))
                             <ul class="list-unstyled mb-3">
                                 <li class="d-flex justify-content-between mb-1">
-                                    <span>{{ __('Wholesaler Discount') }}</span>
+                                    <span>{{ __('wholesaler_discount') }}</span>
                                     <span>{{ webCurrencyConverter(amount:$quotation->wholesaler_discount_amount) }}</span>
                                 </li>
                             </ul>

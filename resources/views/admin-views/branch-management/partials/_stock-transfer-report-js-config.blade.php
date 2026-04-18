@@ -8,15 +8,15 @@
         ],
         'text' => [
             'loading' => translate('Loading...'),
-            'filter' => translate('filter'),
+            'filter' => translate('Filter'),
             'failedToLoad' => translate('failed_to_load_report_data'),
-            'noData' => translate('no_data_found'),
-            'pending' => translate('pending'),
+            'noData' => translate('no_Data_found'),
+            'pending' => translate('Pending'),
             'transferred' => translate('transferred'),
-            'approved' => translate('approved'),
+            'approved' => translate('Approved'),
             'rejected' => translate('rejected'),
-            'from' => translate('from'),
-            'to' => translate('to'),
+            'from' => translate('From'),
+            'to' => translate('To'),
         ],
     ];
 @endphp

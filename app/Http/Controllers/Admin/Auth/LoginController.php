@@ -102,7 +102,7 @@ class LoginController extends BaseController
     public function logout(): RedirectResponse
     {
         $this->adminService->logout();
-        session()->flash('success', translate('logged out successfully'));
+        session()->flash('success', translate('logged_out_successfully'));
         return redirect('login/' . getWebConfig(name: 'admin_login_url'));
     }
 }

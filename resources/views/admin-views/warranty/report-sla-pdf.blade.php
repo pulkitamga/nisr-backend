@@ -372,10 +372,10 @@
                         <th>{{ translate('sla_type') }}</th>
                         <th>{{ translate('claim_number') }}</th>
                         <th>{{ translate('serial_no') }}</th>
-                        <th>{{ translate('product') }}</th>
+                        <th>{{ translate('Product') }}</th>
                         <th>{{ translate('due_date') }}</th>
                         <th>{{ translate('completed_at') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th>{{ translate('Status') }}</th>
                         <th>{{ translate('claim_status') }}</th>
                     </tr>
                 </thead>

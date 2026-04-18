@@ -14,7 +14,7 @@
         @csrf
         <div class="d-flex justify-content-center gap-3 mb-3">
             <input type="hidden" value="{{ $theme }}" name="theme">
-            <button type="button" class="fs-16 btn btn-secondary flex-grow-1" data-dismiss="modal">{{ translate('cancel') }}</button>
+            <button type="button" class="fs-16 btn btn-secondary flex-grow-1" data-dismiss="modal">{{ translate('Cancel') }}</button>
             <button type="submit" class="fs-16 btn btn--primary flex-grow-1">{{ translate('activate') }}</button>
         </div>
     </form>

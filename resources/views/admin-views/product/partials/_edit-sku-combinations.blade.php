@@ -30,7 +30,7 @@
                 </th>
                 <th class="text-center">
                     <label class="control-label">
-                        {{ translate('current_stock') }}
+                        {{ translate('Current_Stock') }}
                     </label>
                 </th>
 
@@ -69,7 +69,7 @@
                         <input type="number" name="price_{{ $combination['type'] }}"
                             value="{{ $combination['price'] }}" min="0" step="0.01"
                             class="form-control allow-edit-in-readonly"
-                            required placeholder="{{ translate('ex') . ': 100' }}">
+                            required placeholder="{{ translate('Ex') . ': 100' }}">
                     </td>
                     <td>
                         <input type="text" name="sku_{{ $combination['type'] }}" value="{{ $combination['sku'] }}"
@@ -78,7 +78,7 @@
                     <td>
                         <input type="number" value="{{ $combination['qty'] }}" min="0" max="100000"
                             step="1" class="form-control variant-current-stock"
-                            placeholder="{{ translate('ex') }}: {{ translate('5') }}" readonly required>
+                            placeholder="{{ translate('Ex') }}: {{ translate('5') }}" readonly required>
                     </td>
                     @if ($showAdjustment)
                         <td>

@@ -11,7 +11,7 @@
             {{translate('search_Bar_Content').' '.'-'.' '.($data['search'] ?? 'N/A')}}
             @if(isset($data['vendor']))
                 <br>
-                {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
             @endif
         </th>
     </tr>
@@ -24,11 +24,11 @@
         <td> {{translate('limit_for_Same_User')}}</td>
         <td> {{translate('min_Purchase_Amount')}}</td>
         <td> {{translate('max_discount_Amount')}}</td>
-        <td> {{translate('discount_Type')}}</td>
-        <td> {{translate('discount_Amount')}}</td>
+        <td> {{translate('Discount_Type')}}</td>
+        <td> {{translate('Discount_Amount')}}</td>
         <td> {{translate('coupon_Bearer')}}</td>
-        <td> {{translate('start_Date')}}</td>
-        <td> {{translate('end_Date')}}</td>
+        <td> {{translate('Start_Date')}}</td>
+        <td> {{translate('End_Date')}}</td>
     </tr>
     @foreach ($data['coupon'] as $key=>$item)
         <tr>

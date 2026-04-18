@@ -107,7 +107,7 @@ class ProductStockReportController extends Controller
                     'labels' => $data['chart']['branch_labels'],
                     'datasets' => [
                         [
-                            'label' => translate('current_stock'),
+                            'label' => translate('Current_Stock'),
                             'data' => $data['chart']['branch_values'],
                             'backgroundColor' => '#0ea5e9',
                         ]
@@ -129,7 +129,7 @@ class ProductStockReportController extends Controller
                     'labels' => $data['chart']['product_labels'],
                     'datasets' => [
                         [
-                            'label' => translate('current_stock'),
+                            'label' => translate('Current_Stock'),
                             'data' => $data['chart']['product_values'],
                             'backgroundColor' => '#2563eb',
                         ]
@@ -155,7 +155,7 @@ class ProductStockReportController extends Controller
                     'labels' => $data['chart']['branch_product_labels'],
                     'datasets' => [
                         [
-                            'label' => translate('current_stock'),
+                            'label' => translate('Current_Stock'),
                             'data' => $data['chart']['branch_product_values'],
                             'backgroundColor' => '#7c3aed',
                         ]
@@ -606,7 +606,7 @@ class ProductStockReportController extends Controller
                 remarks: (string)($row->remarks ?? '')
             );
 
-            $fallbackBranchName = translate('system');
+            $fallbackBranchName = translate('System');
             $branchId = $type === 'IN' ? (int)($row->to_branch_id ?? 0) : (int)($row->from_branch_id ?? 0);
             $branchName = $type === 'IN'
                 ? ((string)($row->to_branch_name ?: $row->from_branch_name ?: ($branchMap->get($branchId) ?? $fallbackBranchName)))

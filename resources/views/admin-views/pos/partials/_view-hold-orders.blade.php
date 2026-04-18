@@ -6,11 +6,11 @@
             <thead class="thead-light thead-50 text-capitalize">
             <tr>
                 <th>{{translate('SL')}}</th>
-                <th>{{translate('date')}}</th>
-                <th>{{translate('customer_info')}}</th>
-                <th>{{translate('quantity')}}</th>
-                <th>{{translate('total_amount')}}</th>
-                <th class="text-center">{{translate('action')}}</th>
+                <th>{{translate('DATE')}}</th>
+                <th>{{translate('Customer_Info')}}</th>
+                <th>{{translate('Quantity')}}</th>
+                <th>{{translate('Total_Amount')}}</th>
+                <th class="text-center">{{translate('Action')}}</th>
             </tr>
             </thead>
 
@@ -50,10 +50,10 @@
                                                         <div class="media-body">
                                                             <h6 class="text-truncate"> {{ Str::limit($item['name'], 12 )}}</h6>
                                                             @if($item['variant'])
-                                                                <div class="text-muted">{{ translate('variation') }}
+                                                                <div class="text-muted">{{ translate('Variation') }}
                                                                     : {{ $item['variant'] }}</div>
                                                             @endif
-                                                            <div class="text-muted">{{ translate('qty') }}
+                                                            <div class="text-muted">{{ translate('QTY') }}
                                                                 : {{ $item['quantity'] }}</div>
                                                         </div>
 
@@ -76,7 +76,7 @@
                                 </button>
                                 <button type="button" class="btn btn-soft-danger action-cancel-customer-order"
                                         data-cart-id="{{ $key }}">
-                                    {{ translate('cancel_order') }}
+                                    {{ translate('cancel_Order') }}
                                 </button>
                             </div>
                         </td>

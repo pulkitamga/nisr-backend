@@ -19,13 +19,13 @@ $statusId = request()->has('status') ? request()->input('status') : (string) \Ap
 $talentPoolFilter = request()->has('talent_pool') ? request()->input('talent_pool') : 'all';
 $selectedStatus = $statuses->firstWhere('id', (int) $statusId);
 $selectedStatusLabel = $statusId === 'all'
-    ? translate('all_status')
-    : ($selectedStatus ? \App\Utils\crm_status_label($selectedStatus->getTranslatedField('name') ?? $selectedStatus->name) : translate('all_status'));
+    ? translate('all_Status')
+    : ($selectedStatus ? \App\Utils\crm_status_label($selectedStatus->getTranslatedField('name') ?? $selectedStatus->name) : translate('all_Status'));
 $toolbarFields = [
     [
         'type' => 'search',
         'name' => 'searchValue',
-        'label' => translate('search'),
+        'label' => translate('Search'),
         'value' => request('searchValue'),
         'placeholder' => translate('search_ticket_by_subject_or_status'),
         'aria_label' => translate('search_ticket_by_subject_or_status'),
@@ -34,10 +34,10 @@ $toolbarFields = [
     [
         'type' => 'select',
         'name' => 'priority',
-        'label' => translate('priority'),
+        'label' => translate('Priority'),
         'value' => $priority,
         'options' => collect(['all', 'low', 'medium', 'high', 'urgent'])
-            ->mapWithKeys(fn ($option) => [$option => $option === 'all' ? translate('all_priority') : translate($option)])
+            ->mapWithKeys(fn ($option) => [$option => $option === 'all' ? translate('all_Priority') : translate($option)])
             ->all(),
         'input_class' => 'form-control border-color-c1',
         'col_class' => 'col-xl-3 col-lg-4',
@@ -45,9 +45,9 @@ $toolbarFields = [
     [
         'type' => 'select',
         'name' => 'status',
-        'label' => translate('status'),
+        'label' => translate('Status'),
         'value' => $statusId,
-        'options' => ['all' => translate('all_status')] + $statuses->mapWithKeys(fn ($statusOption) => [
+        'options' => ['all' => translate('all_Status')] + $statuses->mapWithKeys(fn ($statusOption) => [
             (string) $statusOption['id'] => \App\Utils\crm_status_label($statusOption->getTranslatedField('name') ?? $statusOption->name),
         ])->all(),
         'input_class' => 'form-control border-color-c1',
@@ -69,7 +69,7 @@ $toolbarFields = [
 ];
 $toolbarSummary = [
     [
-        'label' => translate('status'),
+        'label' => translate('Status'),
         'value' => $selectedStatusLabel,
     ],
 ];
@@ -81,7 +81,7 @@ if ($statusId !== 'all' && !request()->has('status')) {
 }
 if ($priority !== 'all') {
     $toolbarSummary[] = [
-        'label' => translate('priority'),
+        'label' => translate('Priority'),
         'value' => translate($priority),
         'muted' => true,
     ];
@@ -95,7 +95,7 @@ if ($talentPoolFilter !== 'all') {
 }
 if (request()->filled('searchValue')) {
     $toolbarSummary[] = [
-        'label' => translate('search'),
+        'label' => translate('Search'),
         'value' => Str::limit(request('searchValue'), 28),
         'muted' => true,
     ];
@@ -134,13 +134,13 @@ $headerActions = [
             <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle w-100">
                 <thead class="thead-light text-capitalize">
                     <tr>
-                        <th>{{ translate('sl') }}</th>
-                        <th>{{ translate('subject') }}</th>
+                        <th>{{ translate('SL') }}</th>
+                        <th>{{ translate('Subject') }}</th>
                         <th>{{ translate('candidate') }}</th>
-                        <th>{{ translate('status') }}</th>
+                        <th>{{ translate('Status') }}</th>
                         <th>{{ translate('recruiter') }}</th>
-                        <th>{{ translate('created_at') }}</th>
-                        <th>{{ translate('action') }}</th>
+                        <th>{{ translate('Created_At') }}</th>
+                        <th>{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -167,7 +167,7 @@ $headerActions = [
                             @endphp
                             <div class="crm-row-actions">
                                 <div class="crm-row-actions__primary">
-                                    <a href="{{ route('admin.support-ticket.career.single', $ticket->id) }}" class="btn btn-sm btn-info">{{ translate('view') }}</a>
+                                    <a href="{{ route('admin.support-ticket.career.single', $ticket->id) }}" class="btn btn-sm btn-info">{{ translate('View') }}</a>
                                     @if($ticket->status == 27)
                                     <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="assign-recruiter" data-route="{{ route('admin.support-ticket.career.assign') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('assign_recruiter') }}</button>
                                     @elseif($ticket->status == 29)
@@ -201,7 +201,7 @@ $headerActions = [
                                         <button type="button" class="dropdown-item text-danger action-btn" data-action="decline-offer" data-route="{{ route('admin.support-ticket.career.decline-offer') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('decline_offer') }}</button>
                                         @endif
                                         @if(in_array($ticket->status, [29, 30, 31, 32]))
-                                        <button type="button" class="dropdown-item text-danger action-btn" data-action="reject" data-route="{{ route('admin.support-ticket.career.reject') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('reject') }}</button>
+                                        <button type="button" class="dropdown-item text-danger action-btn" data-action="reject" data-route="{{ route('admin.support-ticket.career.reject') }}" data-ticket-id="{{ $ticket->id }}">{{ translate('Reject') }}</button>
                                         @endif
                                         @if(!in_array($ticket->status, [33, 35]))
                                         <div class="dropdown-divider"></div>
@@ -274,18 +274,18 @@ $headerActions = [
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>{{ translate('priority') }}</label>
+                        <label>{{ translate('Priority') }}</label>
                         <select name="priority" class="form-control" required>
-                            <option value="low">{{ translate('low') }}</option>
-                            <option value="medium">{{ translate('medium') }}</option>
-                            <option value="high">{{ translate('high') }}</option>
-                            <option value="urgent">{{ translate('urgent') }}</option>
+                            <option value="low">{{ translate('Low') }}</option>
+                            <option value="medium">{{ translate('Medium') }}</option>
+                            <option value="high">{{ translate('High') }}</option>
+                            <option value="urgent">{{ translate('Urgent') }}</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('assign') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Assign') }}</button>
                 </div>
             </form>
         </div>
@@ -310,9 +310,9 @@ $headerActions = [
                         <label>{{ translate('Qualified') }}</label>
                         <div>
                             <input type="radio" name="qualified" value="1" id="qualifiedYes" required>
-                            <label for="qualifiedYes">{{ translate('yes') }}</label>
+                            <label for="qualifiedYes">{{ translate('Yes') }}</label>
                             <input type="radio" name="qualified" value="0" id="qualifiedNo">
-                            <label for="qualifiedNo">{{ translate('no') }}</label>
+                            <label for="qualifiedNo">{{ translate('No') }}</label>
                         </div>
                     </div>
                     <div class="form-group" id="reasonCodeDiv" style="display: none;">
@@ -321,8 +321,8 @@ $headerActions = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('submit') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>
@@ -353,7 +353,7 @@ $headerActions = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
                     <button type="submit" class="btn btn-primary">{{ translate('Schedule') }}</button>
                 </div>
             </form>
@@ -386,8 +386,8 @@ $headerActions = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('submit') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>
@@ -409,12 +409,12 @@ $headerActions = [
                         <input type="file" name="offer_file" class="form-control" accept=".pdf" required>
                     </div>
                     <div class="form-group">
-                        <label>{{ translate('start_date') }}</label>
+                        <label>{{ translate('Start_Date') }}</label>
                         <input type="date" name="start_date" class="form-control" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
                     <button type="submit" class="btn btn-primary">{{ translate('attach') }}</button>
                 </div>
             </form>
@@ -433,13 +433,13 @@ $headerActions = [
                 <div class="modal-body">
                     <input type="hidden" name="ticket_id" id="declineTicketId">
                     <div class="form-group">
-                        <label>{{ translate('reason') }}</label>
+                        <label>{{ translate('Reason') }}</label>
                         <textarea name="reason" class="form-control" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('submit') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>
@@ -466,8 +466,8 @@ $headerActions = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('reject') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Reject') }}</button>
                 </div>
             </form>
         </div>
@@ -488,9 +488,9 @@ $headerActions = [
                         <label>{{ translate('consent') }}</label>
                         <div>
                             <input type="radio" name="consent" value="1" id="consentYes" required>
-                            <label for="consentYes">{{ translate('yes') }}</label>
+                            <label for="consentYes">{{ translate('Yes') }}</label>
                             <input type="radio" name="consent" value="0" id="consentNo">
-                            <label for="consentNo">{{ translate('no') }}</label>
+                            <label for="consentNo">{{ translate('No') }}</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -499,17 +499,17 @@ $headerActions = [
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('close') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ translate('add') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ translate('Add') }}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<span id="career-ticket-are-you-sure" data-text="{{ translate('are_you_sure') }}"></span>
-<span id="career-ticket-yes" data-text="{{ translate('yes') }}"></span>
-<span id="career-ticket-cancel" data-text="{{ translate('cancel') }}"></span>
+<span id="career-ticket-are-you-sure" data-text="{{ translate('Are_you_sure') }}"></span>
+<span id="career-ticket-yes" data-text="{{ translate('Yes') }}"></span>
+<span id="career-ticket-cancel" data-text="{{ translate('Cancel') }}"></span>
 <span id="career-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="career-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 @endsection

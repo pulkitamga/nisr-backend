@@ -36,7 +36,7 @@
                                 <th class="text-center">{{ translate('Quantity') }}</th>
                                 <th>{{ translate('Sent From') }}</th>
                                 <th>{{ translate('Transfer Date') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,7 +58,7 @@
                                                     <form action="{{ route('admin.branch.stock.approve', ['id' => $product->id]) }}" method="POST" class="branch-stock-decision-form" data-confirm-type="approve">
                                                         @csrf
                                                         <button type="submit" class="btn btn-outline-success btn-sm">
-                                                            {{ translate('approve') }}
+                                                            {{ translate('Approve') }}
                                                         </button>
                                                     </form>
                                                 </div>
@@ -68,12 +68,12 @@
                                                     </button>
                                                     <div class="dropdown-menu dropdown-menu-right">
                                                         <a href="{{ route('admin.stock-transfer.view', $transfer->id) }}" class="dropdown-item">
-                                                            <i class="tio-invisible mr-2"></i>{{ translate('view') }}
+                                                            <i class="tio-invisible mr-2"></i>{{ translate('View') }}
                                                         </a>
                                                         <form action="{{ route('admin.branch.stock.reject', ['id' => $product->id]) }}" method="POST" class="crm-row-actions__form branch-stock-decision-form" data-confirm-type="reject">
                                                             @csrf
                                                             <button type="submit" class="dropdown-item text-danger">
-                                                                <i class="tio-clear mr-2"></i>{{ translate('reject') }}
+                                                                <i class="tio-clear mr-2"></i>{{ translate('Reject') }}
                                                             </button>
                                                         </form>
                                                     </div>

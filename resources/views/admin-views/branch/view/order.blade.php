@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Session;
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_Details')}}
+                {{translate('Vendor_details')}}
             </h2>
         </div>
         <div class="flex-between d-sm-flex row align-items-center justify-content-between mb-2 mx-1">
@@ -28,14 +28,14 @@ use Illuminate\Support\Facades\Session;
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="approved">
                                 <button type="submit"
-                                        class="btn btn--primary btn-sm">{{translate('approve')}}</button>
+                                        class="btn btn--primary btn-sm">{{translate('Approve')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm">{{translate('reject')}}</button>
+                                        class="btn btn-danger btn-sm">{{translate('Reject')}}</button>
                             </form>
                         </div>
                     </div>
@@ -56,11 +56,11 @@ use Illuminate\Support\Facades\Session;
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('order')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('Order')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('Product')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
@@ -76,7 +76,7 @@ use Illuminate\Support\Facades\Session;
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('review')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('Review')}}</a>
                     </li>
                 </ul>
             </div>
@@ -88,7 +88,7 @@ use Illuminate\Support\Facades\Session;
                         <div class="card w-100">
                             <div class="card-header">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
-                                    <h5 class="mb-0">{{translate('order_info')}}</h5>
+                                    <h5 class="mb-0">{{translate('order_Info')}}</h5>
                                     <div class="dropdown">
                                         <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.vendors.order-list-export',[$seller['id'],'searchValue' => request('searchValue')])}}">
                                             <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
@@ -104,7 +104,7 @@ use Illuminate\Support\Facades\Session;
                                             <div class="order-stats__content"
                                                  style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                                                 <i class="tio-airdrop"></i>
-                                                <h6 class="order-stats__subtitle">{{translate('pending')}}</h6>
+                                                <h6 class="order-stats__subtitle">{{translate('Pending')}}</h6>
                                             </div>
                                             <div class="order-stats__title">
                                                 {{ $pendingOrder }}
@@ -116,7 +116,7 @@ use Illuminate\Support\Facades\Session;
                                             <div class="order-stats__content"
                                                  style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                                                 <i class="tio-checkmark-circle"></i>
-                                                <h6 class="order-stats__subtitle">{{translate('delivered')}}</h6>
+                                                <h6 class="order-stats__subtitle">{{translate('Delivered')}}</h6>
                                             </div>
                                             <div class="order-stats__title">
                                                 {{ $deliveredOrder }}
@@ -128,7 +128,7 @@ use Illuminate\Support\Facades\Session;
                                             <div class="order-stats__content"
                                                  style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                                                 <i class="tio-table"></i>
-                                                <h6 class="order-stats__subtitle">{{translate('all')}}</h6>
+                                                <h6 class="order-stats__subtitle">{{translate('All')}}</h6>
                                             </div>
                                             <div class="order-stats__title">
                                                 {{ $orders->total() }}
@@ -144,13 +144,13 @@ use Illuminate\Support\Facades\Session;
                                     <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
                                         <th>{{translate('SL')}}</th>
-                                        <th>{{translate('order')}}</th>
-                                        <th>{{translate('date')}}</th>
-                                        <th>{{translate('customer')}}</th>
-                                        <th>{{translate('payment_status')}}</th>
-                                        <th>{{translate('total')}}</th>
-                                        <th>{{translate('order_status')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th>{{translate('Order')}}</th>
+                                        <th>{{translate('DATE')}}</th>
+                                        <th>{{translate('Customer')}}</th>
+                                        <th>{{translate('Payment_Status')}}</th>
+                                        <th>{{translate('Total')}}</th>
+                                        <th>{{translate('Order_Status')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                     </thead>
                                     <tbody id="set-rows">
@@ -200,7 +200,7 @@ use Illuminate\Support\Facades\Session;
                                             <td class="text-capitalize">
                                                 @if($order['order_status']=='pending')
                                                     <span class="badge badge-soft-info fz-12">
-                                                        {{translate('pending')}}
+                                                        {{translate('Pending')}}
                                                     </span>
                                                 @elseif($order['order_status']=='confirmed')
                                                     <span class="badge badge-soft-info fz-12">
@@ -212,11 +212,11 @@ use Illuminate\Support\Facades\Session;
                                                     </span>
                                                 @elseif($order['order_status']=='out_for_delivery')
                                                     <span class="badge badge-soft-warning fz-12">
-                                                        {{translate('out_for_delivery')}}
+                                                        {{translate('out_For_Delivery')}}
                                                     </span>
                                                 @elseif($order['order_status']=='delivered')
                                                     <span class="badge badge-soft-success fz-12">
-                                                        {{translate('delivered')}}
+                                                        {{translate('Delivered')}}
                                                     </span>
                                                 @else
                                                     <span class="badge badge-soft-danger fz-12">
@@ -226,7 +226,7 @@ use Illuminate\Support\Facades\Session;
                                             </td>
                                             <td>
                                                 <div class="d-flex justify-content-center">
-                                                    <a title="{{translate('view')}}"
+                                                    <a title="{{translate('View')}}"
                                                        class="btn btn-outline--primary square-btn btn-sm me-1"
                                                        href="{{route('admin.vendors.order-details',['order_id'=>$order['id'],'vendor_id'=>$order['seller_id']])}}">
                                                         <img src="{{dynamicAsset(path: 'public/assets/back-end/img/eye.svg')}}"
@@ -234,7 +234,7 @@ use Illuminate\Support\Facades\Session;
                                                     </a>
 
                                                     <a class="btn btn-outline-success square-btn btn-sm me-1"
-                                                       target="_blank" title="{{translate('invoice')}}"
+                                                       target="_blank" title="{{translate('Invoice')}}"
                                                        href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
                                                         <i class="tio-download-to"></i>
                                                     </a>

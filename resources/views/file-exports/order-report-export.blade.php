@@ -5,7 +5,7 @@
         <th>{{translate('order_Report_List')}}</th>
     </tr>
     <tr>
-        <th>{{ translate('filter_Criteria') .' '.'-'}}</th>
+        <th>{{ translate('Filter_Criteria') .' '.'-'}}</th>
         <th></th>
         <th>
             {{translate('search_Bar_Content').' '.'-'.' '. ($data['search'] ?? 'N/A')}}
@@ -15,24 +15,24 @@
             {{translate('date_type').' '.'-'.' '.translate($data['dateType'])}}
             <br>
             @if($data['from'] && $data['to'])
-                {{translate('from').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
+                {{translate('From').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
                 <br>
-                {{translate('to').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
+                {{translate('To').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
                 <br>
             @endif
         </th>
     </tr>
     <tr>
         <td> {{translate('SL')}}</td>
-        <td> {{translate('order_ID')}}    </td>
-        <td> {{translate('total_Amount')}}    </td>
+        <td> {{translate('Order_ID')}}    </td>
+        <td> {{translate('Total_Amount')}}    </td>
         <td> {{translate('product_Discount')}}</td>
-        <td> {{translate('coupon_Discount')}}</td>
+        <td> {{translate('Coupon_Discount')}}</td>
         <td> {{translate('shipping_Charge')}}</td>
         <td> {{translate('VAT/TAX')}}</td>
         <td> {{translate('commission')}}</td>
-        <td> {{translate('deliveryman_incentive')}}</td>
-        <td> {{translate('status')}}</td>
+        <td> {{translate('delivery_man_incentive')}}</td>
+        <td> {{translate('Status')}}</td>
     </tr>
     @foreach ($data['orders'] as $key=>$item)
         <tr>

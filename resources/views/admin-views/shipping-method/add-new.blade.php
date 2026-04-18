@@ -10,7 +10,7 @@
     <div class="content container-fluid"> <!-- Page Heading -->
         <nav aria-label="{{ translate('breadcrumb') }}">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('dashboard')}}</a></li>
+                <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('Dashboard')}}</a></li>
                 <li class="breadcrumb-item" aria-current="page">{{translate('shipping_Method')}}</li>
             </ol>
         </nav>
@@ -30,9 +30,9 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label for="title">{{translate('title')}}</label>
+                                        <label for="title">{{translate('Title')}}</label>
                                         <input type="text" name="title" class="form-control"
-                                               placeholder="{{translate('title')}}">
+                                               placeholder="{{translate('Title')}}">
                                     </div>
                                 </div>
                             </div>
@@ -40,9 +40,9 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label for="duration">{{translate('duration')}}</label>
+                                        <label for="duration">{{translate('Duration')}}</label>
                                         <input type="text" name="duration" class="form-control"
-                                               placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}">
+                                               placeholder="{{translate('Ex')}} : {{translate('4_to_6_days')}}">
                                     </div>
                                 </div>
                             </div>
@@ -52,14 +52,14 @@
                                     <div class="col-md-12">
                                         <label for="cost">{{translate('cost')}}</label>
                                         <input type="number" min="0" max="1000000" name="cost" class="form-control"
-                                               placeholder="{{translate('ex')}} : 10">
+                                               placeholder="{{translate('Ex')}} : 10">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="card-footer">
                                 <button type="submit"
-                                        class="btn btn--primary ">{{translate('submit')}}</button>
+                                        class="btn btn--primary ">{{translate('Submit')}}</button>
                             </div>
                         </form>
                     </div>
@@ -80,11 +80,11 @@
                                 <thead>
                                 <tr>
                                     <th scope="col">{{translate('SL')}}#</th>
-                                    <th scope="col">{{translate('title')}}</th>
-                                    <th scope="col">{{translate('duration')}}</th>
+                                    <th scope="col">{{translate('Title')}}</th>
+                                    <th scope="col">{{translate('Duration')}}</th>
                                     <th scope="col">{{translate('cost')}}</th>
-                                    <th scope="col">{{translate('status')}}</th>
-                                    <th scope="col" class="__w-50px">{{translate('action')}}</th>
+                                    <th scope="col">{{translate('Status')}}</th>
+                                    <th scope="col" class="__w-50px">{{translate('Action')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -117,9 +117,9 @@
                                                 </button>
                                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                                     <a class="dropdown-item"
-                                                       href="{{route('admin.business-settings.shipping-method.edit',[$method['id']])}}">{{translate('edit')}}</a>
+                                                       href="{{route('admin.business-settings.shipping-method.edit',[$method['id']])}}">{{translate('Edit')}}</a>
                                                     <a class="dropdown-item delete cursor-pointer"
-                                                       id="{{ $method['id'] }}">{{translate('delete')}}</a>
+                                                       id="{{ $method['id'] }}">{{translate('Delete')}}</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -159,7 +159,7 @@
                     status: status
                 },
                 success: function () {
-                    toastr.success('{{translate("status_updated_successfully")}}');
+                    toastr.success('{{translate("Status_updated_successfully")}}');
                 }
             });
         });
@@ -172,7 +172,7 @@
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: '{{translate("yes_delete_it")}}!',
-                cancelButtonText: '{{ translate("cancel") }}',
+                cancelButtonText: '{{ translate("Cancel") }}',
             }).then((result) => {
                 if (result.value) {
                     $.ajaxSetup({

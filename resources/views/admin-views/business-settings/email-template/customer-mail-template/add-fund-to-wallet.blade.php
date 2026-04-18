@@ -4,7 +4,7 @@
              src="{{ $template->image_full_url['path'] ?? dynamicAsset(path: 'public/assets/back-end/img/email-template/add-fund-wallet.png')}}"
              alt="">
         <h3 class="mb-3 view-mail-title text-capitalize">
-            {{$title ?? translate('transaction_successful')}}
+            {{$title ?? translate('Transaction_Successful')}}
         </h3>
     </div>
 
@@ -12,14 +12,14 @@
         {!! $body !!}
     </div>
     <div class="text-center">
-        <p><span class="text-primary">{{translate('note')}}:</span> {{isset($data['walletTransaction']) ? ($data['walletTransaction']->transaction_type=='add_fund_by_admin' ? translate('reward_by_company_admin') : translate('loyalty_point_to_wallet')): translate('reward_by_company_admin') }}</p>
+        <p><span class="text-primary">{{translate('Note')}}:</span> {{isset($data['walletTransaction']) ? ($data['walletTransaction']->transaction_type=='add_fund_by_admin' ? translate('Reward_by_company_admin') : translate('loyalty_point_to_wallet')): translate('Reward_by_company_admin') }}</p>
     </div>
     <div class="email-table p-2 bg-color-white-smoke table-responsive">
         <table>
             <tbody>
             <tr>
-                <th class="text-nowrap">{{ translate('transaction_Id') }}</th>
-                <th>{{ translate('transaction_date') }}</th>
+                <th class="text-nowrap">{{ translate('transaction_ID') }}</th>
+                <th>{{ translate('transaction_Date') }}</th>
                 <th>{{ translate('credit') }}</th>
                 <th>{{ translate('debit') }}</th>
                 <th>{{ translate('balance') }}</th>

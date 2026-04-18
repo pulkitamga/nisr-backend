@@ -38,7 +38,7 @@ class UserLoyaltyController extends Controller
             );
             return view(VIEW_FILE_NAMES['user_loyalty'], compact('totalLoyaltyPoint', 'loyaltyPointStatus', 'walletStatus', 'loyaltyPointList', 'loyaltyPointMinimumPoint', 'loyaltyPointExchangeRate'));
         }else{
-            Toastr::warning(translate('access_denied'));
+            Toastr::warning(translate('access_Denied'));
             return redirect()->route('home');
         }
 

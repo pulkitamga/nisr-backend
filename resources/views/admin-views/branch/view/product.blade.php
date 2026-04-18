@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_details')}}
+                {{translate('Vendor_details')}}
             </h2>
         </div>
         <div class="flex-between d-sm-flex row align-items-center justify-content-between mb-2 mx-1">
@@ -24,14 +24,14 @@
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="approved">
                                 <button type="submit"
-                                        class="btn btn--primary btn-sm">{{translate('approve')}}</button>
+                                        class="btn btn--primary btn-sm">{{translate('Approve')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm">{{translate('reject')}}</button>
+                                        class="btn btn-danger btn-sm">{{translate('Reject')}}</button>
                             </form>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
         <div class="page-header">
             <div class="flex-between row mx-1">
                 <div>
-                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("shop_Name")." : ".translate("update_Please") }}</h1>
+                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("Shop_Name")." : ".translate("update_Please") }}</h1>
                 </div>
             </div>
             <div class="js-nav-scroller hs-nav-scroller-horizontal">
@@ -52,11 +52,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('order')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('Order')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('Product')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
@@ -72,7 +72,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('review')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('Review')}}</a>
                     </li>
                 </ul>
             </div>
@@ -85,7 +85,7 @@
                         <div class="card h-100">
                             <div class="px-3 py-4">
                                 <h5 class="mb-0 d-flex align-items-center gap-2">
-                                    {{translate('products')}}
+                                    {{translate('Products')}}
                                     <span class="badge badge-soft-dark radius-50 fz-12">{{$products->total()}}</span>
                                 </h5>
                             </div>
@@ -97,12 +97,12 @@
                                     <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
                                         <th>{{translate('SL')}}</th>
-                                        <th>{{translate('product Name')}}</th>
+                                        <th>{{translate('Product_name')}}</th>
                                         <th class="text-center">{{translate('product_Type')}}</th>
                                         <th class="text-center">{{translate('selling_price')}}</th>
                                         <th class="text-center">{{translate('featured')}}</th>
-                                        <th class="text-center">{{translate('active_status')}}</th>
-                                        <th class="text-center">{{translate('action')}}</th>
+                                        <th class="text-center">{{translate('active_Status')}}</th>
+                                        <th class="text-center">{{translate('Action')}}</th>
                                     </tr>
                                     </thead>
 
@@ -169,8 +169,8 @@
                                                                data-toggle-id = "product-status{{$product['id']}}"
                                                                data-on-image = "product-status-on.png"
                                                                data-off-image = "product-status-off.png"
-                                                               data-on-title = "{{translate('Want_to_Turn_ON').' '.$product_name.' '.translate('status').'?'}}"
-                                                               data-off-title = "{{translate('Want_to_Turn_OFF').' '.$product_name.' '.translate('status').'?'}}"
+                                                               data-on-title = "{{translate('Want_to_Turn_ON').' '.$product_name.' '.translate('Status').'?'}}"
+                                                               data-off-title = "{{translate('Want_to_Turn_OFF').' '.$product_name.' '.translate('Status').'?'}}"
                                                                data-on-message = "<p>{{translate('if_enabled_this_product_will_be_available_on_the_website_and_customer_app')}}</p>"
                                                                data-off-message = "<p>{{translate('if_disabled_this_product_will_be_hidden_from_the_website_and_customer_app')}}</p>">`)">
                                                         <span class="switcher_control"></span>

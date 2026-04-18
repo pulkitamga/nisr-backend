@@ -12,7 +12,7 @@
             <th>
                 {{translate('filter_By').' '.'-'.' '.ucwords($data['filter'])}}
                 <br>
-                {{translate('total_request').' '.'-'.' '.count($data['purchase'])}}
+                {{translate('total__Request').' '.'-'.' '.count($data['purchase'])}}
 
             </th>
         </tr>
@@ -20,7 +20,7 @@
         <tr>
             <td>{{translate('SL')}}</td>
             <td>{{translate('DATE')}}</td>
-            <td>{{translate('Purchase_order_no')}}</td>
+            <td>{{translate('Purchase_Order_No')}}</td>
             <td>{{translate('Wholesaler')}}</td>
             <td>{{translate('Tier')}}</td>
             <td>{{translate('Status')}}</td>

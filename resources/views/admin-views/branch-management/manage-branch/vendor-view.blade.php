@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('vendor_details'))
+@section('title', translate('Vendor_details'))
 
 @section('content')
     <div class="content container-fluid">
@@ -10,7 +10,7 @@
                     <div class="mb-3">
                         <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
                             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" alt="">
-                            {{translate('vendor_details')}}
+                            {{translate('Vendor_details')}}
                         </h2>
                     </div>
                 </div>
@@ -20,7 +20,7 @@
         <!-- Back Button -->
         <div class="d-flex justify-content-start mb-3">
             <a href="{{ route('admin.branch.vendors') }}" class="btn btn-secondary">
-                <i class="fa fa-arrow-left"></i> {{ translate('back') }}
+                <i class="fa fa-arrow-left"></i> {{ translate('Back') }}
             </a>
         </div>
 
@@ -30,7 +30,7 @@
                     <div class="card-body">
                         <h4 class="mb-4 d-flex align-items-center gap-2">
                             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" alt="">
-                            {{translate('vendor').' # '.$vendor->id}}
+                            {{translate('Vendor').' # '.$vendor->id}}
                         </h4>
 
                         <div class="customer-details-new-card">
@@ -40,39 +40,39 @@
                                 </h6>
                                 <ul class="customer-details-new-card-content-list">
                                     <li>
-                                        <span class="key">{{translate('contact')}}</span>
+                                        <span class="key">{{translate('Contact')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{!empty($vendor->phone) ? $vendor->phone : translate('no_data_found')}}</strong>
+                                        <strong class="value">{{!empty($vendor->phone) ? $vendor->phone : translate('no_Data_found')}}</strong>
                                     </li>
                                     <li>
-                                        <span class="key">{{translate('email')}}</span>
+                                        <span class="key">{{translate('Email')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{$vendor->email ?? translate('no_data_found')}}</strong>
+                                        <strong class="value">{{$vendor->email ?? translate('no_Data_found')}}</strong>
                                     </li>
                                     <li>
-                                        <span class="key">{{translate('status')}}</span>
+                                        <span class="key">{{translate('Status')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{ $vendor->status == 1 ? translate('active') : translate('inactive') }}</strong>
+                                        <strong class="value">{{ $vendor->status == 1 ? translate('Active') : translate('Inactive') }}</strong>
                                     </li>
                                     <li>
-                                        <span class="key">{{translate('free_delivery_over_amount')}}</span>
+                                        <span class="key">{{translate('free_Delivery_Over_Amount')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{$vendor->free_delivery_over_amount ?? translate('no_data_found')}}</strong>
+                                        <strong class="value">{{$vendor->free_delivery_over_amount ?? translate('no_Data_found')}}</strong>
                                     </li>
                                     <li>
                                         <span class="key">{{translate('sales_commission_percentage')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{$vendor->sales_commission_percentage ?? translate('no_data_found')}}</strong>
+                                        <strong class="value">{{$vendor->sales_commission_percentage ?? translate('no_Data_found')}}</strong>
                                     </li>
                                     <li>
-                                        <span class="key">{{translate('gst')}}</span>
+                                        <span class="key">{{translate('GST')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{$vendor->gst ?? translate('no_data_found')}}</strong>
+                                        <strong class="value">{{$vendor->gst ?? translate('no_Data_found')}}</strong>
                                     </li>
                                     <li>
-                                        <span class="key">{{translate('minimum_order_amount')}}</span>
+                                        <span class="key">{{translate('minimum_Order_Amount')}}</span>
                                         <span class="me-3">:</span>
-                                        <strong class="value">{{$vendor->minimum_order_amount ?? translate('no_data_found')}}</strong>
+                                        <strong class="value">{{$vendor->minimum_order_amount ?? translate('no_Data_found')}}</strong>
                                     </li>
                                 </ul>
                             </div>
@@ -87,29 +87,29 @@
                         <h4 class="mb-4 d-flex align-items-center gap-2 text-capitalize">{{translate('bank_and_branch_details')}}</h4>
                         <ul class="customer-details-new-card-content-list">
                             <li>
-                                <span class="key">{{translate('bank_name')}}</span>
+                                <span class="key">{{translate('bank_Name')}}</span>
                                 <span class="me-3">:</span>
-                                <strong class="value">{{$vendor->bank_name ?? translate('no_data_found')}}</strong>
+                                <strong class="value">{{$vendor->bank_name ?? translate('no_Data_found')}}</strong>
                             </li>
                             <li>
-                                <span class="key">{{translate('account_no')}}</span>
+                                <span class="key">{{translate('account_No')}}</span>
                                 <span class="me-3">:</span>
-                                <strong class="value">{{$vendor->account_no ?? translate('no_data_found')}}</strong>
+                                <strong class="value">{{$vendor->account_no ?? translate('no_Data_found')}}</strong>
                             </li>
                             <li>
-                                <span class="key">{{translate('holder_name')}}</span>
+                                <span class="key">{{translate('holder_Name')}}</span>
                                 <span class="me-3">:</span>
-                                <strong class="value">{{$vendor->holder_name ?? translate('no_data_found')}}</strong>
+                                <strong class="value">{{$vendor->holder_name ?? translate('no_Data_found')}}</strong>
                             </li>
                             <li>
-                                <span class="key">{{translate('branch')}}</span>
+                                <span class="key">{{translate('Branch')}}</span>
                                 <span class="me-3">:</span>
-                                <strong class="value">{{$vendor->branch ?? translate('no_data_found')}}</strong>
+                                <strong class="value">{{$vendor->branch ?? translate('no_Data_found')}}</strong>
                             </li>
                             <li>
                                 <span class="key">{{translate('app_language')}}</span>
                                 <span class="me-3">:</span>
-                                <strong class="value">{{$vendor->app_language ?? translate('no_data_found')}}</strong>
+                                <strong class="value">{{$vendor->app_language ?? translate('no_Data_found')}}</strong>
                             </li>
                         </ul>
                     </div>
@@ -117,7 +117,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="mb-4 d-flex align-items-center gap-2 text-capitalize">{{translate('products_and_stock')}}</h4>
-                        <p>{{ translate('total_products') }}: {{$totalProducts}}</p>
+                        <p>{{ translate('total_Products') }}: {{$totalProducts}}</p>
                         <p>{{ translate('total_stock') }}: {{$totalStock}}</p>
                     </div>
                 </div>

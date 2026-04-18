@@ -11,14 +11,14 @@
                 </div>
                 <div class="col-6">
                     <a href="{{url()->previous()}}" class="btn btn--primary float-end">
-                        <i class="tio-back-ui"></i> {{translate('back')}}
+                        <i class="tio-back-ui"></i> {{translate('Back')}}
                     </a>
                 </div>
             </div>
             <ul class="nav nav-tabs page-header-tabs">
                 <li class="nav-item">
                     <a class="nav-link active" href="javascript:">
-                        {{translate('deliveryman')}} {{translate('reviews')}}
+                        {{translate('delivery_Man')}} {{translate('reviews')}}
                     </a>
                 </li>
             </ul>
@@ -128,9 +128,9 @@
                     <thead class="thead-light">
                     <tr>
                         <th>{{translate('reviewer')}}</th>
-                        <th>{{translate('review')}}</th>
-                        <th>{{translate('attachment')}}</th>
-                        <th>{{translate('date')}}</th>
+                        <th>{{translate('Review')}}</th>
+                        <th>{{translate('Attachment')}}</th>
+                        <th>{{translate('DATE')}}</th>
                     </tr>
                     </thead>
 

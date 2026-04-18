@@ -14,12 +14,12 @@
             <div class="col-sm-12">
                 <div class="pair-list">
                     <div>
-                        <span class="key custom-flex-basis">{{ translate('name') }}</span>
+                        <span class="key custom-flex-basis">{{ translate('Name') }}</span>
                         <span>:</span>
                         <span class="value">{{ $currentCustomerData?->f_name.' '.$currentCustomerData?->l_name }}</span>
                     </div>
                     <div>
-                        <span class="key custom-flex-basis">{{ translate('contact') }}</span>
+                        <span class="key custom-flex-basis">{{ translate('Contact') }}</span>
                         <span>:</span>
                         <a href="tel:{{ $currentCustomerData?->phone }}"
                             class="value text-dark">{{ $currentCustomerData?->phone }}</a>
@@ -50,7 +50,7 @@
             <button class="dropdown-item border rounded mt-2 action-view-all-hold-orders">
                 <span class="d-flex align-items-center gap-2">
                     <i class="tio-pause"></i>
-                    {{translate('view_all_hold_orders')}}
+                    {{translate('view_All_Hold_Orders')}}
                     <span class="badge badge-danger rounded-circle">{{ $summaryData['totalHoldOrders'] }}</span>
                 </span>
             </button>

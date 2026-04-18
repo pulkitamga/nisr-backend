@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('category'))
+@section('title', translate('Category'))
 
 @section('content')
 <div class="content container-fluid">
@@ -12,8 +12,8 @@
             @elseif($category['position'] == 2)
             {{ translate('sub_Sub') }}
             @endif
-            {{ translate('category') }}
-            {{ translate('update') }}
+            {{ translate('Category') }}
+            {{ translate('Update') }}
         </h2>
     </div>
     <div class="row">
@@ -55,14 +55,14 @@
                                 @endforeach
 
                                 <div class="form-group">
-                                    <label class="title-color" for="priority">{{ translate('priority') }}</label>
+                                    <label class="title-color" for="priority">{{ translate('Priority') }}</label>
                                     <select class="form-control" name="priority" id="" required>
                                         @for ($index = 0; $index <= 10; $index++) <option value="{{ $index }}" {{ $category['priority']==$index?'selected':''}}>{{ $index }}</option>
                                             @endfor
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="charges">{{ translate('charges') }}</label>
+                                    <label for="charges">{{ translate('Charges') }}</label>
 
                                     @if($categoryCharges->isEmpty())
                                     <div class="d-flex justify-content-between align-items-center">
@@ -106,18 +106,18 @@
                             @if($category['position'] == 2 || ($category['position'] == 1 && theme_root_path() != 'theme_aster'))
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset" class="btn btn-secondary px-4">
-                                    {{ translate('reset') }}
+                                    {{ translate('Reset') }}
                                 </button>
                                 <button type="submit" class="btn btn--primary px-4">
-                                    {{ translate('update') }}
+                                    {{ translate('Update') }}
                                 </button>
                             </div>
                             @endif
                         </div>
                         @if($category['parent_id']==0 || ($category['position'] == 1 && theme_root_path() == 'theme_aster'))
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{ translate('reset') }}</button>
-                            <button type="submit" class="btn btn--primary px-4">{{ translate('update') }}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{ translate('Reset') }}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{ translate('Update') }}</button>
                         </div>
                         @endif
                     </form>

@@ -27,7 +27,7 @@
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <label class="title-color" for="store">
-                                    {{ translate('brand') }}
+                                    {{ translate('Brand') }}
                                 </label>
                                 <select name="brand_id" class="js-select2-custom form-control text-capitalize">
                                     <option value="" selected>{{ translate('all_brand') }}</option>
@@ -40,13 +40,13 @@
 
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ translate('category') }}</label>
+                                <label for="name" class="title-color">{{ translate('Category') }}</label>
                                 <select class="js-select2-custom form-control action-get-request-onchange" name="category_id"
                                         data-url-prefix="{{ url('/vendor/products/get-categories?parent_id=') }}"
                                         data-element-id="sub-category-select"
                                         data-element-type="select">
                                     <option value="{{ old('category_id') }}" selected
-                                            disabled>{{ translate('select_category') }}</option>
+                                            disabled>{{ translate('select_Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}"
                                             {{ request('category_id') == $category['id'] ? 'selected' : '' }}>
@@ -59,7 +59,7 @@
 
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ translate('sub_Category') }}</label>
+                                <label for="name" class="title-color">{{ translate('Sub_Category') }}</label>
                                 <select class="js-select2-custom form-control action-get-request-onchange" name="sub_category_id"
                                         id="sub-category-select"
                                         data-url-prefix="{{ url('/vendor/products/get-categories?parent_id=') }}"
@@ -84,7 +84,7 @@
                             <div class="d-flex gap-3 justify-content-end">
                                 <a href="{{ route('vendor.products.list', ['type'=>request('type')]) }}"
                                    class="btn btn-secondary px-5">
-                                    {{ translate('reset') }}
+                                    {{ translate('Reset') }}
                                 </a>
                                 <button type="submit" class="btn btn--primary px-5 action-get-element-type">
                                     {{ translate('show_data') }}
@@ -116,7 +116,7 @@
                                                aria-label="Search orders"
                                                value="{{ request('searchValue') }}">
                                         <input type="hidden" value="{{ request('status') }}" name="status">
-                                        <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                        <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -134,7 +134,7 @@
                                 </a>
                                 <a href="{{ route('vendor.products.add') }}" class="btn btn--primary">
                                     <i class="tio-add"></i>
-                                    <span class="text">{{ translate('add_new_product') }}</span>
+                                    <span class="text">{{ translate('add_New_Product') }}</span>
                                 </a>
                                 @endif
                             </div>
@@ -147,14 +147,14 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL') }}</th>
-                                <th class="text-capitalize">{{ translate('product_name') }}</th>
-                                <th class="text-center text-capitalize">{{ translate('product_type') }}</th>
-                                <th class="text-center text-capitalize">{{ translate('unit_price') }}</th>
+                                <th class="text-capitalize">{{ translate('Product_name') }}</th>
+                                <th class="text-center text-capitalize">{{ translate('product_Type') }}</th>
+                                <th class="text-center text-capitalize">{{ translate('Unit_Price') }}</th>
                                 <th class="text-center text-capitalize">{{ translate('verify_status') }}</th>
                                 @if($type != 'new-request' )
-                                <th class="text-center text-capitalize">{{ translate('active_status') }}</th>
+                                <th class="text-center text-capitalize">{{ translate('active_Status') }}</th>
                                 @endif
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -186,11 +186,11 @@
                                     </td>
                                     <td class="text-center">
                                         @if($product->request_status == 0)
-                                            <label class="badge badge-soft-warning">{{translate('pending')}}</label>
+                                            <label class="badge badge-soft-warning">{{translate('Pending')}}</label>
                                         @elseif($product->request_status == 1)
-                                            <label class="badge badge-soft-success">{{translate('approved')}}</label>
+                                            <label class="badge badge-soft-success">{{translate('Approved')}}</label>
                                         @elseif($product->request_status == 2)
-                                            <label class="badge badge-soft-danger">{{translate('denied')}}</label>
+                                            <label class="badge badge-soft-danger">{{translate('Denied')}}</label>
                                         @endif
                                     </td>
                                     @if($type != 'new-request' )
@@ -209,8 +209,8 @@
                                                            data-toggle-id="product-status{{ $product['id'] }}"
                                                            data-on-image="product-status-on.png"
                                                            data-off-image="product-status-off.png"
-                                                           data-on-title="{{ translate('Want_to_Turn_ON').' '.$productName.' '.translate('status') }}"
-                                                           data-off-title="{{ translate('Want_to_Turn_OFF').' '.$productName.' '.translate('status') }}"
+                                                           data-on-title="{{ translate('Want_to_Turn_ON').' '.$productName.' '.translate('Status') }}"
+                                                           data-off-title="{{ translate('Want_to_Turn_OFF').' '.$productName.' '.translate('Status') }}"
                                                            data-on-message="<p>{{ translate('if_enabled_this_product_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                            data-off-message="<p>{{ translate('if_disabled_this_product_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                     <span class="switcher_control"></span>
@@ -226,18 +226,18 @@
                                                    href="{{ route('vendor.products.barcode', [$product['id']]) }}">
                                                     <i class="tio-barcode"></i>
                                                 </a>
-                                                <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('view') }}"
+                                                <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('View') }}"
                                                    href="{{ route('vendor.products.view', [$product['id']]) }}">
                                                     <i class="tio-invisible"></i>
                                                 </a>
                                             @endif
                                             <a class="btn btn-outline--primary btn-sm square-btn"
-                                               title="{{ translate('edit') }}"
+                                               title="{{ translate('Edit') }}"
                                                href="{{ route('vendor.products.update',[$product['id']]) }}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <span class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                  title="{{ translate('delete') }}"
+                                                  title="{{ translate('Delete') }}"
                                                   data-id="product-{{ $product['id']}}">
                                                 <i class="tio-delete"></i>
                                             </span>
@@ -266,5 +266,5 @@
             </div>
         </div>
     </div>
-    <span id="message-select-word" data-text="{{ translate('select') }}"></span>
+    <span id="message-select-word" data-text="{{ translate('Select') }}"></span>
 @endsection

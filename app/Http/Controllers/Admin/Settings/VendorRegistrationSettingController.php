@@ -62,7 +62,7 @@ class VendorRegistrationSettingController extends BaseController
         $vendorRegistrationHeader = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'vendor_registration_header'])['value']);
         $this->businessSettingRepo->updateOrInsert(type: 'vendor_registration_header',
             value:$this->vendorRegistrationSettingService->getHeaderAndSellWithUsUpdateData(request: $request,image: $vendorRegistrationHeader->image??null) );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
     public function updateSellWithUsSection(Request $request): RedirectResponse
@@ -70,7 +70,7 @@ class VendorRegistrationSettingController extends BaseController
         $sellWithUs = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'vendor_registration_sell_with_us'])['value']);
         $this->businessSettingRepo->updateOrInsert(type: 'vendor_registration_sell_with_us',
             value:$this->vendorRegistrationSettingService->getHeaderAndSellWithUsUpdateData(request: $request,image:   $sellWithUs->image??null) );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
     public function updateBusinessProcess(Request $request): RedirectResponse
@@ -80,7 +80,7 @@ class VendorRegistrationSettingController extends BaseController
         $businessProcessStep = json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'business_process_step'])['value']);
         $this->businessSettingRepo->updateOrInsert(type: 'business_process_step',
             value:$this->vendorRegistrationSettingService->getBusinessProcessStepUpdateData(request: $request,businessProcessStep:$businessProcessStep) );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
     public function updateDownloadAppSection(Request $request): RedirectResponse
@@ -89,7 +89,7 @@ class VendorRegistrationSettingController extends BaseController
         $downloadVendorApp= json_decode($this->businessSettingRepo->getFirstWhere(params: ['type' => 'download_vendor_app'])['value']);
         $this->businessSettingRepo->updateOrInsert(type: 'download_vendor_app',
             value:$this->vendorRegistrationSettingService->getDownloadVendorAppUpdateData(request: $request,image:$downloadVendorApp?->image) );
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 

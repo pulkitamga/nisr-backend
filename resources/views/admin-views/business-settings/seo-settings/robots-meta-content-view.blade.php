@@ -49,7 +49,7 @@
                                                    name="meta_title" required>
                                         </div>
                                         <div class="col-12">
-                                            <label class="form-label">{{ translate('meta_description') }}</label>
+                                            <label class="form-label">{{ translate('meta_Description') }}</label>
                                             <textarea placeholder="{{ translate('maximum_220_characters') }} ({{ translate('ideal_160_characters') }})"
                                                   class="form-control" rows="5" name="meta_description"
                                             >{{ $pageData['meta_description'] ?? '' }}</textarea>
@@ -60,8 +60,8 @@
                                     <div class="d-flex flex-column align-items-center gap-3">
                                         <div class="mx-auto text-center max-w-300px w-100">
                                             <label class="d-block text-center font-weight-bold">
-                                                {{ translate('meta_image') }}
-                                                <small class="text-danger">({{ translate('size') }}: {{ '2:1' }})</small>
+                                                {{ translate('meta_Image') }}
+                                                <small class="text-danger">({{ translate('Size') }}: {{ '2:1' }})</small>
                                             </label>
 
                                             <label class="custom_upload_input d-flex mx-2 cursor-pointer align-items-center justify-content-center aspect-ratio-3-15">
@@ -95,7 +95,7 @@
                                             <p class="text-muted mt-2 fz-12 m-0">
                                                 {{ translate('image_format') }} : {{ "jpg, png, jpeg" }}
                                                 <br>
-                                                {{ translate('image_size') }} : {{ translate('max') }} {{ "2 MB" }}
+                                                {{ translate('image_size') }} : {{ translate('Max') }} {{ "2 MB" }}
                                             </p>
                                         </div>
                                     </div>
@@ -107,7 +107,7 @@
                                         <h5 class="m-0 mt-3">{{translate('canonical_URL')}}</h5>
                                     </div>
                                     <div class="col-md-8 col-xl-8">
-                                        <input type="url" placeholder="{{ translate('enter_url') }}..."
+                                        <input type="url" placeholder="{{ translate('Enter_URL') }}..."
                                                class="form-control" name="canonicals_url" value="{{ $pageData['canonicals_url'] ?? '' }}">
                                         <div class="mt-10px fs-12">
                                             <div>
@@ -132,7 +132,7 @@
                                                 <img class="checked"
                                                      src="{{ dynamicAsset('public/assets/back-end/img/check-radio-icon.svg')}}"
                                                      alt="">
-                                                <span>{{ translate('index') }}</span>
+                                                <span>{{ translate('Index') }}</span>
                                                 <span data-toggle="tooltip" title="{{ translate('allow_search_engines_to_put_this_web_page_on_their_list_or_index_and_show_it_on_search_results.') }}">
                                                     <img src="{{ dynamicAsset('public/assets/back-end/img/query.png')}}"
                                                          alt="">
@@ -146,7 +146,7 @@
                                                 <img class="checked"
                                                      src="{{ dynamicAsset('public/assets/back-end/img/check-icon.svg')}}"
                                                      alt="">
-                                                <span>{{ translate('no_Follow') }}</span>
+                                                <span>{{ translate('No_Follow') }}</span>
                                                 <span data-toggle="tooltip" title="{{ translate('instruct_search_engines_not_to_follow_links_from_this_web_page.') }}">
                                                     <img src="{{ dynamicAsset('public/assets/back-end/img/query.png')}}"
                                                          alt="">
@@ -279,7 +279,7 @@
                                             <div class="item w-120px flex-grow-0">
                                                 <select class="form-control h-30 py-0" name="meta_max_image_preview_value">
                                                     <option value="large" {{ isset($pageData['max_image_preview_value']) && $pageData['max_image_preview_value'] == 'large' ? 'selected' : '' }}>{{ translate('large') }}</option>
-                                                    <option value="medium" {{ isset($pageData['max_image_preview_value']) && $pageData['max_image_preview_value'] == 'medium' ? 'selected' : '' }}>{{ translate('medium') }}</option>
+                                                    <option value="medium" {{ isset($pageData['max_image_preview_value']) && $pageData['max_image_preview_value'] == 'medium' ? 'selected' : '' }}>{{ translate('Medium') }}</option>
                                                     <option value="small" {{ isset($pageData['max_image_preview_value']) && $pageData['max_image_preview_value'] == 'small' ? 'selected' : '' }}>{{ translate('small') }}</option>
                                                 </select>
                                             </div>
@@ -291,10 +291,10 @@
                     </div>
                     <div class="d-flex justify-content-end gap-3 mt-3">
                         <button type="reset" class="btn btn-secondary px-5">
-                            {{ translate('reset') }}
+                            {{ translate('Reset') }}
                         </button>
                         <button type="{{ env('APP_MODE') == 'demo' ? 'button' : 'submit' }}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'? '' : 'call-demo'}}">
-                            {{ translate('submit') }}
+                            {{ translate('Submit') }}
                         </button>
                     </div>
                 </form>

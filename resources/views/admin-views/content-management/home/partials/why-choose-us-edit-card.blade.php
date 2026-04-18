@@ -98,7 +98,7 @@ $activeLanguage = $baseLanguage;
         <div class="card-header d-flex justify-content-between align-items-center">
             <h2 class="h1 mb-0">{{ translate('Edit Card') }}</h2>
             <a href="{{ route('admin.content-management.home', ['section' => 'why_choose_us']) }}" class="btn btn-secondary">
-                {{ translate('back') }}
+                {{ translate('Back') }}
             </a>
         </div>
         <div class="card-body">
@@ -252,7 +252,7 @@ $activeLanguage = $baseLanguage;
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
                     <a href="{{ route('admin.content-management.home', ['section' => 'why_choose_us']) }}" class="btn btn-secondary">{{ translate('Cancel') }}</a>
-                    <button type="submit" class="btn btn--primary">{{ translate('Save changes') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('save_Changes') }}</button>
                 </div>
             </form>
         </div>

@@ -11,7 +11,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
-                {{ translate('clearance_sale') }}
+                {{ translate('Clearance_Sale') }}
             </h2>
         </div>
 
@@ -124,7 +124,7 @@
                                                     <label class="mb-0 cursor-pointer"
                                                            for="brand-alphabetic-order-reverse-asc">
                                                         {{ translate('sort_by_Alphabetical') }}
-                                                        ({{ 'A ' . translate('to') . ' Z' }})
+                                                        ({{ 'A ' . translate('To') . ' Z' }})
                                                     </label>
                                                 </div>
                                                 <div class="d-flex gap-2 align-items-center">
@@ -134,7 +134,7 @@
                                                     <label class="mb-0 cursor-pointer"
                                                            for="brand-alphabetic-order-reverse-desc">
                                                         {{ translate('sort_by_Alphabetical') }}
-                                                        ({{ 'Z ' . translate('to') . ' A' }})
+                                                        ({{ 'Z ' . translate('To') . ' A' }})
                                                     </label>
                                                 </div>
                                             </div>
@@ -164,7 +164,7 @@
                                                            id="stock-none"
                                                         {{ isset($stockClearancePriority['out_of_stock_product']) && $stockClearancePriority['out_of_stock_product'] == 'default' ? 'checked' : '' }}>
                                                     <label class="mb-0 cursor-pointer" for="stock-none">
-                                                        {{ translate('none') }}
+                                                        {{ translate('None') }}
                                                     </label>
                                                 </div>
                                             </div>
@@ -196,7 +196,7 @@
                                                            id="time-none"
                                                         {{ isset($stockClearancePriority['temporary_close_sorting']) && $stockClearancePriority['temporary_close_sorting'] == 'default' ? 'checked' : '' }}>
                                                     <label class="mb-0 cursor-pointer" for="time-none">
-                                                        {{ translate('none') }}
+                                                        {{ translate('None') }}
                                                     </label>
                                                 </div>
                                             </div>
@@ -285,7 +285,7 @@
 
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn--primary-2 px-5">
-                                    {{ translate('save') }}
+                                    {{ translate('Save') }}
                                 </button>
                             </div>
                         </form>

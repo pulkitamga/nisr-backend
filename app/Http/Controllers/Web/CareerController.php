@@ -124,7 +124,7 @@ class CareerController extends Controller
             }
             return back()
                 ->withInput()
-                ->withErrors(['career' => translate('something_went_wrong')]);
+                ->withErrors(['career' => translate('Something_went_wrong')]);
         }
 
         Toastr::success(translate('career_applied_success'));

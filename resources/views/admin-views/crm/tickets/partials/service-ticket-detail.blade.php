@@ -37,7 +37,7 @@
             <div class="col-lg-6 col-md-12">
                 <div class="card mb-4 shadow-sm h-100 detail-card">
                     <div class="card-header bg-light">
-                        <h5 class="mb-0">{{ translate('Customer Details') }}</h5>
+                        <h5 class="mb-0">{{ translate('customer_details') }}</h5>
                     </div>
                     <div class="card-body">
                         @if($supportTicket->customer)
@@ -45,13 +45,13 @@
                             {{ $supportTicket->customer->l_name ?? '' }}</span>
                         </p>
                         <p><strong>{{ translate('Email') }}:</strong>
-                            <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('Not Available') }}</span>
+                            <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('not_available') }}</span>
                         </p>
                         <p><strong>{{ translate('Phone') }}:</strong>
-                            <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('Not Available') }}</span>
+                            <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('not_available') }}</span>
                         </p>
                         @else
-                        <p>{{ translate('Customer Not Found') }}</p>
+                        <p>{{ translate('customer_not_found') }}</p>
                         @endif
                     </div>
                 </div>
@@ -61,7 +61,7 @@
             <div class="col-lg-6 col-md-12">
                 <div class="card mb-4 shadow-sm h-100 detail-card">
                     <div class="card-header bg-light">
-                        <h5 class="mb-0">{{ translate('Service Details') }}</h5>
+                        <h5 class="mb-0">{{ translate('service_details') }}</h5>
                     </div>
                     <div class="card-body">
                         @php
@@ -78,7 +78,7 @@
                         <p><strong>{{ translate('Status') }}:</strong>
                             <span class="bidi-auto">{{ $localizedTicketStatus }}</span>
                         </p>
-                        <p><strong>{{ translate('Created At') }}:</strong>
+                        <p><strong>{{ translate('Created_At') }}:</strong>
                             <span class="bidi-ltr">{{ $supportTicket->created_at->format('d M, Y H:i A') }}</span>
                         </p>
                     </div>
@@ -162,7 +162,7 @@
                                             <th>{{ translate('SL') }}</th>
                                             <th>{{ translate('Description') }}</th>
                                             <th>{{ translate('Created By') }}</th>
-                                            <th>{{ translate('Created At') }}</th>
+                                            <th>{{ translate('Created_At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -209,7 +209,7 @@
                                             <th>{{ translate('Subtotal') }}</th>
                                             <th>{{ translate('Tax') }}</th>
                                             <th>{{ translate('Total') }}</th>
-                                            <th>{{ translate('Created At') }}</th>
+                                            <th>{{ translate('Created_At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -254,7 +254,7 @@
                                             <th>{{ translate('Tax') }}</th>
                                             <th>{{ translate('Total') }}</th>
                                             <th>{{ translate('Payment Link') }}</th>
-                                            <th>{{ translate('Payment Status') }}</th>
+                                            <th>{{ translate('Payment_Status') }}</th>
                                             <th>{{ translate('Generated At') }}</th>
                                             <th>{{ translate('Link Expires At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
@@ -313,7 +313,7 @@
                                             <th>{{ translate('SL') }}</th>
                                             <th>{{ translate('Additional Charges') }}</th>
                                             <th>{{ translate('Description') }}</th>
-                                            <th>{{ translate('Created At') }}</th>
+                                            <th>{{ translate('Created_At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -353,8 +353,8 @@
                                             <th>{{ translate('SL') }}</th>
                                             <th>{{ translate('Reason') }}</th>
                                             <th>{{ translate('Fee Amount') }}</th>
-                                            <th>{{ translate('Refund Amount') }}</th>
-                                            <th>{{ translate('Created At') }}</th>
+                                            <th>{{ translate('Refund_Amount') }}</th>
+                                            <th>{{ translate('Created_At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -396,7 +396,7 @@
                                             <th>{{ translate('Remark') }}</th>
                                             <th>{{ translate('Attachments') }}</th>
                                             <th>{{ translate('Customer Signature') }}</th>
-                                            <th>{{ translate('Created At') }}</th>
+                                            <th>{{ translate('Created_At') }}</th>
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -418,7 +418,7 @@
                                                 @if(!empty($attachments))
                                                 <button type="button" class="btn btn-sm btn-outline-primary view-attachments-btn"
                                                     data-attachments='@json($attachments)'>
-                                                    {{ translate('View All') }}
+                                                    {{ translate('view_all') }}
                                                 </button>
                                                 @else
                                                 <span class="text-muted">{{ translate('No Attachment') }}</span>
@@ -484,7 +484,7 @@
             <div class="modal-body">
                 <p><strong>{{ translate('Description') }}:</strong> <span id="activity-description"></span></p>
                 <p><strong>{{ translate('Created By') }}:</strong> <span id="activity-created-by"></span></p>
-                <p><strong>{{ translate('Created At') }}:</strong> <span id="activity-created-at"></span></p>
+                <p><strong>{{ translate('Created_At') }}:</strong> <span id="activity-created-at"></span></p>
                 <p><strong>{{ translate('Attachments') }}:</strong> <span id="activity-attachments"></span></p>
             </div>
             <div class="modal-footer">
@@ -511,7 +511,7 @@
                 <p><strong>{{ translate('Tax') }}:</strong> <span id="estimate-tax"></span></p>
                 <p><strong>{{ translate('Total') }}:</strong> <span id="estimate-total"></span></p>
                 <p><strong>{{ translate('Service Mode') }}:</strong> <span id="estimate-is-mobile"></span></p>
-                <p><strong>{{ translate('Created At') }}:</strong> <span id="estimate-created-at"></span></p>
+                <p><strong>{{ translate('Created_At') }}:</strong> <span id="estimate-created-at"></span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -536,7 +536,7 @@
                 <p><strong>{{ translate('Subtotal') }}:</strong> <span id="invoice-subtotal"></span></p>
                 <p><strong>{{ translate('Tax') }}:</strong> <span id="invoice-tax"></span></p>
                 <p><strong>{{ translate('Total') }}:</strong> <span id="invoice-total"></span></p>
-                <p><strong>{{ translate('Payment Status') }}:</strong> <span id="invoice-payment-status"></span></p>
+                <p><strong>{{ translate('Payment_Status') }}:</strong> <span id="invoice-payment-status"></span></p>
                 <p><strong>{{ translate('Generated At') }}:</strong> <span id="invoice-generated-at"></span></p>
             </div>
             <div class="modal-footer">
@@ -562,7 +562,7 @@
                 <p><strong>{{ translate('Additional Charges') }}:</strong> <span
                         id="change-order-additional-charges"></span></p>
                 <p><strong>{{ translate('Description') }}:</strong> <span id="change-order-description"></span></p>
-                <p><strong>{{ translate('Created At') }}:</strong> <span id="change-order-created-at"></span></p>
+                <p><strong>{{ translate('Created_At') }}:</strong> <span id="change-order-created-at"></span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -601,8 +601,8 @@
             <div class="modal-body">
                 <p><strong>{{ translate('Reason') }}:</strong> <span id="cancellation-reason"></span></p>
                 <p><strong>{{ translate('Fee Amount') }}:</strong> <span id="cancellation-fee-amount"></span></p>
-                <p><strong>{{ translate('Refund Amount') }}:</strong> <span id="cancellation-refund-amount"></span></p>
-                <p><strong>{{ translate('Created At') }}:</strong> <span id="cancellation-created-at"></span></p>
+                <p><strong>{{ translate('Refund_Amount') }}:</strong> <span id="cancellation-refund-amount"></span></p>
+                <p><strong>{{ translate('Created_At') }}:</strong> <span id="cancellation-created-at"></span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary"
@@ -618,7 +618,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content text-start">
             <div class="modal-header">
-                <h5 class="modal-title" id="serviceDetailsModalLabel">{{ translate('Service Details') }}</h5>
+                <h5 class="modal-title" id="serviceDetailsModalLabel">{{ translate('service_details') }}</h5>
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -628,7 +628,7 @@
                 <p><strong>{{ translate('Status') }}:</strong> <span id="service-status"></span></p>
                 <p><strong>{{ translate('Scheduled At') }}:</strong> <span id="service-scheduled-at"></span></p>
                 <p><strong>{{ translate('Started At') }}:</strong> <span id="service-started-at"></span></p>
-                <p><strong>{{ translate('Completed At') }}:</strong> <span id="service-completed-at"></span></p>
+                <p><strong>{{ translate('completed_at') }}:</strong> <span id="service-completed-at"></span></p>
                 <p><strong>{{ translate('Odometer Start') }}:</strong> <span id="service-odometer-start"></span></p>
                 <p><strong>{{ translate('Odometer End') }}:</strong> <span id="service-odometer-end"></span></p>
                 <p><strong>{{ translate('GPS Location') }}:</strong> <span id="service-gps-location"></span></p>
@@ -636,7 +636,7 @@
                 <p><strong>{{ translate('Priority') }}:</strong> <span id="service-priority"></span></p>
                 <p><strong>{{ translate('SLA Hours') }}:</strong> <span id="service-sla-hours"></span></p>
                 <p><strong>{{ translate('Service Mode') }}:</strong> <span id="service-is-mobile"></span></p>
-                <p><strong>{{ translate('Created At') }}:</strong> <span id="service-created-at"></span></p>
+                <p><strong>{{ translate('Created_At') }}:</strong> <span id="service-created-at"></span></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ translate('Close') }}</button>
@@ -657,29 +657,29 @@
     $textMobile = translate('Mobile');
     $textInShop = translate('In-shop');
     $workflowStatusMap = [
-        'new' => translate('new'),
+        'new' => translate('New'),
         'assigned' => translate('assigned'),
         'scheduled' => translate('scheduled'),
         'ready_to_start' => translate('ready_to_start'),
-        'in_progress' => translate('in_progress'),
+        'in_progress' => translate('in_Progress'),
         'qa_pending' => translate('qa_pending'),
         'completed' => translate('completed'),
-        'closed' => translate('closed'),
+        'closed' => translate('Closed'),
         'cancelled' => translate('cancelled'),
     ];
     $paymentStatusMap = [
-        'pending' => translate('pending'),
+        'pending' => translate('Pending'),
         'paid' => translate('paid'),
         'expired' => translate('expired'),
-        'failed' => translate('failed'),
+        'failed' => translate('Failed'),
         'refunded' => translate('refunded'),
         'cancelled' => translate('cancelled'),
     ];
     $priorityMap = [
-        'low' => translate('low'),
-        'medium' => translate('medium'),
-        'high' => translate('high'),
-        'urgent' => translate('urgent'),
+        'low' => translate('Low'),
+        'medium' => translate('Medium'),
+        'high' => translate('High'),
+        'urgent' => translate('Urgent'),
     ];
 @endphp
 <script>

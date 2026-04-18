@@ -36,7 +36,7 @@ class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
                         (string) ($ticket->customer->f_name ?? ''),
                         (string) ($ticket->customer->l_name ?? ''),
                     ])))
-                    : translate('Customer Not Found'),
+                    : translate('customer_not_found'),
                 (string) ($ticket->customer->email ?? 'N/A'),
                 $ticket->sub_type ? str_replace('_', ' ', $ticket->sub_type) : translate('No Sub-Type'),
                 ucfirst((string) $ticket->priority),
@@ -60,20 +60,20 @@ class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
         $headings = [
             translate('SL'),
             translate('Subject'),
-            translate('customer'),
+            translate('Customer'),
             translate('customer_Email'),
             translate('Ticket_Type'),
             translate('Priority'),
-            translate('status'),
+            translate('Status'),
         ];
 
         if ($this->type === 'service') {
-            $headings[] = translate('service');
+            $headings[] = translate('Service');
         }
 
         $headings[] = translate('Department');
         $headings[] = translate('assigned_employee');
-        $headings[] = translate('Created At');
+        $headings[] = translate('Created_At');
 
         return $headings;
     }
@@ -91,13 +91,13 @@ class SupportTicketExport implements FromCollection, WithHeadings, WithTitle
     public function filterSummary(): string
     {
         return implode(' | ', array_filter([
-            translate('search') . ': ' . (trim((string) $this->request->get('searchValue', '')) ?: translate('all')),
+            translate('Search') . ': ' . (trim((string) $this->request->get('searchValue', '')) ?: translate('All')),
             translate('Priority') . ': ' . (($this->request->get('priority') && $this->request->get('priority') !== 'all')
                 ? ucfirst((string) $this->request->get('priority'))
-                : translate('all')),
-            translate('status') . ': ' . (($this->request->get('status') && $this->request->get('status') !== 'all')
+                : translate('All')),
+            translate('Status') . ': ' . (($this->request->get('status') && $this->request->get('status') !== 'all')
                 ? (string) $this->request->get('status')
-                : translate('all')),
+                : translate('All')),
         ]));
     }
 

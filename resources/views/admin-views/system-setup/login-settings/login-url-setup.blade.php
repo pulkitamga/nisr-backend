@@ -44,7 +44,7 @@
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" id="submit"
-                                class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                class="btn btn--primary px-4">{{translate('Submit')}}</button>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" id="submit"
-                                class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                class="btn btn--primary px-4">{{translate('Submit')}}</button>
                         </div>
                     </div>
                 </div>

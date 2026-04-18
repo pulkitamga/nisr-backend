@@ -42,7 +42,7 @@
                 </div>
                 <div class="col-md-3">
                     <select name="active_status" class="form-control select2">
-                        <option value="all">{{ translate('All Status') }}</option>
+                        <option value="all">{{ translate('all_Status') }}</option>
                         <option value="active" {{ request('active_status') == 'active' ? 'selected' : '' }}>
                             {{ translate('Active') }}
                         </option>
@@ -185,10 +185,10 @@
                             status: isChecked
                         },
                         success: function(response) {
-                            toastr.success(response.message || '{{ translate("Status updated successfully") }}');
+                            toastr.success(response.message || '{{ translate("Status_updated_successfully") }}');
                         },
                         error: function() {
-                            toastr.error('{{ translate("Something went wrong") }}');
+                            toastr.error('{{ translate("Something_went_wrong") }}');
                             checkbox.prop('checked', !isChecked); // revert
                         }
                     });

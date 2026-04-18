@@ -40,13 +40,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
-                        <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="heading[]" class="form-control"
-                            placeholder="{{ translate('Enter Heading') }}">
+                            placeholder="{{ translate('enter_heading') }}">
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('subheading') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Subheading') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="subheading[]" class="form-control"
                             placeholder="{{ translate('Enter Subheading') }}">
                     </div>
@@ -57,7 +57,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 {{-- Image Upload --}}
                 <div class="form-group">
-                    <label>{{ translate('image') }}</label>
+                    <label>{{ translate('Image') }}</label>
                     <input type="file" id="hero_image" name="image" class="form-control" accept="image/*">
                 </div>
 
@@ -68,7 +68,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary" id="submitBtn">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary" id="submitBtn">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

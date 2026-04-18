@@ -87,11 +87,11 @@ class WarrantyClaimChartController extends Controller
                     $months = $now->diffInMonths($endDate);
                     $days = $now->copy()->addMonths($months)->diffInDays($endDate);
                     if ($months > 0 && $days > 0) {
-                        $remaining = $months . ' ' . translate('months') . ' ' . $days . ' ' . translate('days');
+                        $remaining = $months . ' ' . translate('months') . ' ' . $days . ' ' . translate('Days');
                     } elseif ($months > 0) {
                         $remaining = $months . ' ' . translate('months');
                     } else {
-                        $remaining = $days . ' ' . translate('days');
+                        $remaining = $days . ' ' . translate('Days');
                     }
                 }
             }

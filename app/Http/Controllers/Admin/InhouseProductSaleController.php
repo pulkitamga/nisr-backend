@@ -1239,8 +1239,8 @@ class InhouseProductSaleController extends BaseController
             foreach ($dataset as $row) {
                 $key = (string)($row->branch_id ?? 0) . '|' . (string)($row->product_id ?? 0);
                 if (!isset($merged[$key])) {
-                    $branchName = (string)($row->branch_name ?? translate('branch'));
-                    $productName = (string)($row->product_name ?? translate('product'));
+                    $branchName = (string)($row->branch_name ?? translate('Branch'));
+                    $productName = (string)($row->product_name ?? translate('Product'));
                     $merged[$key] = [
                         'label' => $branchName . ' - ' . $productName,
                         'total_amount' => 0.0,

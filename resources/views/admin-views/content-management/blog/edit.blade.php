@@ -47,14 +47,14 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                 id="{{ $lang }}-form">
                 <div class="form-group">
-                    <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
+                    <label>{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="heading[]" class="form-control"
-                        placeholder="{{ translate('Enter Heading') }}"
+                        placeholder="{{ translate('enter_heading') }}"
                         value="{{ $lang == $defaultLanguage ? $blog->heading : ($translations[$lang]['heading'] ?? '') }}">
                 </div>
 
                 <div class="form-group">
-                    <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                    <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                     <textarea name="description[]" class="form-control" rows="5"
                         placeholder="{{ translate('Enter Description') }}">
                {!! $lang == $defaultLanguage ? $blog->description : ($translations[$lang]['description'] ?? '') !!}                </textarea>
@@ -66,7 +66,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">{{ translate('category') }}</label>
+                    <label class="form-label">{{ translate('Category') }}</label>
                     <select name="category" class="form-control" required>
                         @foreach($categories as $category)
                         <option value="{{ $category }}" {{ $blog->category == $category ? 'selected' : '' }}>{{
@@ -87,7 +87,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             </div>
 
             <div class="form-group">
-                <label>{{ translate('image') }}</label>
+                <label>{{ translate('Image') }}</label>
                 <input type="file" name="image" class="form-control">
                 @if ($blog->image)
                 <img src="{{ Storage::url($blog->image) }}" class="mt-2" width="100" alt="Current Image">
@@ -95,8 +95,8 @@ $translations[$translation->locale][$translation->key] = $translation->value;
             </div>
 
             <div class="d-flex gap-2 flex-wrap mt-4">
-                <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
-                <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+                <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('Cancel') }}</a>
+                <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
             </div>
         </form>
     </div>

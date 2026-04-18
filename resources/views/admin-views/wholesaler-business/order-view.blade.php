@@ -29,7 +29,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             <div class="wholesale-builder-section__header">
                 <div>
                     <h3 class="wholesale-builder-section__title">{{ translate('Quotation setup') }}</h3>
-                    <p class="wholesale-builder-section__subtitle">{{ translate('Order Request') }} {{ translate('and') }} {{ translate('Quotation No') }}</p>
+                    <p class="wholesale-builder-section__subtitle">{{ translate('Order Request') }} {{ translate('_and') }} {{ translate('Quotation_No') }}</p>
                 </div>
                 <div class="crm-list-toolbar__summary">
                     <span class="crm-list-toolbar__chip">
@@ -45,13 +45,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
             <div class="wholesale-builder-section__body">
             <div class=" mb-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase Order No') }}:</label>
+                    <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase_Order_No') }}:</label>
 
                     <input type="text" name="order_no" value="{{ $order->purchase_order_no }}" readonly
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm">
                 </div>
                 <div>
-                    <label for="quotation_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation No') }}:</label>
+                    <label for="quotation_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation_No') }}:</label>
 
                     <input type="text" name="quotation_no" id="quotation_no_input"
                         class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="{{ translate('Enter Quotation No') }}" required>
@@ -84,7 +84,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     <span class="wholesale-builder-summary-card__value bidi-auto" id="builder-wholesaler-tier">{{ $order->wholeseller->tier ?? translate('N/A') }}</span>
                 </div>
                 <div class="wholesale-builder-summary-card">
-                    <span class="wholesale-builder-summary-card__label">{{ translate('Purchase Order No') }}</span>
+                    <span class="wholesale-builder-summary-card__label">{{ translate('Purchase_Order_No') }}</span>
                     <span class="wholesale-builder-summary-card__value bidi-auto" id="builder-order-number">{{ $order->purchase_order_no ?? '--' }}</span>
                 </div>
             </div>
@@ -94,7 +94,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="wholesale-builder-section__header">
                     <div>
                         <h3 class="wholesale-builder-section__title">{{ translate('Products') }}</h3>
-                        <p class="wholesale-builder-section__subtitle">{{ translate('Add_Product') }} {{ translate('and') }} {{ translate('review') }} {{ translate('final_price') }}</p>
+                        <p class="wholesale-builder-section__subtitle">{{ translate('Add_Product') }} {{ translate('_and') }} {{ translate('Review') }} {{ translate('final_price') }}</p>
                     </div>
                     <div class="crm-list-toolbar__summary">
                         <span class="crm-list-toolbar__chip">
@@ -113,7 +113,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                             <div id="product_dropdown_wrapper" class="mt-2 hidden">
                                 <select id="product_select" class="js-example-matcher w-64"
                                     data-placeholder="{{ translate('Search and select a product') }}">
-                                    <option value="" disabled selected>{{ translate('Select Product') }}</option>
+                                    <option value="" disabled selected>{{ translate('select_Product') }}</option>
                                     @foreach ($wholesaleProducts as $wholesale)
 
                                     <option value="{{ $wholesale->id }}"
@@ -121,7 +121,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         data-variation-type="{{ $wholesale->variation_type }}" data-name="{{ $wholesale->product->getTranslatedField('name') }}"
                                         data-price="{{ optional($wholesale->price_list->first())->price_per_piece ?? 0 }}"
                                         data-tax="{{ $wholesale->tax ?? 0 }}">
-                                        {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
+                                        {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('no_variation') }})
                                     </option>
                                     @endforeach
                                 </select>
@@ -135,11 +135,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <table class="table table-hover table-borderless table-thead-bordered min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden wholesale-builder-product-table">
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
-                                    <th class="px-4 py-2 text-start">{{ translate('Product Name') }}</th>
-                                    <th class="px-2 py-2 text-start">{{ translate('Requested Qty') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Product_name') }}</th>
+                                    <th class="px-2 py-2 text-start">{{ translate('requested_qty') }}</th>
                                     <th class="px-4 py-2 text-start">{{ translate('Base Price') }}</th>
                                     <th class="px-4 py-2 text-start">{{ translate('Tax') }}</th>
-                                    <th class="px-4 py-2 text-start">{{ translate('Final Price') }}</th>
+                                    <th class="px-4 py-2 text-start">{{ translate('Final_price') }}</th>
                                     <th class="px-4 py-2 text-start">{{ translate('Action') }}</th>
 
                                 </tr>
@@ -157,7 +157,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                 @endphp
                                 <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
                                     <td class="px-4 py-2">
-                                        {{ $item->product->getTranslatedField('name') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
+                                        {{ $item->product->getTranslatedField('name') }} ({{ $item->product_variation_type ?? translate('no_variation') }})
                                     </td>
 
                                     <td class="px-4 py-2">
@@ -215,7 +215,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     <div class="wholesale-builder-section__header">
                         <div>
                             <h3 class="wholesale-builder-section__title">{{ translate('Charges & Discounts') }}</h3>
-                            <p class="wholesale-builder-section__subtitle">{{ translate('Charges') }} {{ translate('and') }} {{ translate('Discounts') }}</p>
+                            <p class="wholesale-builder-section__subtitle">{{ translate('Charges') }} {{ translate('_and') }} {{ translate('Discounts') }}</p>
                         </div>
                     </div>
                     <div class="wholesale-builder-section__body">
@@ -236,7 +236,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="mt-6">
-                            <label class="block text-lg font-semibold text-gray-800">{{ translate('Wholesaler Discount') }}</label>
+                            <label class="block text-lg font-semibold text-gray-800">{{ translate('wholesaler_discount') }}</label>
                             <input type="text" id="wholesaler_discount" name="wholesaler_discount"
                                 value="{{ $order->wholeseller->wholesaler_discount ?? 0 }}%" readonly
                                 class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-gray-100">
@@ -257,7 +257,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     <div class="wholesale-builder-section__header">
                         <div>
                             <h3 class="wholesale-builder-section__title">{{ translate('Localized Terms & Notes') }}</h3>
-                            <p class="wholesale-builder-section__subtitle">{{ translate('Terms and Conditions') }} {{ translate('and') }} {{ translate('Note') }}</p>
+                            <p class="wholesale-builder-section__subtitle">{{ translate('Terms_and_Conditions') }} {{ translate('_and') }} {{ translate('Note') }}</p>
                         </div>
                         @php
                     $activeLanguage = $defaultLanguage;
@@ -282,7 +282,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                             id="{{ $lang }}-form">
                             <input type="hidden" name="lang[]" value="{{ $lang }}">
 
-                            <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms and Conditions') }}({{ strtoupper($lang) }})</label>
+                            <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700">{{ translate('Terms_and_Conditions') }}({{ strtoupper($lang) }})</label>
                             <textarea name="terms_and_conditions[]" id="terms_and_conditions"
                                 class="form-control summernote w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm"></textarea>
 

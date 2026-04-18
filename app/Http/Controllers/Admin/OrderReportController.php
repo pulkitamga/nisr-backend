@@ -260,7 +260,7 @@ class OrderReportController extends Controller
 
 
         $data = [
-            'report_title' => translate('order_report'),
+            'report_title' => translate('order_Report'),
             'exportedAt' => now(),
 
             'orders' => $orders,

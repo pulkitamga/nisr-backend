@@ -15,7 +15,7 @@ class CrmDealSalesReportExport implements WithMultipleSheets
         $isRtl = session('direction') === 'rtl';
         $summary = $this->data['summary'] ?? [];
         $departmentSections = collect($this->data['departmentSections'] ?? []);
-        $unassignedLabel = translate('unassigned');
+        $unassignedLabel = translate('Unassigned');
 
         $summaryHeadings = [translate('metric'), translate('value')];
         $summaryRows = [
@@ -28,14 +28,14 @@ class CrmDealSalesReportExport implements WithMultipleSheets
         ];
 
         $detailsHeadings = [
-            translate('department'),
-            translate('employee'),
+            translate('Department'),
+            translate('Employee'),
             translate('retail_won_sales'),
             translate('wholesale_won_sales'),
             translate('won_sales'),
             translate('won'),
             translate('lost'),
-            translate('total'),
+            translate('Total'),
         ];
 
         $detailsRows = [];
@@ -84,7 +84,7 @@ class CrmDealSalesReportExport implements WithMultipleSheets
                 isRtl: $isRtl
             ),
             new InhouseProductSaleSheetExport(
-                title: translate('details'),
+                title: translate('Details'),
                 headings: $detailsHeadings,
                 rows: $detailsRows,
                 isRtl: $isRtl

@@ -1,5 +1,5 @@
 @extends('layouts.back-end.app-seller')
-@section('title', translate('order_List'))
+@section('title', translate('Order_List'))
 
 @push('css_or_js')
     <link href="{{dynamicAsset(path: 'public/assets/back-end/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
@@ -12,16 +12,16 @@
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/all-orders.png') }}" class="mb-1 me-1" alt="">
                 <span class="page-header-title">
                     @if($status =='processing')
-                        {{translate('packaging')}}
+                        {{translate('Packaging')}}
                     @elseif($status =='failed')
-                        {{translate('failed_to_Deliver')}}
+                        {{translate('Failed_to_Deliver')}}
                     @elseif($status == 'all')
-                        {{translate('all')}}
+                        {{translate('All')}}
                     @else
                         {{translate(str_replace('_',' ',$status))}}
                     @endif
                 </span>
-                {{translate('orders')}}
+                {{translate('Orders')}}
             </h2>
             <span class="badge badge-soft-dark radius-50 fz-14">{{$orders->total()}}</span>
         </div>
@@ -44,7 +44,7 @@
                                     <label class="title-color" for="filter">{{translate('order_Type')}}</label>
                                     <select name="filter" id="filter" class="form-control select2-selection__arrow">
                                         <option
-                                            value="all" {{ $filter == 'all' ? 'selected' : '' }}>{{translate('all')}}</option>
+                                            value="all" {{ $filter == 'all' ? 'selected' : '' }}>{{translate('All')}}</option>
                                         <option
                                             value="default_type" {{ $filter == 'default_type' ? 'selected' : '' }}>{{translate('website_Order')}}</option>
                                         @if(($status == 'all' || $status == 'delivered') && $sellerPos == 1 && !request()->has('deliveryManId'))
@@ -58,7 +58,7 @@
 
                         <div class="col-sm-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label class="title-color" for="customer">{{translate('customer')}}</label>
+                                <label class="title-color" for="customer">{{translate('Customer')}}</label>
 
                                 <input type="hidden" id='customer_id' name="customer_id"
                                        value="{{request('customer_id') ? request('customer_id') : 'all'}}">
@@ -92,13 +92,13 @@
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3" id="from_div">
-                            <label class="title-color" for="customer">{{translate('start_date')}}</label>
+                            <label class="title-color" for="customer">{{translate('Start_Date')}}</label>
                             <div class="form-group">
                                 <input type="date" name="from" value="{{$from}}" id="from_date" class="form-control">
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-4 col-xl-3" id="to_div">
-                            <label class="title-color" for="customer">{{translate('end_date')}}</label>
+                            <label class="title-color" for="customer">{{translate('End_Date')}}</label>
                             <div class="form-group">
                                 <input type="date" value="{{$to}}" name="to" id="to_date" class="form-control">
                             </div>
@@ -107,7 +107,7 @@
                             <div class="d-flex gap-3 justify-content-end">
                                 <a href="{{route('vendor.orders.list',['status'=>request('status')])}}"
                                    class="btn btn-secondary px-5">
-                                    {{translate('reset')}}
+                                    {{translate('Reset')}}
                                 </a>
                                 <button type="submit" class="btn btn--primary px-5" id="formUrlChange" data-action="{{ url()->current() }}">
                                     {{translate('show_data')}}
@@ -125,7 +125,7 @@
                     <div class="row g-2 align-items-center flex-grow-1">
                         <div class="col-md-4">
                             <h5 class="text-capitalize d-flex gap-1">
-                                {{translate('order_list')}}
+                                {{translate('Order_List')}}
                                 <span class="badge badge-soft-dark radius-50 fz-12">{{$orders->total()}}</span>
                             </h5>
                         </div>
@@ -140,7 +140,7 @@
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                            placeholder="{{translate('search_orders')}}" aria-label="Search orders"
                                            value="{{ $searchValue }}" required>
-                                    <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                    <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                 </div>
                             </form>
                             <div class="dropdown">
@@ -158,16 +158,16 @@
                         <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th class="text-capitalize">{{translate('SL')}}</th>
-                            <th class="text-capitalize">{{translate('order_ID')}}</th>
-                            <th class="text-capitalize">{{translate('order_Date')}}</th>
-                            <th class="text-capitalize">{{translate('customer_info')}}</th>
-                            <th class="text-capitalize">{{translate('total_amount')}}</th>
+                            <th class="text-capitalize">{{translate('Order_ID')}}</th>
+                            <th class="text-capitalize">{{translate('Order_Date')}}</th>
+                            <th class="text-capitalize">{{translate('Customer_Info')}}</th>
+                            <th class="text-capitalize">{{translate('Total_Amount')}}</th>
                             @if($status == 'all')
-                                <th class="text-capitalize">{{translate('order_Status')}} </th>
+                                <th class="text-capitalize">{{translate('Order_Status')}} </th>
                             @else
-                                <th class="text-capitalize">{{translate('payment_method')}} </th>
+                                <th class="text-capitalize">{{translate('Payment_Method')}} </th>
                             @endif
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -232,7 +232,7 @@
                                                 class="badge badge-soft-danger">{{$order['order_status']}}</label>
                                         @elseif($order['order_status']=='failed')
                                             <span class="badge badge-danger fz-12">
-                                                    {{translate('failed_to_deliver')}}
+                                                    {{translate('Failed_to_Deliver')}}
                                             </span>
                                         @else
                                             <label
@@ -247,13 +247,13 @@
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
                                         <a class="btn btn-outline--primary btn-sm square-btn"
-                                           title="{{translate('view')}}"
+                                           title="{{translate('View')}}"
                                            href="{{route('vendor.orders.details',[$order['id']])}}">
                                             <i class="tio-invisible"></i>
 
                                         </a>
                                         <a class="btn btn-outline-info btn-sm square-btn" target="_blank"
-                                           title="{{translate('invoice')}}"
+                                           title="{{translate('Invoice')}}"
                                            href="{{route('vendor.orders.generate-invoice',[$order['id']])}}">
                                             <i class="tio-download"></i>
                                         </a>

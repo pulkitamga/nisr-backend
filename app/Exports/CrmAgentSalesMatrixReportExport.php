@@ -17,7 +17,7 @@ class CrmAgentSalesMatrixReportExport implements WithMultipleSheets
         $monthlyRows = collect($this->data['monthlyRows'] ?? []);
         $summaryPerEmployee = collect(data_get($this->data, 'summary.per_employee', []));
         $grand = data_get($this->data, 'summary.grand', []);
-        $unassignedLabel = translate('unassigned');
+        $unassignedLabel = translate('Unassigned');
 
         $matrixHeadings = [translate('period')];
         foreach ($employees as $employee) {
@@ -28,7 +28,7 @@ class CrmAgentSalesMatrixReportExport implements WithMultipleSheets
             $matrixHeadings[] = $name . ' - ' . translate('wholesale_customers');
         }
         $matrixHeadings[] = translate('total_batteries');
-        $matrixHeadings[] = translate('total_customers');
+        $matrixHeadings[] = translate('total_Customers');
 
         $matrixRows = $monthlyRows->map(function ($row) use ($employees) {
             $line = [(string)data_get($row, 'month_label', '')];
@@ -48,18 +48,18 @@ class CrmAgentSalesMatrixReportExport implements WithMultipleSheets
         })->values()->all();
 
         $summaryHeadings = [
-            translate('employee'),
+            translate('Employee'),
             translate('retail_batteries'),
             translate('retail_customers'),
             translate('wholesale_batteries'),
             translate('wholesale_customers'),
             translate('total_batteries'),
-            translate('total_customers'),
+            translate('total_Customers'),
         ];
 
         $summaryRows = $summaryPerEmployee->map(function ($row) {
             return [
-                (string)data_get($row, 'employee_name', translate('unassigned')),
+                (string)data_get($row, 'employee_name', translate('Unassigned')),
                 (int)data_get($row, 'retail_batteries', 0),
                 (int)data_get($row, 'retail_customers', 0),
                 (int)data_get($row, 'wholesale_batteries', 0),

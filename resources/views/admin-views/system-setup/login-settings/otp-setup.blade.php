@@ -30,7 +30,7 @@
                                        title="{{ translate('set_how_many_times_a_user_can_hit_the_wrong_OTPs.').'.'.translate('after_reaching_this_limit_the_user_will_be_blocked_for_a_time') }}">
                                     </i>
                                 </label>
-                                <input type="number" min="0" value="{{$maximumOtpHit}}" name="maximum_otp_hit" class="form-control"  placeholder="{{translate('ex').':'.'5'}}" required>
+                                <input type="number" min="0" value="{{$maximumOtpHit}}" name="maximum_otp_hit" class="form-control"  placeholder="{{translate('Ex').':'.'5'}}" required>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6">
@@ -84,16 +84,16 @@
                                        title="{{ translate('set_a_time_duration_during_which_users_cannot_log_in_after_reaching_the_Maximum_Login_Hit_limit') }}">
                                     </i>
                                 </label>
-                                <input type="number" min="0" step="0.01" value="{{$temporaryLoginBlockTime}}" placeholder="{{translate('ex').':'.'1210'}}"
+                                <input type="number" min="0" step="0.01" value="{{$temporaryLoginBlockTime}}" placeholder="{{translate('Ex').':'.'1210'}}"
                                        name="temporary_login_block_time" class="form-control" required>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex gap-3 justify-content-end">
-                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                         <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE') != 'demo'?'':'call-demo'}}">
-                            {{translate('save')}}
+                            {{translate('Save')}}
                         </button>
                     </div>
                 </div>

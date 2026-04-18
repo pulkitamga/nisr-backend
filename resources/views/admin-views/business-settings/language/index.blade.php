@@ -9,7 +9,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/system-setting.png')}}" alt="">
-                {{translate('system_setup')}}
+                {{translate('system_Setup')}}
             </h2>
         </div>
         @include('admin-views.business-settings.system-settings-inline-menu')
@@ -48,16 +48,16 @@
                             <tr>
                                 <th>{{ translate('SL')}}</th>
                                 <th>{{translate('ID')}}</th>
-                                <th>{{translate('name')}}</th>
+                                <th>{{translate('Name')}}</th>
                                 <th>{{translate('language_code')}}</th>
                                 <th>{{translate('country_code')}}</th>
-                                <th class="text-center">{{translate('status')}}</th>
+                                <th class="text-center">{{translate('Status')}}</th>
                                 <th class="text-center">{{translate('default_status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach(getWebConfig(name: 'language') as $key =>$data)
+                            @foreach(($language ?? []) as $key =>$data)
                                 <tr>
                                     <td>{{$key++}}</td>
                                     <td>{{$data['id']}}</td>
@@ -134,15 +134,15 @@
                                             <div class="dropdown-menu">
                                                 @if($data['code']!='en')
                                                     <a class="dropdown-item" data-toggle="modal"
-                                                       data-target="#lang-modal-update-{{$data['code']}}">{{translate('update')}}</a>
+                                                       data-target="#lang-modal-update-{{$data['code']}}">{{translate('Update')}}</a>
                                                     @if ($data['default'] === true)
                                                         <a class="dropdown-item default-language-delete-alert"
                                                            href="javascript:"
                                                            data-text="{{translate('default_language_can_not_be_deleted').'!'.translate('to_delete_change_the_default_language_first').'!' }}"
-                                                           >{{translate('delete')}}</a>
+                                                           >{{translate('Delete')}}</a>
                                                     @else
                                                         <a class="dropdown-item delete"
-                                                           id="{{route('admin.business-settings.language.delete',[$data['code']])}}">{{translate('delete')}}</a>
+                                                           id="{{route('admin.business-settings.language.delete',[$data['code']])}}">{{translate('Delete')}}</a>
 
                                                     @endif
                                                 @endif
@@ -218,8 +218,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                    data-dismiss="modal">{{translate('close')}}</button>
-                            <button type="submit" class="btn btn--primary">{{translate('add')}}
+                                    data-dismiss="modal">{{translate('Close')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Add')}}
                                 <i class="fa fa-plus"></i></button>
                         </div>
                     </form>
@@ -227,7 +227,7 @@
             </div>
         </div>
 
-        @foreach(getWebConfig(name: 'language') as $key =>$data)
+        @foreach(($language ?? []) as $key =>$data)
             <div class="modal fade" id="lang-modal-update-{{$data['code']}}" tabindex="-1" role="dialog"
                  aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -292,8 +292,8 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
-                                        data-dismiss="modal">{{translate('close')}}</button>
-                                <button type="submit" class="btn btn--primary">{{translate('update')}} <i
+                                        data-dismiss="modal">{{translate('Close')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Update')}} <i
                                         class="fa fa-plus"></i></button>
                             </div>
                         </form>

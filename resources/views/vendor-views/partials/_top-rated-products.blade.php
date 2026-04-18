@@ -1,7 +1,7 @@
 <div class="card-header">
     <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/most-popular-product.png')}}" alt="">
-        {{translate('most_popular_products')}}
+        {{translate('most_Popular_Products')}}
     </h4>
 </div>
 

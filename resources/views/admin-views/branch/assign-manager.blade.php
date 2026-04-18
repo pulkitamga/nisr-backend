@@ -47,17 +47,17 @@
                 <div class="row">
                     <div class="col-lg-4 form-group">
                         <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('Name')}}</label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $managers['name'] ?? '') }}" placeholder="{{translate('ex').':'.'Jhone Doe'}}" required> 
+                        <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $managers['name'] ?? '') }}" placeholder="{{translate('Ex').':'.'Jhone Doe'}}" required> 
 
  
                     </div>
                     <div class="col-lg-4 form-group">
                         <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('Phone')}}</label>
-                        <input type="text" class="form-control" id="phone" name="phone" value="{{old('Phone', $managers['phone'] ?? '')}}" placeholder="{{translate('ex').':'.'Enter phone'}}" required>
+                        <input type="text" class="form-control" id="phone" name="phone" value="{{old('Phone', $managers['phone'] ?? '')}}" placeholder="{{translate('Ex').':'.'Enter phone'}}" required>
                     </div>
                     <div class="col-lg-4 form-group">
-                        <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('email')}}</label>
-                        <input type="email" class="form-control form-control-user" id="exampleInputEmail" name="email" value="{{old('email', $managers['email'] ?? '')}}" placeholder="{{translate('ex').':'.'Jhone@company.com'}}" required  {{ !empty($managers['email']) ? 'disabled' : '' }} >
+                        <label for="exampleInputEmail" class="title-color d-flex gap-1 align-items-center">{{translate('Email')}}</label>
+                        <input type="email" class="form-control form-control-user" id="exampleInputEmail" name="email" value="{{old('email', $managers['email'] ?? '')}}" placeholder="{{translate('Ex').':'.'Jhone@company.com'}}" required  {{ !empty($managers['email']) ? 'disabled' : '' }} >
                     </div>
                      @if(empty($managers))
                     <div class="col-lg-4 form-group">
@@ -112,9 +112,9 @@
                 @if(empty($managers))
         <div class="d-flex align-items-center justify-content-end gap-10">
                     <input type="hidden" name="from_submit" value="admin">
-                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-manager-form" data-redirect-route="{{ route('admin.branch.assign-manager', $seller['id']) }}"
-                            data-message="{{translate('want_to_add_this_record').'?'}}">{{translate('add')}}</button>
+                            data-message="{{translate('want_to_add_this_record').'?'}}">{{translate('Add')}}</button>
                 </div>
         
         @else
@@ -123,9 +123,9 @@
 
             <div class="d-flex align-items-center justify-content-end gap-10">
                     <input type="hidden" name="from_submit" value="admin">
-                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="update-manager-form" data-redirect-route="{{ route('admin.branch.assign-manager', $seller['id']) }}"
-                            data-message="{{translate('want_to_update_this_record').'?'}}">{{translate('update')}}</button>
+                            data-message="{{translate('want_to_update_this_record').'?'}}">{{translate('Update')}}</button>
                             <a href="{{ route('admin.employee.update', $AdminData['id']) }}"> <button type="button" class="btn btn--primary btn-user"  data-redirect-route=""
                             >{{translate('Manage_Manager_Details')}}</button></a>
                 </div>

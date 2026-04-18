@@ -28,21 +28,21 @@
                         <option value="retail_deal" {{ $policy->entity_type == 'retail_deal' ? 'selected' : '' }}>{{ translate('Retail Deal') }}</option>
                         <option value="wholesale_deal" {{ $policy->entity_type == 'wholesale_deal' ? 'selected' : '' }}>{{ translate('Wholesale Deal') }}</option>
                         <option value="warranty_claim" {{ $policy->entity_type == 'warranty_claim' ? 'selected' : '' }}>{{ translate('Warranty Claim') }}</option>
-                        <option value="complaint_ticket" {{ $policy->entity_type == 'complaint_ticket' ? 'selected' : '' }}>{{ translate('Complaint Ticket') }}</option>
-                        <option value="service_ticket" {{ $policy->entity_type == 'service_ticket' ? 'selected' : '' }}>{{ translate('Service Ticket') }}</option>
+                        <option value="complaint_ticket" {{ $policy->entity_type == 'complaint_ticket' ? 'selected' : '' }}>{{ translate('complaint_Ticket') }}</option>
+                        <option value="service_ticket" {{ $policy->entity_type == 'service_ticket' ? 'selected' : '' }}>{{ translate('service_Ticket') }}</option>
                         <option value="career_ticket" {{ $policy->entity_type == 'career_ticket' ? 'selected' : '' }}>{{ translate('Career Ticket') }}</option>
-                        <option value="support_ticket" {{ $policy->entity_type == 'support_ticket' ? 'selected' : '' }}>{{ translate('Support Ticket') }}</option>
-                        <option value="retail_ticket" {{ $policy->entity_type == 'retail_ticket' ? 'selected' : '' }}>{{ translate('Retail Ticket') }}</option>
+                        <option value="support_ticket" {{ $policy->entity_type == 'support_ticket' ? 'selected' : '' }}>{{ translate('support_Ticket') }}</option>
+                        <option value="retail_ticket" {{ $policy->entity_type == 'retail_ticket' ? 'selected' : '' }}>{{ translate('retail_ticket') }}</option>
                         <option value="wholesale_ticket" {{ $policy->entity_type == 'wholesale_ticket' ? 'selected' : '' }}>{{ translate('Wholesale Ticket') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Priority') }}</label>
                     <select name="priority" class="form-control" required>
-                        <option value="low" {{ $policy->priority == 'low' ? 'selected' : '' }}>{{ translate('low') }}</option>
-                        <option value="medium" {{ $policy->priority == 'medium' ? 'selected' : '' }}>{{ translate('medium') }}</option>
-                        <option value="high" {{ $policy->priority == 'high' ? 'selected' : '' }}>{{ translate('high') }}</option>
-                        <option value="urgent" {{ $policy->priority == 'urgent' ? 'selected' : '' }}>{{ translate('urgent') }}</option>
+                        <option value="low" {{ $policy->priority == 'low' ? 'selected' : '' }}>{{ translate('Low') }}</option>
+                        <option value="medium" {{ $policy->priority == 'medium' ? 'selected' : '' }}>{{ translate('Medium') }}</option>
+                        <option value="high" {{ $policy->priority == 'high' ? 'selected' : '' }}>{{ translate('High') }}</option>
+                        <option value="urgent" {{ $policy->priority == 'urgent' ? 'selected' : '' }}>{{ translate('Urgent') }}</option>
                     </select>
                 </div>
                 <div class="form-group">

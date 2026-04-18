@@ -57,7 +57,7 @@ class CustomRoleController extends BaseController
     {
         if ($this->isSuperAdminRoleName($request->name) && !$this->currentAdminIsSuperAdmin()) {
             throw ValidationException::withMessages([
-                'name' => [translate('access_denied')],
+                'name' => [translate('access_Denied')],
             ]);
         }
 
@@ -91,13 +91,13 @@ class CustomRoleController extends BaseController
 
         if ($this->isSuperAdminRole($role) && !$this->currentAdminIsSuperAdmin()) {
             throw ValidationException::withMessages([
-                'name' => [translate('access_denied')],
+                'name' => [translate('access_Denied')],
             ]);
         }
 
         if ($this->isSuperAdminRoleName($request->name) && !$this->currentAdminIsSuperAdmin()) {
             throw ValidationException::withMessages([
-                'name' => [translate('access_denied')],
+                'name' => [translate('access_Denied')],
             ]);
         }
 
@@ -141,7 +141,7 @@ class CustomRoleController extends BaseController
 
         return response()->json([
             'success' => 1,
-            'message' => translate('status_updated_successfully'),
+            'message' => translate('Status_updated_successfully'),
         ], 200);
     }
 

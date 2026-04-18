@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ translate('coupon_discount') }}</h5>
+                <h5 class="modal-title">{{ translate('Coupon_Discount') }}</h5>
                 <button id="coupon_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -16,7 +16,7 @@
 
                 <div class="form-group">
                     <button type="button" class="btn btn--primary action-coupon-discount" data-error-message="{{translate('please_enter_coupon_code')}}">
-                        {{ translate('submit') }}
+                        {{ translate('Submit') }}
                     </button>
                 </div>
             </div>

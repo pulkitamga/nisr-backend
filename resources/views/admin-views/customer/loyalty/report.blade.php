@@ -35,7 +35,7 @@
                                         $transaction_status=request()->get('transaction_type');
                                         @endphp
                                         <select name="transaction_type" id="" class="form-control" title="{{translate('select_transaction_type')}}">
-                                            <option value="">{{ translate('all')}}</option>
+                                            <option value="">{{ translate('All')}}</option>
                                             <option value="point_to_wallet" {{isset($transaction_status) && $transaction_status=='point_to_wallet'?'selected':''}}>{{ translate('point_to_wallet')}}</option>
                                             <option value="order_place" {{isset($transaction_status) && $transaction_status=='order_place'?'selected':''}}>{{ translate('order_place')}}</option>
                                             <option value="refund_order" {{isset($transaction_status) && $transaction_status=='refund_order'?'selected':''}}>{{ translate('refund_order')}}</option>
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                             <div>
-                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('filter')}}</button>
+                                <button type="submit" class="btn btn--primary px-4"><i class="tio-filter-list me-1"></i>{{translate('Filter')}}</button>
                             </div>
                         </form>
                     </div>
@@ -109,7 +109,7 @@
         <div class="card mt-3">
             <div class="card-header text-capitalize gap-2">
                 <h4 class="mb-0 text-nowrap ">
-                    {{translate('transactions')}}
+                    {{translate('Transactions')}}
                     <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{$transactions->total()}}</span>
                 </h4>
                 <div class="d-flex justify-content-end">
@@ -128,13 +128,13 @@
                         <tr>
                             <th>{{translate('SL')}}</th>
                             <th>{{translate('transaction_ID')}}</th>
-                            <th>{{translate('customer')}}</th>
+                            <th>{{translate('Customer')}}</th>
                             <th>{{translate('credit')}}</th>
                             <th>{{translate('debit')}}</th>
                             <th>{{translate('balance')}}</th>
-                            <th>{{translate('transaction_type')}}</th>
-                            <th>{{translate('reference')}}</th>
-                            <th class="text-center">{{translate('created_at')}}</th>
+                            <th>{{translate('transaction_Type')}}</th>
+                            <th>{{translate('Reference')}}</th>
+                            <th class="text-center">{{translate('Created_At')}}</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -28,14 +28,14 @@
 
                                 <div class="row align-items-center">
                                     <div class="flex-between col-auto">
-                                        <h5 class="text-muted me-1">{{translate('admin')}}
+                                        <h5 class="text-muted me-1">{{translate('Admin')}}
                                             : </h5>
                                         <h5 class="text-muted">{{auth('admin')->user()->name}}</h5>
                                     </div>
 
                                     <div class="col-auto">
                                         <div class="row align-items-center g-0">
-                                            <h5 class="text-muted col-auto {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}}">{{translate('date')}}</h5>
+                                            <h5 class="text-muted col-auto {{Session::get('direction') === "rtl" ? 'ps-2' : 'pe-2'}}">{{translate('DATE')}}</h5>
 
                                             <!-- Flatpickr -->
                                             <h5 class="text-muted">( {{session('from_date')}} - {{session('to_date')}}
@@ -125,7 +125,7 @@
                                     <i class="tio-dollar-outlined nav-icon text-start"></i>
 
                                     <div class="media-body text-start">
-                                        <h4 class="mb-1">{{translate('total_earning')}} </h4>
+                                        <h4 class="mb-1">{{translate('total_Earning')}} </h4>
                                         <span class="font-size-sm text-success">
                                           <i class="tio-trending-up"></i> {{\App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($total_earning))}}
                                         </span>
@@ -252,7 +252,7 @@
                 <div class="hs-unfold">
                     <a class="js-hs-unfold-invoker btn btn-white"
                        href="{{route('admin.orders.list',['all'])}}">
-                        <i class="tio-shopping-cart-outlined me-1"></i> {{translate('orders')}}
+                        <i class="tio-shopping-cart-outlined me-1"></i> {{translate('Orders')}}
                     </a>
                 </div>
             </div>
@@ -523,7 +523,7 @@
                                 if (v.v.toFixed() > 0) {
                                     return '<span class="font-weight-bold">' + v.v.toFixed() + ' hours</span> on ' + v.d;
                                 } else {
-                                    return '<span class="font-weight-bold">{{ __('No time') }}</span> {{ __('on') }} ' + v.d;
+                                    return '<span class="font-weight-bold">{{ __('No time') }}</span> {{ __('On') }} ' + v.d;
                                 }
                             }
                         }

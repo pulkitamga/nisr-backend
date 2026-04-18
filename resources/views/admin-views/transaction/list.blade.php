@@ -22,12 +22,12 @@
                                     </div>
                                 </div>
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                       placeholder="{{ translate('search_by_orders_id_or_transaction_id')}}"
-                                       aria-label="{{ translate('Search orders') }}"
+                                       placeholder="{{ translate('search_by_orders_id_or_transaction_ID')}}"
+                                       aria-label="{{ translate('search_orders') }}"
                                        value="{{ $search }}"
                                        required>
                                 <button type="submit"
-                                        class="btn btn--primary">{{ translate('search')}}</button>
+                                        class="btn btn--primary">{{ translate('Search')}}</button>
                             </div>
                         </form>
                     </div>
@@ -57,7 +57,7 @@
                                                 {{'---'.translate('select_status').'---'}}---
                                             </option>
                                             <option class="text-capitalize"
-                                                    value="all" {{ $status == 'all'? 'selected' : '' }} >{{translate('all')}} </option>
+                                                    value="all" {{ $status == 'all'? 'selected' : '' }} >{{translate('All')}} </option>
                                             <option class="text-capitalize"
                                                     value="disburse" {{ $status == 'disburse'? 'selected' : '' }} >{{translate('disburse')}} </option>
                                             <option class="text-capitalize"
@@ -79,7 +79,7 @@
                                 <div class="col-md-12 d-flex justify-content-end gap-2">
                                     <button type="submit" class="btn btn--primary px-4" id="formUrlChange"
                                             data-action="{{ url()->current() }}">
-                                        {{translate('filter')}}
+                                        {{translate('Filter')}}
                                     </button>
                                     <div>
                                         <button type="button" class="btn btn--primary text-nowrap btn-block"
@@ -108,20 +108,20 @@
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('vendor_name')}}</th>
-                        <th>{{translate('customer_name')}}</th>
-                        <th>{{translate('order_id')}}</th>
-                        <th>{{translate('transaction_id')}}</th>
-                        <th>{{translate('order_amount')}}</th>
+                        <th>{{translate('vendor_Name')}}</th>
+                        <th>{{translate('Customer_Name')}}</th>
+                        <th>{{translate('Order_ID')}}</th>
+                        <th>{{translate('transaction_ID')}}</th>
+                        <th>{{translate('order_Amount')}}</th>
                         <th>{{translate('vendor_amount') }}</th>
-                        <th>{{translate('admin_commission')}}</th>
+                        <th>{{translate('admin_Commission')}}</th>
                         <th>{{translate('received_by')}}</th>
-                        <th>{{translate('delivered_by')}}</th>
-                        <th>{{translate('delivery_charge')}}</th>
-                        <th>{{translate('payment_method')}}</th>
-                        <th>{{translate('tax')}}</th>
-                        <th>{{translate('date')}}</th>
-                        <th>{{translate('status')}}</th>
+                        <th>{{translate('delivered_By')}}</th>
+                        <th>{{translate('delivery_Charge')}}</th>
+                        <th>{{translate('Payment_Method')}}</th>
+                        <th>{{translate('Tax')}}</th>
+                        <th>{{translate('DATE')}}</th>
+                        <th>{{translate('Status')}}</th>
                     </tr>
                     </thead>
                     <tbody>

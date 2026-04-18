@@ -52,7 +52,7 @@ class SEOSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'bing_webmaster_code', value: $request['bing_webmaster_code'] ?? '');
         $this->businessSettingRepo->updateOrInsert(type: 'baidu_webmaster_code', value: $request['baidu_webmaster_code'] ?? '');
         $this->businessSettingRepo->updateOrInsert(type: 'yandex_webmaster_code', value: $request['yandex_webmaster_code'] ?? '');
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 
@@ -75,7 +75,7 @@ class SEOSettingsController extends BaseController
             File::put($path, '');
         }
         File::put($path, $content);
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 }

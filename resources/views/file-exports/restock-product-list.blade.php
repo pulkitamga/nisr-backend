@@ -2,7 +2,7 @@
     <table>
         <thead>
             <tr>
-                <th style="font-size: 18px">{{(translate('restock_product_list'))}}</th>
+                <th style="font-size: 18px">{{(translate('restock_product_List'))}}</th>
             </tr>
             <tr>
                 <th>{{ translate('Restock_Analytics').' '.'-' }}</th>
@@ -13,28 +13,28 @@
             </tr>
             <tr>
                 <th>
-                    {{ translate('filter_Criteria').' - ' }}
+                    {{ translate('Filter_Criteria').' - ' }}
                 </th>
                 <th></th>
                 <th>
-                    {{translate('category').' - '. ($data['category'] != 'all' ? $data['category']['name'] : $data['category'])  }}
+                    {{translate('Category').' - '. ($data['category'] != 'all' ? $data['category']['name'] : $data['category'])  }}
                     <br>
-                    {{translate('sub_Category').' - '. ($data['subCategory'] != 'all' ? $data['subCategory']['name'] : $data['subCategory'])  }}
+                    {{translate('Sub_Category').' - '. ($data['subCategory'] != 'all' ? $data['subCategory']['name'] : $data['subCategory'])  }}
                     <br>
-                    {{translate('brand').' - '. ($data['brand'] != 'all' ? $data['brand']['name'] : $data['brand'])  }}
+                    {{translate('Brand').' - '. ($data['brand'] != 'all' ? $data['brand']['name'] : $data['brand'])  }}
                     <br>
                     {{translate('search_Bar_Content').' - '. (!empty($data['searchValue']) ?  ucwords($data['searchValue']) : 'N/A') }}
                     <br>
-                    {{translate('start_date').' - '. (!empty($data['startDate']) ?  $data['startDate']->format('d F Y') : 'N/A') }}
+                    {{translate('Start_Date').' - '. (!empty($data['startDate']) ?  $data['startDate']->format('d F Y') : 'N/A') }}
                     <br>
-                    {{translate('end_date').' - '. (!empty($data['endDate']) ?  $data['endDate']->format('d F Y') : 'N/A') }}
+                    {{translate('End_Date').' - '. (!empty($data['endDate']) ?  $data['endDate']->format('d F Y') : 'N/A') }}
                 </th>
             </tr>
             <tr>
                 <td> {{translate('SL')}}</td>
                 <td> {{translate('product_Image')}}	</td>
                 <td> {{translate('image_URL')}}	</td>
-                <td> {{translate('product_Name')}}	</td>
+                <td> {{translate('Product_name')}}	</td>
                 <td> {{translate('selling_price')}}</td>
                 <td> {{translate('variant')}}</td>
                 <td> {{translate('last_request_date')}}</td>

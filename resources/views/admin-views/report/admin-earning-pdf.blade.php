@@ -100,7 +100,7 @@
             <tr>
                 <th class="content-position-y text-start">
                     <h2>{{ translate('admin_Earning_Report') }}</h2>
-                    <p class="fz-14">{{ translate('date') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
+                    <p class="fz-14">{{ translate('DATE') }} : <span style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
                 </th>
                 <th class="content-position-y text-end">
                     @php
@@ -121,7 +121,7 @@
 
     <!-- अवधि -->
     <div class="content-position-y fz-12">
-        <p class="fz-14"><b>{{ translate('duration') }}</b> : 
+        <p class="fz-14"><b>{{ translate('Duration') }}</b> : 
             @if($pdfData['duration'] == 'this_year')
                 {{ translate('this_Year') }}
             @elseif($pdfData['duration'] == 'this_month')
@@ -164,14 +164,14 @@
             <thead>
                 <tr>
                     <th>{{ translate('SL') }}</th>
-                    <th>{{ translate('details') }}</th>
-                    <th class="text-end">{{ translate('amount') }}</th>
+                    <th>{{ translate('Details') }}</th>
+                    <th class="text-end">{{ translate('Amount') }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>1</td>
-                    <td>{{ translate('in_House_earning') }}</td>
+                    <td>{{ translate('in-House_Earning') }}</td>
                     <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['inhouse_earning'])) }}</td>
                 </tr>
                 <tr>
@@ -186,7 +186,7 @@
                 </tr>
                 <tr>
                     <td>4</td>
-                    <td>{{ translate('deliveryman_incentive') }}</td>
+                    <td>{{ translate('delivery_man_incentive') }}</td>
                     <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($pdfData['deliveryman_incentive'])) }}</td>
                 </tr>
                 <tr>
@@ -219,10 +219,10 @@
                 <td class="content-position-y bg-light py-4 footer" style="background-color: #F7F7F7; padding: 24px 40px;">
                     <div class="d-flex justify-content-center gap-2" style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
                         <div class="mb-2">
-                            <i class="fa fa-phone"></i> {{ translate('phone') }} : {{ $pdfData['company_phone'] }}
+                            <i class="fa fa-phone"></i> {{ translate('Phone') }} : {{ $pdfData['company_phone'] }}
                         </div>
                         <div class="mb-2">
-                            <i class="fa fa-envelope"></i> {{ translate('email') }} : {{ $pdfData['company_email'] }}
+                            <i class="fa fa-envelope"></i> {{ translate('Email') }} : {{ $pdfData['company_email'] }}
                         </div>
                     </div>
                     <div class="mb-2 text-center">{{ url('/') }}</div>

@@ -24,7 +24,7 @@
             {{ $product['selling_price'] . ' ' . setCurrencySymbol(amount: usdToDefaultCurrency(amount: $product->unit_price), currencyCode: getCurrencyCode())  }}</span>
         <br>
         <div class="bar-code" style="margin-inline-start: 10px !important; font-weight:bold">{!! DNS1D::getBarcodeHTML($product->code, 'C128') !!}</div>
-        <p class="">{{ translate('code') }} :
+        <p class="">{{ translate('Code') }} :
             {{ $product->code }}</p>
     </div>
     @endfor

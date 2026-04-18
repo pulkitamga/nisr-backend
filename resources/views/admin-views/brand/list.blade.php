@@ -26,7 +26,7 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                             placeholder="{{ translate('search_by_brand_name') }}" aria-label="{{ translate('search_by_brand_name') }}" value="{{ request('searchValue') }}" required>
-                                        <button type="submit" class="btn btn--primary input-group-text">{{ translate('search') }}</button>
+                                        <button type="submit" class="btn btn--primary input-group-text">{{ translate('Search') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -47,11 +47,11 @@
                                 <tr>
                                     <th>{{ translate('SL') }}</th>
                                     <th>{{ translate('brand_Logo') }}</th>
-                                    <th class="max-width-100px">{{ translate('name') }}</th>
+                                    <th class="max-width-100px">{{ translate('Name') }}</th>
                                     <th class="text-center">{{ translate('total_Product') }}</th>
                                     <th class="text-center">{{ translate('total_Order') }}</th>
-                                    <th class="text-center">{{ translate('status') }}</th>
-                                    <th class="text-center"> {{ translate('action') }}</th>
+                                    <th class="text-center">{{ translate('Status') }}</th>
+                                    <th class="text-center"> {{ translate('Action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -82,8 +82,8 @@
                                                            data-toggle-id = "brand-status{{ $brand['id'] }}"
                                                            data-on-image = "brand-status-on.png"
                                                            data-off-image = "brand-status-off.png"
-                                                           data-on-title = "{{ translate('Want_to_Turn_ON').' '.$brand->getTranslatedField('name').' '. translate('status') }}"
-                                                           data-off-title = "{{ translate('Want_to_Turn_OFF').' '.$brand->getTranslatedField('name').' '.translate('status') }}"
+                                                           data-on-title = "{{ translate('Want_to_Turn_ON').' '.$brand->getTranslatedField('name').' '. translate('Status') }}"
+                                                           data-off-title = "{{ translate('Want_to_Turn_OFF').' '.$brand->getTranslatedField('name').' '.translate('Status') }}"
                                                            data-on-message = "<p>{{ translate('if_enabled_this_brand_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                            data-off-message = "<p>{{ translate('if_disabled_this_brand_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                     <span class="switcher_control"></span>
@@ -92,11 +92,11 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('edit') }}"
+                                                <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('Edit') }}"
                                                     href="{{ route('admin.brand.update', [$brand['id']]) }}">
                                                     <i class="tio-edit"></i>
                                                 </a>
-                                                <a class="btn btn-outline-danger btn-sm delete-brand square-btn " title="{{ translate('delete') }}"
+                                                <a class="btn btn-outline-danger btn-sm delete-brand square-btn " title="{{ translate('Delete') }}"
                                                    data-product-count = "{{count($brand?->brandAllProducts)}}"
                                                    data-text="{{translate('there_were_').count($brand?->brandAllProducts).translate('_products_under_this_brand').'.'.translate('please_update_their_brand_from_the_below_list_before_deleting_this_one').'.'}}"
                                                    id="{{ $brand['id'] }}">
@@ -153,9 +153,9 @@
                             </select>
                         </div>
                         <div class="d-flex justify-content-center gap-3">
-                            <button type="submit" class="btn btn--primary min-w-120">{{translate('update')}}</button>
+                            <button type="submit" class="btn btn--primary min-w-120">{{translate('Update')}}</button>
                             <button type="button" class="btn btn-danger-light min-w-120"
-                                    data-dismiss="modal">{{ translate('cancel') }}</button>
+                                    data-dismiss="modal">{{ translate('Cancel') }}</button>
                         </div>
                     </form>
                 </div>

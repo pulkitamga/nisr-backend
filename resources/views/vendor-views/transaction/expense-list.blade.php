@@ -5,7 +5,7 @@
         <div class="mb-4">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{asset('public/assets/back-end/img/order_report.png')}}" alt="">
-                {{translate('transaction_report')}}
+                {{translate('transaction_Report')}}
             </h2>
         </div>
 
@@ -18,31 +18,31 @@
                     <div class="row  gy-2 align-items-center text-start">
                         <div class="col-sm-6 col-md-3">
                             <select class="form-control __form-control" name="date_type" id="date_type">
-                                <option value="this_year" {{ $date_type == 'this_year'? 'selected' : '' }}>{{translate('this_year')}}</option>
-                                <option value="this_month" {{ $date_type == 'this_month'? 'selected' : '' }}>{{translate('this_month')}}</option>
-                                <option value="this_week" {{ $date_type == 'this_week'? 'selected' : '' }}>{{translate('this_week')}}</option>
+                                <option value="this_year" {{ $date_type == 'this_year'? 'selected' : '' }}>{{translate('this_Year')}}</option>
+                                <option value="this_month" {{ $date_type == 'this_month'? 'selected' : '' }}>{{translate('this_Month')}}</option>
+                                <option value="this_week" {{ $date_type == 'this_week'? 'selected' : '' }}>{{translate('this_Week')}}</option>
                                 <option value="today" {{ $date_type == 'today'? 'selected' : '' }}>{{translate('today')}}</option>
-                                <option value="custom_date" {{ $date_type == 'custom_date'? 'selected' : '' }}>{{translate('custom_date')}}</option>
+                                <option value="custom_date" {{ $date_type == 'custom_date'? 'selected' : '' }}>{{translate('custom_Date')}}</option>
                             </select>
                         </div>
                         <div class="col-sm-6 col-md-3" id="from_div">
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{$from}}" id="from_date"
                                        class="form-control __form-control">
-                                <label>{{translate('start_Date')}}</label>
+                                <label>{{translate('Start_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{$to}}" name="to" id="to_date"
                                        class="form-control __form-control">
-                                <label>{{translate('end_Date')}}</label>
+                                <label>{{translate('End_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3">
                             <button type="submit" class="btn btn--primary px-4 w-100" id="formUrlChange"
                                     data-action="{{ url()->current() }}">
-                                {{translate('filter')}}
+                                {{translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -59,7 +59,7 @@
                         <h6 class="subtext">
                             <span>{{translate('total_Expense')}}</span>
                             <span class="ms-2" data-toggle="tooltip" data-placement="top"
-                                  title="{{translate('free_delivery')}}, {{translate('coupon_discount_will_be_shown_here')}}">
+                                  title="{{translate('free_Delivery')}}, {{translate('coupon_discount_will_be_shown_here')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
                                      alt="img">
                             </span>
@@ -78,7 +78,7 @@
                     <div class="info">
                         <h4 class="subtitle">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $coupon_discount), currencyCode: getCurrencyCode()) }}</h4>
                         <h6 class="subtext">
-                            <span>{{translate('coupon_Discount')}}</span>
+                            <span>{{translate('Coupon_Discount')}}</span>
                             <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                   title="{{translate('discount_on_purchase_and_first_delivery_coupon_amount_will_be_shown_here')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
@@ -119,14 +119,14 @@
                                    value="{{ $search }}"
                                    required>
                             <button type="submit"
-                                    class="btn btn--primary">{{ translate('search')}}</button>
+                                    class="btn btn--primary">{{ translate('Search')}}</button>
                         </div>
                     </form>
                     <div>
                         <a href="{{ route('vendor.transaction.expense-transaction-summary-pdf', ['search'=>request('search'),'date_type'=>request('date_type'), 'from'=>request('from'), 'to'=>request('to')]) }}"
                            class="btn btn-outline--primary text-nowrap btn-block">
                             <i class="tio-file-text"></i>
-                            {{translate('download_PDF')}}
+                            {{translate('Download_PDF')}}
                         </a>
                     </div>
                     <div class="dropdown">
@@ -146,10 +146,10 @@
                             <th>{{translate('SL')}}</th>
                             <th>{{translate('XID')}}</th>
                             <th>{{translate('transaction_Date')}}</th>
-                            <th>{{translate('order_ID')}}</th>
+                            <th>{{translate('Order_ID')}}</th>
                             <th>{{translate('expense_Amount')}}</th>
                             <th>{{translate('expense_Type')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>

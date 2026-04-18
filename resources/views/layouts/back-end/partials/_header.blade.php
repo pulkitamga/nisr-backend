@@ -109,7 +109,7 @@ use Carbon\Carbon;
                     <li class="nav-item">
                         <div class="hs-unfold">
                             <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
-                                href="{{route('admin.crm.index')}}" title="{{translate('message')}}" data-toggle="tooltip" data-custom-class="header-icon-title">
+                                href="{{route('admin.crm.index')}}" title="{{translate('Message')}}" data-toggle="tooltip" data-custom-class="header-icon-title">
                                 <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_5926_1152)">
                                         <path d="M16.6666 2.16699H3.33329C2.41663 2.16699 1.67496 2.91699 1.67496 3.83366L1.66663 18.8337L4.99996 15.5003H16.6666C17.5833 15.5003 18.3333 14.7503 18.3333 13.8337V3.83366C18.3333 2.91699 17.5833 2.16699 16.6666 2.16699ZM4.99996 8.00033H15V9.66699H4.99996V8.00033ZM11.6666 12.167H4.99996V10.5003H11.6666V12.167ZM15 7.16699H4.99996V5.50033H15V7.16699Z" fill="#073B74" />
@@ -249,7 +249,7 @@ use Carbon\Carbon;
                                 <div class="avatar border avatar-circle">
                                     <img class="avatar-img"
                                         src="{{getStorageImages(path: auth('admin')->user()->image_full_url,type: 'backend-profile')}}"
-                                        alt="{{translate('image_description')}}">
+                                        alt="{{translate('image_Description')}}">
                                     <span class="d-none avatar-status avatar-sm-status avatar-status-success"></span>
                                 </div>
                             </a>
@@ -259,7 +259,7 @@ use Carbon\Carbon;
                                     <div class="media align-items-center text-break">
                                         <div class="avatar avatar-sm avatar-circle me-2">
                                             <img class="avatar-img" src="{{getStorageImages(path: auth('admin')->user()->image_full_url,type: 'backend-profile')}}"
-                                                alt="{{translate('image_description')}}">
+                                                alt="{{translate('image_Description')}}">
                                         </div>
                                         <div class="media-body">
                                             <span class="card-title h5">{{auth('admin')->user()->name}}</span>
@@ -326,7 +326,7 @@ use Carbon\Carbon;
                     <a class="p-2  title-color"
                         href="{{route('admin.contact.list')}}">
                         <i class="tio-email"></i>
-                        {{translate('message')}}
+                        {{translate('Message')}}
                         @php($message=\App\Models\Contact::where('seen',0)->count())
                         @if($message!=0)
                         <span>({{ $message }})</span>
@@ -339,7 +339,7 @@ use Carbon\Carbon;
                     <a class="p-2  title-color"
                         href="{{route('admin.orders.list',['status'=>'pending'])}}">
                         <i class="tio-shopping-cart-outlined"></i>
-                        {{translate('order_list')}}
+                        {{translate('Order_List')}}
                     </a>
                 </div>
                 @endif

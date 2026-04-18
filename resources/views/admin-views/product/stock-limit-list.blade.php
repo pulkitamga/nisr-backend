@@ -32,11 +32,11 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_by_Product_Name') }}"
-                                               aria-label="{{ translate('Search orders') }}"
+                                               aria-label="{{ translate('search_orders') }}"
                                                value="{{ $searchValue }}" required>
                                         <input type="hidden" value="{{ $status }}" name="status">
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -46,7 +46,7 @@
                                 <select name="qty_order_sort" class="form-control action-select-onchange-get-view"
                                         data-url-prefix="{{ route('admin.products.stock-limit-list',['in_house', '']) }}/?sortOrderQty=">
                                     <option value="default" {{ $sortOrderQty== "default"?'selected':''}}>
-                                        {{ translate('default') }}
+                                        {{ translate('Default') }}
                                     </option>
                                     <option value="quantity_asc" {{ $sortOrderQty== "quantity_asc"?'selected':''}}>
                                         {{ translate('inventory_quantity(low_to_high)') }}
@@ -73,11 +73,11 @@
                             <tr>
                                 <th>{{ translate('SL') }}</th>
                                
-                                <th class="text-center">{{ translate('unit_price') }}</th>
-                                <th class="text-center">{{ translate('quantity') }}</th>
-                                <th class="text-center">{{ translate('orders') }}</th>
-                                <th class="text-center">{{ translate('active_status') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Unit_Price') }}</th>
+                                <th class="text-center">{{ translate('Quantity') }}</th>
+                                <th class="text-center">{{ translate('Orders') }}</th>
+                                <th class="text-center">{{ translate('active_Status') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                              
@@ -130,8 +130,8 @@
                                                            data-toggle-id="product-status{{ $product['id'] }}"
                                                            data-on-image="product-status-on.png"
                                                            data-off-image="product-status-off.png"
-                                                           data-on-title="{{ translate('Want_to_Turn_ON').' '.$product['name'].' '.translate('status') }}"
-                                                           data-off-title="{{ translate('Want_to_Turn_OFF').' '.$product['name'].' '.translate('status') }}"
+                                                           data-on-title="{{ translate('Want_to_Turn_ON').' '.$product['name'].' '.translate('Status') }}"
+                                                           data-off-title="{{ translate('Want_to_Turn_OFF').' '.$product['name'].' '.translate('Status') }}"
                                                            data-on-message="<p>{{ translate('if_enabled_this_product_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                            data-off-message="<p>{{ translate('if_disabled_this_product_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                     <span class="switcher_control"></span>
@@ -148,12 +148,12 @@
                                                 <i class="tio-barcode"></i>
                                             </a>
                                             <a class="btn btn-outline--primary btn-sm square-btn"
-                                               title="{{ translate('edit') }}"
+                                               title="{{ translate('Edit') }}"
                                                href="{{route('admin.products.update',[$product['id']]) }}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <span class="btn btn-outline-danger btn-sm square-btn delete-data"
-                                                  title="{{ translate('delete') }}"
+                                                  title="{{ translate('Delete') }}"
                                                   data-id="product-{{ $product['id']}}">
                                                 <i class="tio-delete"></i>
                                             </span>
@@ -192,10 +192,10 @@
                         <div class="rest-part-content"></div>
                         <div class="d-flex justify-content-end gap-10 flex-wrap align-items-center">
                             <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="{{ translate('Close') }}">
-                                {{ translate('close') }}
+                                {{ translate('Close') }}
                             </button>
                             <button class="btn btn--primary" class="btn btn--primary px-4" type="submit">
-                                {{ translate('submit') }}
+                                {{ translate('Submit') }}
                             </button>
                         </div>
                     </div>

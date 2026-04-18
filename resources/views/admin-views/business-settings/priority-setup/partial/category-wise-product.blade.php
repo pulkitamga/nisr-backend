@@ -74,7 +74,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="category-wise-product-alphabetic-order"
                                             {{isset($categoryWiseProductListPriority?->sort_by) && $categoryWiseProductListPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="category-wise-product-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -82,7 +82,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="category-wise-product-alphabetic-order-reverse"
                                             {{isset($categoryWiseProductListPriority?->sort_by) && $categoryWiseProductListPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="category-wise-product-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -106,7 +106,7 @@
                                         <input type="radio" name="out_of_stock_product" value="default" data-parent-class="category-wise-product" id="category-wise-product-stock-out-default"
                                             {{isset($categoryWiseProductListPriority?->out_of_stock_product) ? ($categoryWiseProductListPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                         <label class="mb-0" for="category-wise-product-stock-out-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -131,7 +131,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="category-wise-product" id="category-wise-product-temporary-close-default"
                                             {{isset($categoryWiseProductListPriority?->temporary_close_sorting) ?($categoryWiseProductListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="category-wise-product-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -139,7 +139,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

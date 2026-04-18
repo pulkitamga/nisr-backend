@@ -10,7 +10,7 @@
         <div class="d-flex justify-content-between gap-2 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/flash_deal.png')}}" alt="">
-                {{translate('flash_deals')}}
+                {{translate('flash_Deals')}}
             </h2>
             <button class="btn btn-primary" data-toggle="modal" data-target="#prioritySetModal" >
                 <span data-toggle="tooltip" title="{{ translate('now_you_can_set_priority_of_products') }}">{{translate('product_priority_Setup')}}</span>
@@ -46,10 +46,10 @@
                                             <input type="text" name="deal_type" value="flash_deal" class="d-none">
                                             <div class="form-group">
                                                 <label for="name"
-                                                       class="title-color font-weight-medium text-capitalize">{{ translate('title')}}
+                                                       class="title-color font-weight-medium text-capitalize">{{ translate('Title')}}
                                                     ({{strtoupper($lang)}})</label>
                                                 <input type="text" name="title[]" class="form-control" id="title"
-                                                       placeholder="{{translate('ex').':'.translate('LUX')}}"
+                                                       placeholder="{{translate('Ex').':'.translate('LUX')}}"
                                                     {{$lang == $defaultLanguage ? 'required':''}}>
                                             </div>
                                         </div>
@@ -57,12 +57,12 @@
                                     @endforeach
                                     <div class="form-group">
                                         <label for="name"
-                                               class="title-color font-weight-medium text-capitalize">{{ translate('start_date')}}</label>
+                                               class="title-color font-weight-medium text-capitalize">{{ translate('Start_Date')}}</label>
                                         <input type="date" name="start_date"  id="start-date-time" class="form-control" required>
                                     </div>
                                     <div class="form-group">
                                         <label for="name"
-                                               class="title-color font-weight-medium text-capitalize">{{ translate('end_date')}}</label>
+                                               class="title-color font-weight-medium text-capitalize">{{ translate('End_Date')}}</label>
                                         <input type="date" name="end_date" id="end-date-time" class="form-control" required>
                                     </div>
                                 </div>
@@ -77,22 +77,22 @@
 
                                     <div class="form-group">
                                         <label for="name"
-                                               class="title-color font-weight-medium text-capitalize">{{translate('upload_image')}}</label>
+                                               class="title-color font-weight-medium text-capitalize">{{translate('Upload_Image')}}</label>
                                         <span class="text-info ms-1">( {{translate('ratio').' '.'5:1'}} )</span>
                                         <div class="custom-file text-start">
                                             <input type="file" name="image" id="custom-file-upload"
                                                    class="custom-file-input image-input" data-image-id="viewer"
                                                    accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                             <label class="custom-file-label text-capitalize"
-                                                   for="custom-file-upload">{{translate('choose_file')}}</label>
+                                                   for="custom-file-upload">{{translate('choose_File')}}</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary px-4">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-4">{{ translate('submit')}}</button>
+                                        class="btn btn-secondary px-4">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{ translate('Submit')}}</button>
                             </div>
                         </form>
                     </div>
@@ -121,9 +121,9 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('search') }}"
+                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('Search') }}"
                                                value="{{ $searchValue ?? '' }}" required>
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -136,12 +136,12 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL')}}</th>
-                                <th>{{ translate('title')}}</th>
-                                <th>{{ translate('duration')}}</th>
-                                <th>{{ translate('status')}}</th>
-                                <th  class="text-center">{{ translate('active_products')}}</th>
+                                <th>{{ translate('Title')}}</th>
+                                <th>{{ translate('Duration')}}</th>
+                                <th>{{ translate('Status')}}</th>
+                                <th  class="text-center">{{ translate('active_Products')}}</th>
                                 <th  class="text-center">{{ translate('publish')}}</th>
-                                <th class="text-center">{{ translate('action')}}</th>
+                                <th class="text-center">{{ translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -155,7 +155,7 @@
                                         @if(Carbon::parse($deal['end_date'])->endOfDay()->isPast())
                                             <span class="badge badge-soft-danger">{{ translate('expired')}} </span>
                                         @else
-                                            <span class="badge badge-soft-success"> {{ translate('active')}} </span>
+                                            <span class="badge badge-soft-success"> {{ translate('Active')}} </span>
                                         @endif
                                     </td>
                                     <td  class="text-center">{{ $deal->products_count }}</td>
@@ -187,9 +187,9 @@
                                                href="{{route('admin.deal.add-product',[$deal['id']])}}">
                                                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/plus.svg')}}" class="svg"
                                                      alt="">
-                                                {{translate('add_product')}}
+                                                {{translate('Add_Product')}}
                                             </a>
-                                            <a title="{{translate('edit')}}"
+                                            <a title="{{translate('Edit')}}"
                                                href="{{route('admin.deal.update',[$deal['id']])}}"
                                                class="btn btn-outline--primary btn-sm edit">
                                                 <i class="tio-edit"></i>
@@ -224,7 +224,7 @@
                     <div class="modal-body px-sm-4 mb-sm-3">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="prioritySetModalLabel">{{translate('priority_settings')}}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -306,7 +306,7 @@
                                             <input type="radio" class="show" name="sort_by" value="a_to_z" id="flash-deal-alphabetic-order"
                                                 {{isset($flashDealPriority?->sort_by) && $flashDealPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                             <label class="mb-0 cursor-pointer text-capitalize" for="flash-deal-alphabetic-order">
-                                                {{translate('sort_by_Alphabetical')}} ({{'A '.translate('to').' Z' }})
+                                                {{translate('sort_by_Alphabetical')}} ({{'A '.translate('To').' Z' }})
                                             </label>
                                         </div>
 
@@ -314,7 +314,7 @@
                                             <input type="radio" class="show" name="sort_by" value="z_to_a" id="flash-deal-alphabetic-order-reverse"
                                                 {{isset($flashDealPriority?->sort_by) && $flashDealPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                             <label class="mb-0 cursor-pointer text-capitalize" for="flash-deal-alphabetic-order-reverse">
-                                                {{translate('sort_by_Alphabetical')}} ({{'Z '.translate('to').' A' }})
+                                                {{translate('sort_by_Alphabetical')}} ({{'Z '.translate('To').' A' }})
                                             </label>
                                         </div>
 
@@ -339,7 +339,7 @@
                                             <input type="radio" name="out_of_stock_product" value="default" data-parent-class="flash-deal" id="default"
                                                 {{isset($flashDealPriority?->out_of_stock_product) ? ($flashDealPriority?->out_of_stock_product == 'default' ? 'checked' : '') :'checked'}}>
                                             <label class="mb-0 cursor-pointer" for="default">
-                                                {{translate('none')}}
+                                                {{translate('None')}}
                                             </label>
                                         </div>
                                     </div>
@@ -363,7 +363,7 @@
                                             <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="flash-deal" id="flash-deal-temporary-close-default"
                                                 {{isset($flashDealPriority?->temporary_close_sorting) ?( $flashDealPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                             <label class="mb-0 cursor-pointer" for="flash-deal-temporary-close-default">
-                                                {{ translate('none') }}
+                                                {{ translate('None') }}
                                             </label>
                                         </div>
                                     </div>
@@ -372,7 +372,7 @@
                         </div>
 
                         <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
+                            <button type="submit" class="btn btn-primary px-5">{{translate('Save')}}</button>
                         </div>
                     </div>
                 </form>

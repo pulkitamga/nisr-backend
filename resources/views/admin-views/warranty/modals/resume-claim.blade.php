@@ -21,7 +21,7 @@
                                 <option value="repair_pending">{{ translate('repair_pending') }}</option>
                             @endif
                             @if($claim && $claim->status === 'waiting_payment')
-                                <option value="diagnosis_pending">{{ translate('Diagnosis Pending') }}</option>
+                                <option value="diagnosis_pending">{{ translate('diagnosis_pending') }}</option>
                             @endif
                         </select>
                     </div>

@@ -50,7 +50,7 @@ class ForgotPasswordController extends Controller
                 if(isset($password_verification_data) &&  Carbon::parse($password_verification_data->created_at)->diffInSeconds() < $otp_interval_time){
                     $time= $otp_interval_time - Carbon::parse($password_verification_data->created_at)->diffInSeconds();
 
-                    return response()->json(['message' => translate('please_try_again_after').' '.CarbonInterval::seconds($time)->cascade()->forHumans()], 200);
+                    return response()->json(['message' => translate('please_try_again_after_').' '.CarbonInterval::seconds($time)->cascade()->forHumans()], 200);
                 }else {
                     $token = Str::random(120);
                     $reset_data = PasswordReset::where(['identity' => $customer['email']])->latest()->first();
@@ -105,7 +105,7 @@ class ForgotPasswordController extends Controller
                 if(isset($password_verification_data) &&  Carbon::parse($password_verification_data->created_at)->diffInSeconds() < $otp_interval_time){
                     $time= $otp_interval_time - Carbon::parse($password_verification_data->created_at)->diffInSeconds();
 
-                    return response()->json(['message' => translate('please_try_again_after').' '.CarbonInterval::seconds($time)->cascade()->forHumans()], 200);
+                    return response()->json(['message' => translate('please_try_again_after_').' '.CarbonInterval::seconds($time)->cascade()->forHumans()], 200);
                 }else {
                     $token = \App\Support\OtpManager::numericToken(4);
                     $reset_data = PasswordReset::where(['identity' => $customer['phone']])->latest()->first();
@@ -133,7 +133,7 @@ class ForgotPasswordController extends Controller
             }
         }
         return response()->json(['errors' => [
-            ['code' => 'not-found', 'message' => translate('user not found').'!']
+            ['code' => 'not-found', 'message' => translate('user_not_found').'!']
         ]], 403);
     }
 
@@ -160,7 +160,7 @@ class ForgotPasswordController extends Controller
 
         $verify = $this->passwordResetRepo->getFirstWhere(params: ['identity' => $request['email_or_phone'], 'token' => $request['reset_token']]);
         if ($verify) {
-            return response()->json(['message' => translate('otp_verified')], 200);
+            return response()->json(['message' => translate('OTP_verified')], 200);
         }
 
         return response()->json([

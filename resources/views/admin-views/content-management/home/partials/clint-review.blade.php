@@ -168,12 +168,12 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         id="{{ $lang }}-form">
 
                         <div class="form-group">
-                            <label>{{ translate('name') }} ({{ strtoupper($lang) }})</label>
+                            <label>{{ translate('Name') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="name[]" id="edit-name" class="form-control lang-name"
                                 data-lang="{{ $lang }}">
 
 
-                            <label>{{ translate('review') }} ({{ strtoupper($lang) }})</label>
+                            <label>{{ translate('Review') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="review[]" class="form-control lang-review"
                                 data-lang="{{ $lang }}"
                                 rows="3"></textarea>
@@ -194,7 +194,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">{{ __('Save changes') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('save_Changes') }}</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">{{ __('Cancel') }}</button>
                 </div>
             </div>

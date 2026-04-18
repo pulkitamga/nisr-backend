@@ -366,14 +366,14 @@
         <table>
             <thead>
                 <tr>
-                    <th>{{ translate('department') }}</th>
-                    <th>{{ translate('employee') }}</th>
+                    <th>{{ translate('Department') }}</th>
+                    <th>{{ translate('Employee') }}</th>
                     <th>{{ translate('retail_won_sales') }}</th>
                     <th>{{ translate('wholesale_won_sales') }}</th>
                     <th>{{ translate('won_sales') }}</th>
                     <th>{{ translate('won') }}</th>
                     <th>{{ translate('lost') }}</th>
-                    <th>{{ translate('total') }}</th>
+                    <th>{{ translate('Total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -391,7 +391,7 @@
                         </tr>
                     @endforeach
                     <tr style="background:#e6f0f0;font-weight:bold">
-                        <td colspan="2">{{ $section->department_name }} {{ translate('total') }}</td>
+                        <td colspan="2">{{ $section->department_name }} {{ translate('Total') }}</td>
                         <td>{{ number_format($section->totals['retail_won_sales'], 2) }}</td>
                         <td>{{ number_format($section->totals['wholesale_won_sales'], 2) }}</td>
                         <td>{{ number_format($section->totals['won_sales_total'], 2) }}</td>

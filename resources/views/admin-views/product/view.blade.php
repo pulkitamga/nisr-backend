@@ -102,7 +102,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 data-toggle="tooltip" data-placement="top" data-title="{{translate('Download')}}">
                                 <i class="tio-download"></i>
                                 <span class="d-block d-md-none">
-                                    {{ translate('download') }}
+                                    {{ translate('Download') }}
                                 </span>
                             </span>
                             @endif
@@ -139,7 +139,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 <div>
                                     <button class="btn btn-danger p-2 px-3" data-toggle="modal"
                                         data-target="#publishNoteModal">
-                                        {{ translate('reject') }}
+                                        {{ translate('Reject') }}
                                     </button>
                                 </div>
                                 <div>
@@ -149,7 +149,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                         data-redirect-route="{{route('admin.products.list',['vendor', 'status' => $product['request_status']])}}"
                                         data-message="{{translate('want_to_approve_this_product_request_request').'?'}}"
                                         data-status="1">
-                                        {{ translate('approve') }}
+                                        {{ translate('Approve') }}
                                     </button>
                                     @endif
                                 </div>
@@ -158,7 +158,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             @if($product['added_by'] == 'seller' && ($product['request_status'] == 2))
                             <div class="d-flex justify-content-sm-end flex-wrap gap-2 pb-4">
                                 <div>
-                                    <span>{{translate('status').' : '}}</span>
+                                    <span>{{translate('Status').' : '}}</span>
                                     <span class="__badge badge badge-soft-danger">{{translate('rejected')}}</span>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             <div
                                 class="d-flex gap-3 flex-nowrap lh-1 badge badge--primary-light justify-content-sm-end height-30px align-items-center">
                                 <span class="text-dark">
-                                    {{ count($product->orderDetails) }} {{ translate('orders') }}
+                                    {{ count($product->orderDetails) }} {{ translate('Orders') }}
                                 </span>
                                 <span class="border-left py-2"></span>
                                 <div
@@ -222,7 +222,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                         '.', ' '):0 }}
                                     </span>
                                     <div class="review-details-popup">
-                                        <h6 class="mb-2">{{ translate('rating') }}</h6>
+                                        <h6 class="mb-2">{{ translate('Rating') }}</h6>
                                         <div class="">
                                             <ul class="list-unstyled list-unstyled-py-2 mb-0">
                                                 @php($total = $product->reviews->count())
@@ -322,13 +322,13 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                         @endif
                                     </h2>
                                     <a class="btn btn-outline--primary btn-sm square-btn mx-2 w-auto h-25"
-                                        title="{{ translate('edit') }}"
+                                        title="{{ translate('Edit') }}"
                                         href="{{ route('admin.products.update', [$product['id']]) }}">
                                         <i class="tio-edit"></i>
                                     </a>
                                 </div>
                                 <div class="">
-                                    <label class="text-gulf-blue font-weight-bold">{{ translate('description').' : '
+                                    <label class="text-gulf-blue font-weight-bold">{{ translate('Description').' : '
                                         }}</label>
                                     <div class="rich-editor-html-content">
                                         {!! $product->getTranslatedField('description', $language, $product['details']) !!}
@@ -360,12 +360,12 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                 <div class="row gy-3 flex-grow-1">
                     <div class="col-sm-6 col-xl-3">
-                        <h4 class="mb-3 text-capitalize">{{ translate('general_information') }}</h4>
+                        <h4 class="mb-3 text-capitalize">{{ translate('general_Information') }}</h4>
 
                         <div class="pair-list">
                             @if($product?->product_type == 'physical' && $brandSetting)
                             <div>
-                                <span class="key text-nowrap">{{ translate('brand') }}</span>
+                                <span class="key text-nowrap">{{ translate('Brand') }}</span>
                                 <span>:</span>
                                 <span class="value">
                                     {{isset($product->brand) ? $product->brand->getTranslatedField('name') :
@@ -383,7 +383,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 </span>
                             </div>
                             <div>
-                                <span class="key text-nowrap">{{ translate('category') }}</span>
+                                <span class="key text-nowrap">{{ translate('Category') }}</span>
                                 <span>:</span>
                                 <span class="value">
                                     {{isset($product->category) ? $product->category->getTranslatedField('name') :
@@ -392,7 +392,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             </div>
 
                             <div>
-                                <span class="key text-nowrap text-capitalize">{{ translate('product_type') }}</span>
+                                <span class="key text-nowrap text-capitalize">{{ translate('product_Type') }}</span>
                                 <span>:</span>
                                 <span class="value">{{ translate($product->product_type) }}</span>
                             </div>
@@ -403,7 +403,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                 <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                             </div>
                             <div>
-                                <span class="key text-nowrap">{{ translate('current_Stock') }}</span>
+                                <span class="key text-nowrap">{{ translate('Current_Stock') }}</span>
                                 <span>:</span>
                                 <span class="value">{{ $product->current_stock}}</span>
                             </div>
@@ -433,7 +433,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
 
                         <div class="pair-list">
                             <div>
-                                <span class="key text-nowrap text-capitalize">{{ translate('unit_price') }}</span>
+                                <span class="key text-nowrap text-capitalize">{{ translate('Unit_Price') }}</span>
                                 <span>:</span>
 
                                 <span class="value">
@@ -447,7 +447,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             </div>
 
                             <div>
-                                <span class="key text-nowrap">{{ translate('tax') }}</span>
+                                <span class="key text-nowrap">{{ translate('Tax') }}</span>
                                 <span>:</span>
                                 @if ($product->tax_type == 'percent')
                                 <span class="value">
@@ -475,7 +475,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             @endif
                             @if(getProductPriceByType(product: $product, type: 'discount', result: 'string') > 0)
                             <div>
-                                <span class="key text-nowrap">{{ translate('discount') }}</span>
+                                <span class="key text-nowrap">{{ translate('Discount') }}</span>
                                 <span>:</span>
                                 @if($product?->clearanceSale?->discount_type == 'percentage' ? '-' : '') @endif
                                 {{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
@@ -485,7 +485,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     </div>
                     @if(count($product->tags)>0)
                     <div class="col-sm-6 col-xl-3">
-                        <h4 class="mb-3">{{ translate('tags') }}</h4>
+                        <h4 class="mb-3">{{ translate('Tags') }}</h4>
                         <div class="pair-list">
                             <div>
                                 <span class="value">
@@ -575,8 +575,8 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th class="text-center">{{ translate('SKU') }}</th>
-                                    <th class="text-center text-capitalize">{{ translate('variation_wise_price') }}</th>
-                                    <th class="text-center">{{ translate('stock') }}</th>
+                                    <th class="text-center text-capitalize">{{ translate('variation_Wise_Price') }}</th>
+                                    <th class="text-center">{{ translate('Stock') }}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -615,7 +615,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     <th class="text-center">{{ translate('SL') }}</th>
                                     <th class="text-center">{{ translate('Variation_Name') }}</th>
                                     <th class="text-center">{{ translate('SKU') }}</th>
-                                    <th class="text-center">{{ translate('price') }}</th>
+                                    <th class="text-center">{{ translate('Price') }}</th>
                                     @if($product->digital_product_type == 'ready_product')
                                     <th class="text-center">{{ translate('Action') }}</th>
                                     @endif
@@ -643,7 +643,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     @if($product->digital_product_type == 'ready_product')
                                     <td class="text-center">
                                         <span class="btn p-0 getDownloadFileUsingFileUrl" data-toggle="tooltip"
-                                            title="{{ !is_null($variation->file_full_url['path']) ? translate('download') : translate('File_not_found') }}"
+                                            title="{{ !is_null($variation->file_full_url['path']) ? translate('Download') : translate('File_not_found') }}"
                                             data-file-path="{{ $variation->file_full_url['path'] }}">
                                             <img src="{{ asset(path: 'public/assets/back-end/img/icons/download-green.svg') }}"
                                                 alt="">
@@ -673,7 +673,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         <div class="service-info-grid">
                             <div class="service-info-column">
                                 <div class="service-info-item">
-                                    <span class="service-info-key">{{ translate('title') }}</span>
+                                    <span class="service-info-key">{{ translate('Title') }}</span>
                                     <span class="service-info-value bidi-auto">
                                         {{ isset($product->service)
                                             ? $product->getTranslatedField(
@@ -810,7 +810,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                             data-lightbox="meta-thumbnail">
                             <img class="max-width-100px rounded"
                                 src="{{ getStorageImages(path: $product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-product') }}"
-                                alt="{{translate('meta_image')}}">
+                                alt="{{translate('meta_Image')}}">
                         </a>
                     </div>
                     @endif
@@ -866,12 +866,12 @@ $brandSetting = getWebConfig(name: 'product_brand');
                         <th>{{ translate('SL') }}</th>
                         <th>{{ translate('Review_ID') }}</th>
                         <th>{{ translate('reviewer') }}</th>
-                        <th>{{ translate('rating') }}</th>
-                        <th>{{ translate('review') }}</th>
+                        <th>{{ translate('Rating') }}</th>
+                        <th>{{ translate('Review') }}</th>
                         <th>{{ translate('Reply') }}</th>
-                        <th class="text-center">{{ translate('date') }}</th>
+                        <th class="text-center">{{ translate('DATE') }}</th>
                         <th class="text-center">{{ translate('Status') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1064,7 +1064,7 @@ $brandSetting = getWebConfig(name: 'product_brand');
                                     @if($review?->reply?->reply_text)
                                     {{ translate('Update') }}
                                     @else
-                                    {{ translate('submit') }}
+                                    {{ translate('Submit') }}
                                     @endif
                                 </button>
                             </div>
@@ -1173,11 +1173,11 @@ $brandSetting = getWebConfig(name: 'product_brand');
                     <span id="denied-note-word-count">{{translate('0/100')}}</span>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('close') }}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ translate('Close') }}
                     </button>
                     <button type="button" class="btn btn--primary form-submit"
                         data-redirect-route="{{route('admin.products.list',['vendor','status' => $product['request_status']])}}"
-                        data-form-id="product-status-denied">{{ translate('submit') }}</button>
+                        data-form-id="product-status-denied">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

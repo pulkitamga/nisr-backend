@@ -1,11 +1,11 @@
 @extends('layouts.back-end.app-seller')
-@section('title',translate('emergency_Contact'))
+@section('title',translate('Emergency_Contact'))
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-delivery-man.png')}}" alt="">
-                {{translate('emergency_Contact')}}
+                {{translate('Emergency_Contact')}}
             </h2>
         </div>
         <div class="row">
@@ -30,7 +30,7 @@
                                 </div>
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                                         <div class="input-group mb-3">
                                             <div>
                                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control " name="country_code" required>
@@ -39,16 +39,16 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <input value="{{old('phone')}}" type="text" name="phone" class="form-control" placeholder="{{translate('ex').':'.'017********'}}" required>
+                                            <input value="{{old('phone')}}" type="text" name="phone" class="form-control" placeholder="{{translate('Ex').':'.'017********'}}" required>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="d-flex gap-3 justify-content-end">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary px-4">{{translate('reset')}}</button>
+                                        class="btn btn-secondary px-4">{{translate('Reset')}}</button>
                                 <button type="submit"
-                                        class="btn btn--primary px-4">{{translate('submit')}}</button>
+                                        class="btn btn--primary px-4">{{translate('Submit')}}</button>
                             </div>
                         </div>
                     </div>
@@ -69,10 +69,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th class="text-center">{{translate('name')}}</th>
-                                <th class="text-center">{{translate('phone')}}</th>
-                                <th class="text-center">{{translate('status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Name')}}</th>
+                                <th class="text-center">{{translate('Phone')}}</th>
+                                <th class="text-center">{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
 
@@ -92,8 +92,8 @@
                                                     data-toggle-id = "contact_status{{$contact['id']}}"
                                                     data-on-image = ""
                                                     data-off-image = ""
-                                                    data-on-title = "{{translate('are_you_sure').'?'}}"
-                                                    data-off-title = "{{translate('are_you_sure').'?'}}"
+                                                    data-on-title = "{{translate('Are_you_sure').'?'}}"
+                                                    data-off-title = "{{translate('Are_you_sure').'?'}}"
                                                     data-on-message = "<p>{{translate('want_to_change_status')}}</p>"
                                                     data-off-message = "<p>{{translate('want_to_change_status')}}</p>"
                                                 >
@@ -104,13 +104,13 @@
                                     <td>
                                         <div class="d-flex justify-content-center align-items-center gap-2">
                                             <button  class="btn btn-outline--primary btn-sm emergency-contact-update-view"
-                                                     title="{{translate('edit')}}"
+                                                     title="{{translate('Edit')}}"
                                                      data-action="{{route('vendor.delivery-man.emergency-contact.update',['id'=>$contact->id])}}">
                                                 <i class="tio-edit"></i>
                                             </button>
                                             <a class="btn btn-outline-danger btn-sm delete delete-data" href="javascript:"
                                                data-id="delete-contact-{{$contact->id}}"
-                                               title="{{ translate('delete')}}">
+                                               title="{{ translate('Delete')}}">
                                                 <i class="tio-delete"></i>
                                             </a>
                                         </div>

@@ -17,16 +17,16 @@
             'all' => translate('All'),
             'new' => translate('New'),
             'processing' => translate('processing'),
-            'converted' => translate('converted'),
+            'converted' => translate('Converted'),
             'ignored' => translate('ignored'),
         ];
         $channelOptions = [
             'all' => translate('All'),
-            'email' => translate('email'),
-            'form' => translate('form'),
-            'chat' => translate('chat'),
+            'email' => translate('Email'),
+            'form' => translate('Form'),
+            'chat' => translate('Chat'),
             'social' => translate('social'),
-            'phone' => translate('phone'),
+            'phone' => translate('Phone'),
         ];
         $activeFilterDate = request('filter_date', request('fhilter_date'));
         $selectedChannelValue = $selectedChannel === 'all' ? '' : $selectedChannel;
@@ -57,11 +57,11 @@
                 'value' => $selectedChannelValue,
                 'options' => [
                     '' => translate('All'),
-                    'email' => translate('email'),
-                    'form' => translate('form'),
-                    'chat' => translate('chat'),
+                    'email' => translate('Email'),
+                    'form' => translate('Form'),
+                    'chat' => translate('Chat'),
                     'social' => translate('social'),
-                    'phone' => translate('phone'),
+                    'phone' => translate('Phone'),
                 ],
                 'col_class' => 'col-xl-2 col-lg-6',
                 'input_class' => 'form-control js-select2-custom set-filter',
@@ -78,10 +78,10 @@
             [
                 'type' => 'search',
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
-                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'placeholder' => translate('Search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('Search_by_Name_or_Email_or_Phone'),
                 'col_class' => 'col-xl-3 col-lg-12',
             ],
         ];
@@ -113,7 +113,7 @@
         }
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -153,7 +153,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
-            {{translate('Inbox_list')}}
+            {{translate('Inbox_List')}}
             <span class="badge badge-soft-dark radius-50"></span>
         </h2>
     </div>
@@ -166,7 +166,7 @@
     ])
     <div class="card">
         @include('admin-views.crm.partials._list-card-header', [
-            'listHeaderTitle' => translate('Inbox_list'),
+            'listHeaderTitle' => translate('Inbox_List'),
             'listHeaderTotal' => $messages->total(),
             'listHeaderActions' => $headerActions,
         ])
@@ -188,7 +188,7 @@
                         <th>{{translate('Owner')}}</th>
                         <th>{{translate('Status')}}</th>
                         <th>{{translate('Received_At')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -220,8 +220,8 @@
                             </div>
 
                         </td> -->
-                        <td>{{ $msg->source_id ??  translate('Not Available') }}</td>
-                        <td>{{ $msg->sender_name ??  translate('Not Available') }}</td>
+                        <td>{{ $msg->source_id ??  translate('not_available') }}</td>
+                        <td>{{ $msg->sender_name ??  translate('not_available') }}</td>
 
                         <td>
                             <div class="mb-1">
@@ -231,7 +231,7 @@
                             <a class="title-color hover-c1" href="tel:{{$msg->sender_phone}}">{{$msg->sender_phone}}</a>
 
                         </td>
-                        <td>{{ $msg->owner?->name ?? translate('Not Assigned') }}</td>
+                        <td>{{ $msg->owner?->name ?? translate('not_assigned') }}</td>
                         <td>
                             @php
                             $status = strtolower($msg->status);

@@ -8,7 +8,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/order_report.png')}}" alt="">
-                {{translate('transaction_report')}}
+                {{translate('transaction_Report')}}
             </h2>
 
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder">
@@ -62,7 +62,7 @@
                         <div class="col-sm-6 col-md-4">
                             <div class="form-group">
                                 <select name="all_customers" class="form-control">
-                                    <option value="0" selected>{{translate('all_customers')}}</option>
+                                    <option value="0" selected>{{translate('all_Customers')}}</option>
                                     <option value="1">{{translate('customer_one')}}</option>
                                     <option value="2">{{translate('customer_two')}}</option>
                                 </select>
@@ -71,29 +71,29 @@
                         <div class="col-sm-6 col-md-4">
                             <div class="form-group">
                                 <select name="custom_date" class="form-control">
-                                    <option value="0" selected>{{translate('custom_date')}}</option>
-                                    <option value="1">{{translate('this_month')}}</option>
-                                    <option value="2">{{translate('this_year')}}</option>
+                                    <option value="0" selected>{{translate('custom_Date')}}</option>
+                                    <option value="1">{{translate('this_Month')}}</option>
+                                    <option value="2">{{translate('this_Year')}}</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label for="start_date" class="title-color text-capitalize d-flex">{{translate('start_date')}}</label>
+                                <label for="start_date" class="title-color text-capitalize d-flex">{{translate('Start_Date')}}</label>
                                 <input type="date" name="start_date" id="start_date" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <div class="form-group">
-                                <label for="end_date" class="title-color text-capitalize d-flex">{{translate('end_date')}}</label>
+                                <label for="end_date" class="title-color text-capitalize d-flex">{{translate('End_Date')}}</label>
                                 <input type="date" name="end_date" id="end_date" class="form-control" required>
                             </div>
                         </div>
 
                         <div class="col-12">
                             <div class="d-flex gap-3 justify-content-end">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('filter')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Filter')}}</button>
                             </div>
                         </div>
                     </div>
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <h4 class="mt-4 text-capitalize d-flex">{{translate('total_transactions')}}</h4>
+        <h4 class="mt-4 text-capitalize d-flex">{{translate('total_Transactions')}}</h4>
         <div class="card mt-2">
             <div class="px-3 py-4">
                 <div class="row align-items-center">
@@ -114,8 +114,8 @@
                                         <i class="tio-search"></i>
                                     </div>
                                 </div>
-                                <input type="search" name="search" class="form-control" placeholder="{{translate('search_product_name')}}" required>
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                <input type="search" name="search" class="form-control" placeholder="{{translate('search_Product_Name')}}" required>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                         <!-- End Search -->
@@ -123,7 +123,7 @@
                     <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
                         <div>
                             <select name="expense_type" class="form-control">
-                                <option value="0" selected>{{translate('expense_type')}}</option>
+                                <option value="0" selected>{{translate('expense_Type')}}</option>
                                 <option value="1">{{translate('fixed')}}</option>
                                 <option value="2">{{translate('recurring')}}</option>
                             </select>
@@ -131,7 +131,7 @@
 
                         <a href="#" class="btn btn-outline--primary">
                             <i class="tio-file-outlined"></i>
-                            <span class="text">{{translate('download_PDF')}}</span>
+                            <span class="text">{{translate('Download_PDF')}}</span>
                         </a>
                         <div>
                             <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
@@ -154,11 +154,11 @@
                         <tr>
                             <th>{{translate('SL')}}</th>
                             <th>{{translate('transaction_ID')}}</th>
-                            <th>{{translate('transaction_date')}}</th>
-                            <th>{{translate('order_ID')}}</th>
-                            <th>{{translate('expense_amount')}}</th>
-                            <th>{{translate('expense_type')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th>{{translate('transaction_Date')}}</th>
+                            <th>{{translate('Order_ID')}}</th>
+                            <th>{{translate('expense_Amount')}}</th>
+                            <th>{{translate('expense_Type')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -168,7 +168,7 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>{{ __('Free Delivery') }}</td>
+                            <td>{{ __('free_Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
                                     <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
@@ -183,7 +183,7 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>{{ __('Free Delivery') }}</td>
+                            <td>{{ __('free_Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
                                     <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
@@ -198,7 +198,7 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>{{ __('Free Delivery') }}</td>
+                            <td>{{ __('free_Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
                                     <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
@@ -213,7 +213,7 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>{{ __('Free Delivery') }}</td>
+                            <td>{{ __('free_Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
                                     <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">
@@ -228,7 +228,7 @@
                             <td>15 May 2020 9:30 am</td>
                             <td>100234</td>
                             <td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: 687.93), currencyCode: getCurrencyCode()) }}</td>
-                            <td>{{ __('Free Delivery') }}</td>
+                            <td>{{ __('free_Delivery') }}</td>
                             <td>
                                 <div class="d-flex gap-10 justify-content-center">
                                     <a class="btn btn-outline-success square-btn btn-sm" target="_blank" title="{{ translate('Transactions') }}" href="#">

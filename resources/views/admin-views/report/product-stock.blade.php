@@ -130,9 +130,9 @@
                 <form method="GET" action="{{ route('admin.stock.product-stock') }}">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-3" style="margin-bottom: 20px;">
-                            <label class="form-label mb-1">{{ translate('category') }}</label>
+                            <label class="form-label mb-1">{{ translate('Category') }}</label>
                             <select class="js-select2-custom form-control" name="category_id">
-                                <option value="all">{{ translate('all') }}</option>
+                                <option value="all">{{ translate('All') }}</option>
                                 @foreach ($categories as $category)
                                     @php($categoryName = $category->getTranslatedField('name') ?? '#' . $category->id)
                                     <option value="{{ $category->id }}"
@@ -144,7 +144,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('product') }}</label>
+                            <label class="form-label mb-1">{{ translate('Product') }}</label>
                             <select class="js-select2-custom form-control" name="product_ids[]" multiple>
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}"
@@ -157,7 +157,7 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('branch') }}</label>
+                            <label class="form-label mb-1">{{ translate('Branch') }}</label>
                             <select class="js-select2-custom form-control" name="branch_ids[]" multiple>
                                 @foreach ($branches as $branch)
                                     <option value="{{ $branch->id }}"
@@ -174,13 +174,13 @@
                             <select class="form-control" name="date_type" id="product_stock_date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
+                                    {{ translate('this_Year') }}</option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
+                                    {{ translate('this_Month') }}</option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
+                                    {{ translate('this_Week') }}</option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}</option>
                                 <option value="custom_date"
@@ -191,13 +191,13 @@
 
                         <div class="col-md-2 custom-date-range" id="product_stock_from_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
 
                         <div class="col-md-2 custom-date-range" id="product_stock_to_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
 
@@ -210,9 +210,9 @@
                         </div>
 
                         <div class="col-md-12 d-flex flex-wrap gap-2 mt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.stock.product-stock') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.stock.product-stock-export', request()->query()) }}"
                                 class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i>{{ translate('excel') }}
@@ -241,8 +241,8 @@
                     <div class="stock-kpi-title">{{ translate('total_stock_in') }}</div>
                     <div class="stock-kpi-value text-success">{{ number_format((int) ($summary['total_stock_in'] ?? 0)) }}
                     </div>
-                    <div class="stock-kpi-meta">{{ translate('from') }} {{ $filters['from'] ?? '' }}
-                        {{ translate('to') }} {{ $filters['to'] ?? '' }}</div>
+                    <div class="stock-kpi-meta">{{ translate('From') }} {{ $filters['from'] ?? '' }}
+                        {{ translate('To') }} {{ $filters['to'] ?? '' }}</div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -302,8 +302,8 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th class="text-center">{{ translate('current_stock') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th class="text-center">{{ translate('Current_Stock') }}</th>
                             <th class="text-center">{{ translate('stock_in') }}</th>
                             <th class="text-center">{{ translate('stock_out') }}</th>
                             <th class="text-center">{{ translate('net_stock_movement') }}</th>
@@ -324,7 +324,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="6" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -341,8 +341,8 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th class="text-center">{{ translate('current_stock') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th class="text-center">{{ translate('Current_Stock') }}</th>
                             <th class="text-center">{{ translate('products_count') }}</th>
                         </tr>
                     </thead>
@@ -356,7 +356,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="4" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -373,9 +373,9 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th class="text-center">{{ translate('current_stock') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th class="text-center">{{ translate('Current_Stock') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -388,7 +388,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="4" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -405,13 +405,13 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('date') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th>{{ translate('type') }}</th>
-                            <th>{{ translate('quantity') }}</th>
-                            <th>{{ translate('category') }}</th>
-                            <th>{{ translate('reference') }}</th>
+                            <th>{{ translate('DATE') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th>{{ translate('Type') }}</th>
+                            <th>{{ translate('Quantity') }}</th>
+                            <th>{{ translate('Category') }}</th>
+                            <th>{{ translate('Reference') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -422,7 +422,7 @@
                                 <td>
                                     {{ $row->product_name }}
                                     @if (!empty($row->variation))
-                                        <small class="d-block text-muted">{{ translate('variation') }}:
+                                        <small class="d-block text-muted">{{ translate('Variation') }}:
                                             {{ $row->variation }}</small>
                                     @endif
                                 </td>
@@ -445,7 +445,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="8" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -464,7 +464,7 @@
 
             const stockInLabel = @json(translate('stock_in'));
             const stockOutLabel = @json(translate('stock_out'));
-            const stockLabel = @json(translate('current_stock'));
+            const stockLabel = @json(translate('Current_Stock'));
 
             function renderChart(selector, options) {
                 const el = document.querySelector(selector);

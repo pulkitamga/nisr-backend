@@ -438,7 +438,7 @@ class OrderController extends Controller
         CartManager::cart_clean($request);
 
         return response()->json([
-            'messages' => translate('order_placed_successfully'),
+            'messages' => translate('Order_Placed_Successfully'),
             'new_user' => (bool) $newCustomerRegister,
         ], 200);
     }
@@ -568,7 +568,7 @@ class OrderController extends Controller
 
         CartManager::cart_clean($request);
 
-        return response()->json(translate('order_placed_successfully'), 200);
+        return response()->json(translate('Order_Placed_Successfully'), 200);
     }
 
     public function refund_request(Request $request): JsonResponse
@@ -798,7 +798,7 @@ class OrderController extends Controller
                     } else {
                         return response()->json([
                             'status' => 0,
-                            'message' => translate('file_not_found'),
+                            'message' => translate('File_not_found'),
                         ]);
                     }
                 } else {
@@ -944,7 +944,7 @@ class OrderController extends Controller
             } else {
                 return response()->json([
                     'status' => 0,
-                    'message' => translate('file_not_found'),
+                    'message' => translate('File_not_found'),
                 ]);
             }
 

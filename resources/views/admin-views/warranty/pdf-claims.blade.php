@@ -402,11 +402,11 @@
     <div class="filter-summary">
         <strong>{{ translate('filters_applied') }}:</strong>
         {{ translate('date_range') }}: {{ $filters['date_range'] }} |
-        {{ translate('branch') }}: {{ $filters['branch'] }} |
-        {{ translate('status') }}: {{ $filters['status'] }} |
-        {{ translate('product') }}: {{ $filters['product'] }}
+        {{ translate('Branch') }}: {{ $filters['branch'] }} |
+        {{ translate('Status') }}: {{ $filters['status'] }} |
+        {{ translate('Product') }}: {{ $filters['product'] }}
         @if ($filters['search'])
-            | {{ translate('search') }}: {{ $filters['search'] }}
+            | {{ translate('Search') }}: {{ $filters['search'] }}
         @endif
     </div>
 
@@ -419,11 +419,11 @@
                     <div class="kpi-value">{{ $cards['total'] }}</div>
                 </td>
                 <td class="td-new">
-                    <div class="kpi-label">{{ translate('new') }}</div>
+                    <div class="kpi-label">{{ translate('New') }}</div>
                     <div class="kpi-value">{{ $cards['new'] }}</div>
                 </td>
                 <td class="td-approved">
-                    <div class="kpi-label">{{ translate('approved') }}</div>
+                    <div class="kpi-label">{{ translate('Approved') }}</div>
                     <div class="kpi-value">{{ $cards['approved'] }}</div>
                 </td>
                 <td class="td-rejected">
@@ -431,7 +431,7 @@
                     <div class="kpi-value">{{ $cards['rejected'] }}</div>
                 </td>
                 <td class="td-pending">
-                    <div class="kpi-label">{{ translate('pending') }}</div>
+                    <div class="kpi-label">{{ translate('Pending') }}</div>
                     <div class="kpi-value">{{ $cards['pending'] }}</div>
                 </td>
                 <td class="td-resolved">
@@ -466,13 +466,13 @@
                     <th>{{ translate('SL') }}</th>
                     <th>{{ translate('claim_number') }}</th>
                     <th>{{ translate('serial') }}</th>
-                    <th>{{ translate('product') }}</th>
+                    <th>{{ translate('Product') }}</th>
                     <th>{{ translate('warranty_months') }}</th>
                     <th>{{ translate('warranty_end_date') }}</th>
-                    <th>{{ translate('remaining') }}</th>
-                    <th>{{ translate('status') }}</th>
-                    <th>{{ translate('customer') }}</th>
-                    <th>{{ translate('branch') }}</th>
+                    <th>{{ translate('Remaining') }}</th>
+                    <th>{{ translate('Status') }}</th>
+                    <th>{{ translate('Customer') }}</th>
+                    <th>{{ translate('Branch') }}</th>
                     <th>{{ translate('submitted_at') }}</th>
                     <th>{{ translate('sla_due') }}</th>
                 </tr>
@@ -496,11 +496,11 @@
                                 $days = $now->copy()->addMonths($months)->diffInDays($end);
                                 if ($months > 0 && $days > 0) {
                                     $remaining =
-                                        $months . ' ' . translate('months') . ' ' . $days . ' ' . translate('days');
+                                        $months . ' ' . translate('months') . ' ' . $days . ' ' . translate('Days');
                                 } elseif ($months > 0) {
                                     $remaining = $months . ' ' . translate('months');
                                 } else {
-                                    $remaining = $days . ' ' . translate('days');
+                                    $remaining = $days . ' ' . translate('Days');
                                 }
                             }
                         } else {
@@ -535,7 +535,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="no-data-message">{{ translate('no_data_found') }}</td>
+                        <td colspan="12" class="no-data-message">{{ translate('no_Data_found') }}</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -3,7 +3,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ translate('print_Invoice') }}</h5>
+                <h5 class="modal-title">{{ translate('print__Invoice') }}</h5>
                 <button id="invoice_close" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -16,7 +16,7 @@
                                data-print="#printableArea"
                                value="{{ translate('proceed') }}, {{ translate('if_thermal_printer_is_ready') }}"/>
                         <a href="{{url()->previous()}}" class="btn btn-danger non-printable">
-                            {{ translate('back') }}
+                            {{ translate('Back') }}
                         </a>
                     </div>
                     <hr class="non-printable">

@@ -27,10 +27,10 @@
             [
                 'type' => 'search',
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
-                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'placeholder' => translate('Search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('Search_by_Name_or_Email_or_Phone'),
                 'col_class' => 'col-xl-8 col-lg-8',
             ],
             [
@@ -51,7 +51,7 @@
         ];
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => \Illuminate\Support\Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -101,14 +101,14 @@
                     <thead class="thead-light text-capitalize">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('wholesaler') }}</th>
-                            <th>{{ translate('company') }}</th>
+                            <th>{{ translate('Wholesaler') }}</th>
+                            <th>{{ translate('Company') }}</th>
                             <th>{{ translate('trade') }}</th>
                             <th>{{ translate('reg._no.') }}</th>
                             <th>{{ translate('tax._no.') }}</th>
                             <th>{{ translate('VAT._no.') }}</th>
                             <th>{{ translate('Approval setup') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -170,7 +170,7 @@
                                     <div class="crm-row-actions">
                                         <div class="crm-row-actions__primary">
                                             <a class="btn btn-sm btn-info" href="{{ route('admin.wholesale.business.wholesaler.profile', $business->id) }}">
-                                                {{ translate('view') }}
+                                                {{ translate('View') }}
                                             </a>
                                             <button type="button"
                                                     class="btn btn-sm btn-success"
@@ -201,7 +201,7 @@
                                                 </h5>
                                                 <div class="wholesale-review-modal__meta">
                                                     <span class="wholesale-review-modal__meta-pill">
-                                                        <span class="wholesale-review-modal__meta-label">{{ translate('wholesaler') }}</span>
+                                                        <span class="wholesale-review-modal__meta-label">{{ translate('Wholesaler') }}</span>
                                                         <span class="bidi-auto">{{ $business->wholesaler->name ?? translate('N/A') }}</span>
                                                     </span>
                                                     <span class="wholesale-review-modal__meta-pill">
@@ -243,7 +243,7 @@
 
                                                         <div class="wholesale-review-status">
                                                             <div class="wholesale-review-status__item">
-                                                                <span class="wholesale-review-status__label">{{ translate('tier') }}</span>
+                                                                <span class="wholesale-review-status__label">{{ translate('Tier') }}</span>
                                                                 <span class="wholesale-review-status__value">
                                                                     {{ $business->wholesaler->tier ? ($tierLabel ?: $business->wholesaler->tier) : translate('Pending setup') }}
                                                                 </span>
@@ -270,7 +270,7 @@
 
                                                             <div class="row g-3">
                                                                 <div class="col-md-7">
-                                                                    <label class="form-label wholesale-review-form__label" for="approval-tier-{{ $business->wholesaler['id'] }}">{{ translate('tier') }}</label>
+                                                                    <label class="form-label wholesale-review-form__label" for="approval-tier-{{ $business->wholesaler['id'] }}">{{ translate('Tier') }}</label>
                                                                     <select name="tier"
                                                                             id="approval-tier-{{ $business->wholesaler['id'] }}"
                                                                             class="form-control wholesale-review-form__control {{ $isActiveApprovalModal && $errors->has('tier') ? 'is-invalid' : '' }}"
@@ -359,7 +359,7 @@
                                         </div>
                                         <div class="modal-footer wholesale-review-modal__footer">
                                             <a href="{{ route('admin.wholesale.business.wholesaler.profile', $business->id) }}" class="btn btn-secondary">
-                                                {{ translate('view') }}
+                                                {{ translate('View') }}
                                             </a>
                                             <div class="d-flex flex-wrap align-items-center gap-2">
                                                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" data-bs-dismiss="modal">

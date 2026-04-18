@@ -47,7 +47,7 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
             $exportArray[] = [
                 $serialNumber++,
                 $branch['branch_name'] ?? '',
-                $this->product ? $this->product->name : translate('all_products'),
+                $this->product ? $this->product->name : translate('all_Products'),
                 $branch['current_stock'] ?? 0,
                 "In: {$stockIn}\nOut: {$stockOut}",
                 $branch['last_updated']
@@ -58,7 +58,7 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
 
         if (count($this->branchData) > 0) {
             $exportArray[] = [
-                translate('total'),
+                translate('Total'),
                 '',
                 '',
                 array_sum(array_column($this->branchData, 'current_stock')),
@@ -75,9 +75,9 @@ class BranchStockExport implements FromArray, WithHeadings, WithTitle, ShouldAut
         $headings = [
 
             translate('SL'),
-            translate('branch_name'),
-            translate('product_name'),
-            translate('current_stock'),
+            translate('Branch_Name'),
+            translate('Product_name'),
+            translate('Current_Stock'),
             translate('stock_in_out'),
             translate('last_updated'),
 

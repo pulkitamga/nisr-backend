@@ -11,7 +11,7 @@
     <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset('public/assets/back-end/img/location.png')}}" alt="">
-            {{translate('State & City')}}
+            {{translate('State_&_City')}}
         </h2>
     </div>
         @include('admin-views.business-settings.business-setup-inline-menu')
@@ -39,14 +39,14 @@
                             <div class="col-6">
                                 <label class="title-color">{{translate('Country')}}</label>
                                 <select name="country" class="form-control" required>
-                                    <option value="" disabled selected>{{translate('--Select--')}}</option>
+                                    <option value="" disabled selected>{{translate('Select')}}</option>
                                     @foreach($countries as $country)
                                         <option value="{{ $country['code'] }}">{{ $country['name'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label class="title-color">{{translate('State Name')}}</label>
+                                <label class="title-color">{{translate('state_name')}}</label>
                                 <ul class="nav nav-tabs w-fit-content mb-2">
                                     @foreach($language as $lang)
                                         <li class="nav-item text-capitalize">
@@ -129,14 +129,14 @@
                             <div class="col-6">
                                 <label class="title-color">{{translate('State')}}</label>
                                 <select name="state_id" class="form-control js-select2" required>
-                                    <option value="" disabled selected>{{translate('--Select State--')}}</option>
+                                    <option value="" disabled selected>{{translate('select_state')}}</option>
                                     @foreach($states as $state)
                                         <option value="{{ $state->id }}">{{ $state->getTranslatedField('name') }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label class="title-color">{{translate('City Name')}}</label>
+                                <label class="title-color">{{translate('city_name')}}</label>
                                 <ul class="nav nav-tabs w-fit-content mb-2">
                                     @foreach($language as $lang)
                                         <li class="nav-item text-capitalize">
@@ -219,7 +219,7 @@
                             <div class="col-6">
                                 <label class="title-color">{{translate('City')}}</label>
                                 <select name="city_id" class="form-control js-select2" required>
-                                    <option value="" disabled selected>{{translate('--Select City--')}}</option>
+                                    <option value="" disabled selected>{{translate('select_city')}}</option>
                                     @foreach($cities as $city)
                                         <option value="{{ $city->id }}">{{ $city->getTranslatedField('name') }}</option>
                                     @endforeach

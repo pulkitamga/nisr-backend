@@ -20,7 +20,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_save_information_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -44,7 +44,7 @@
                                 <label class="title-color d-flex text-capitalize" for="agent_email">{{translate('agent_email')}}</label>
                                 <input class="form-control" type="email" name="agent_email" id="agent_email"
                                        value="{{ $agentEmail['value'] ?? 'agent@yourapp.com' }}"
-                                       placeholder="{{translate('ex').':'.'agent@yourapp.com'}}">
+                                       placeholder="{{translate('Ex').':'.'agent@yourapp.com'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
@@ -52,7 +52,7 @@
                                 <label class="title-color d-flex text-capitalize" for="sla_first_response">{{translate('sla_first_response_hours')}}</label>
                                 <input class="form-control" type="number" name="sla_first_response" id="sla_first_response"
                                        value="{{ $slaFirstResponse['value'] ?? 1 }}"
-                                       placeholder="{{translate('ex').':'.'1'}}">
+                                       placeholder="{{translate('Ex').':'.'1'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
@@ -60,7 +60,7 @@
                                 <label class="title-color d-flex text-capitalize" for="sla_decision">{{translate('sla_decision_days')}}</label>
                                 <input class="form-control" type="number" name="sla_decision" id="sla_decision"
                                        value="{{ $slaDecision['value'] ?? 3 }}"
-                                       placeholder="{{translate('ex').':'.'3'}}">
+                                       placeholder="{{translate('Ex').':'.'3'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
@@ -68,7 +68,7 @@
                                 <label class="title-color d-flex text-capitalize" for="warranty_month">{{translate('warranty_months')}}</label>
                                 <input class="form-control" type="number" name="warranty_months" id="warranty_months"
                                        value="{{ $warrantyMonths['value'] ?? 3 }}"
-                                       placeholder="{{translate('ex').':'.'12'}}">
+                                       placeholder="{{translate('Ex').':'.'12'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
@@ -76,7 +76,7 @@
                                 <label class="title-color d-flex text-capitalize" for="rate_limit_window">{{translate('rate_limit_window_minutes')}}</label>
                                 <input class="form-control" type="number" name="rate_limit_window" id="rate_limit_window"
                                        value="{{ $rateLimitWindow['value'] ?? 2 }}"
-                                       placeholder="{{translate('ex').':'.'2'}}">
+                                       placeholder="{{translate('Ex').':'.'2'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4">
@@ -84,7 +84,7 @@
                                 <label class="title-color d-flex text-capitalize" for="rate_limit_max_attempts">{{translate('rate_limit_max_attempts')}}</label>
                                 <input class="form-control" type="number" name="rate_limit_max_attempts" id="rate_limit_max_attempts"
                                        value="{{ $rateLimitMaxAttempts['value'] ?? 5 }}"
-                                       placeholder="{{translate('ex').':'.'5'}}">
+                                       placeholder="{{translate('Ex').':'.'5'}}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-3">
@@ -204,7 +204,7 @@
                         </div>
                         <div class="col-12">
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                                <button type="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>

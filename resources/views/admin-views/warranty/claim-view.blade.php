@@ -197,7 +197,7 @@
                 </div>
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="p-3 border rounded">
-                        <div class="text-muted">{{ translate('Paid Amount') }}</div>
+                        <div class="text-muted">{{ translate('Paid_Amount') }}</div>
                         <div class="h5 mb-0 text-success">{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $paidChargesTotal)) }}</div>
                     </div>
                 </div>

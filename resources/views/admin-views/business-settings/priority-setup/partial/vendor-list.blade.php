@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="">
-                    <h3 class="mb-3 text-capitalize">{{ translate('vendor_list') }}</h3>
+                    <h3 class="mb-3 text-capitalize">{{ translate('Vendor_List') }}</h3>
                     <p class="max-w-400">{{ translate('the_Vendor_list_arranges_all_vendors_based_on_the_latest_join_that_are_highly_rated_by_customer_choice_and_also_in_alphabetic_order').'.'}}</p>
                 </div>
             </div>
@@ -87,7 +87,7 @@
                                         <input type="radio" class="show" name="sort_by" value="a_to_z" id="vendor-list-alphabetic-order"
                                             {{isset($vendorListPriority?->sort_by) && $vendorListPriority?->sort_by == 'a_to_z' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="vendor-list-alphabetic-order">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('to').' Z' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'A '.translate('To').' Z' }})
                                         </label>
                                     </div>
 
@@ -95,7 +95,7 @@
                                         <input type="radio" class="show" name="sort_by" value="z_to_a" id="vendor-list-alphabetic-order-reverse"
                                             {{isset($vendorListPriority?->sort_by) && $vendorListPriority?->sort_by == 'z_to_a' ? 'checked' : ''}}>
                                         <label class="mb-0 cursor-pointer text-capitalize" for="vendor-list-alphabetic-order-reverse">
-                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('to').' A' }})
+                                            {{ translate('sort_by_Alphabetical') }} ({{'Z '.translate('To').' A' }})
                                         </label>
                                     </div>
                                 </div>
@@ -120,7 +120,7 @@
                                         <input type="radio" name="vacation_mode_sorting" value="default" data-parent-class="vendor-list" id="vendor-list-vacation-mode-default"
                                             {{isset($vendorListPriority?->vacation_mode_sorting) ?( $vendorListPriority?->vacation_mode_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="vendor-list-vacation-mode-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -145,7 +145,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="vendor-list" id="vendor-list-temporary-close-default"
                                             {{isset($vendorListPriority?->temporary_close_sorting) ?( $vendorListPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="vendor-list-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -153,7 +153,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

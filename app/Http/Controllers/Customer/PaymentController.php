@@ -768,7 +768,7 @@ class PaymentController extends Controller
 
         $claim = $payment->claim;
         if (! $claim || ! $claim->warranty) {
-            Toastr::error(translate('Warranty claim not found'));
+            Toastr::error(translate('warranty_claim_not_found'));
 
             return redirect('/');
         }
@@ -819,7 +819,7 @@ class PaymentController extends Controller
 
         $claim = $payment->claim;
         if (! $claim || ! $claim->warranty) {
-            Toastr::error(translate('Warranty claim not found'));
+            Toastr::error(translate('warranty_claim_not_found'));
 
             return back();
         }

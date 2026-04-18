@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('branch_List'))
+@section('title', translate('Branch_List'))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -22,7 +22,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_branch_name_or_phone_or_email'),
             'aria_label' => translate('search_by_branch_name_or_phone_or_email'),
@@ -33,7 +33,7 @@
     $toolbarSummary = [];
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -66,7 +66,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png') }}" alt="">
-            {{ translate('branch_List') }}
+            {{ translate('Branch_List') }}
             <span class="badge badge-soft-dark radius-50 fz-12">{{ $branches->total() }}</span>
         </h2>
     </div>
@@ -81,7 +81,7 @@
 
     <div class="card">
         @include('admin-views.crm.partials._list-card-header', [
-            'listHeaderTitle' => translate('branch_List'),
+            'listHeaderTitle' => translate('Branch_List'),
             'listHeaderTotal' => $branches->total(),
             'listHeaderActions' => $headerActions,
         ])
@@ -91,14 +91,14 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('branch_name') }}</th>
+                        <th>{{ translate('Branch_Name') }}</th>
                         <th>{{ translate('branch_manager') }}</th>
-                        <th>{{ translate('branch_address') }}</th>
-                        <th>{{ translate('branch_zipcode') }}</th>
-                        <th>{{ translate('contact_info') }}</th>
+                        <th>{{ translate('Branch_Address') }}</th>
+                        <th>{{ translate('branch_Zipcode') }}</th>
+                        <th>{{ translate('_contact_info') }}</th>
                         <th>{{ translate('Shipping_area') }}</th>
-                        <th>{{ translate('status') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th>{{ translate('Status') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,7 +114,7 @@
                                 @if($seller->manager)
                                     {{ $seller->manager->name }}
                                 @else
-                                    <span class="text-muted">{{ translate('Not Assigned') }}</span>
+                                    <span class="text-muted">{{ translate('not_assigned') }}</span>
                                 @endif
                             </td>
                             <td>{{ $seller->getTranslatedField('branch_country') }}, {{ $seller->getTranslatedField('branch_address') }}</td>
@@ -128,18 +128,18 @@
                             <td>{{ $seller->shipping_method_areas }}</td>
                             <td>
                                 {!! $seller->status == 'active'
-                                    ? '<label class="badge badge-success">' . translate('active') . '</label>'
-                                    : '<label class="badge badge-danger">' . translate('inactive') . '</label>' !!}
+                                    ? '<label class="badge badge-success">' . translate('Active') . '</label>'
+                                    : '<label class="badge badge-danger">' . translate('Inactive') . '</label>' !!}
                             </td>
                             <td class="text-center">
                                 @if($seller->id != 1)
                                     <div class="crm-row-actions">
                                         <div class="crm-row-actions__primary">
-                                            <a title="{{ translate('view') }}" class="btn btn-outline-info btn-sm" href="{{ route('admin.branch.view', $seller->id) }}">
-                                                {{ translate('view') }}
+                                            <a title="{{ translate('View') }}" class="btn btn-outline-info btn-sm" href="{{ route('admin.branch.view', $seller->id) }}">
+                                                {{ translate('View') }}
                                             </a>
-                                            <a title="{{ translate('edit') }}" class="btn btn-outline--primary btn-sm" href="{{ route('admin.branch.update', $seller->id) }}">
-                                                {{ translate('edit') }}
+                                            <a title="{{ translate('Edit') }}" class="btn btn-outline--primary btn-sm" href="{{ route('admin.branch.update', $seller->id) }}">
+                                                {{ translate('Edit') }}
                                             </a>
                                         </div>
                                         <div class="dropdown crm-row-actions__menu">
@@ -151,7 +151,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="tio-delete-outlined mr-2"></i>{{ translate('delete') }}
+                                                        <i class="tio-delete-outlined mr-2"></i>{{ translate('Delete') }}
                                                     </button>
                                                 </form>
                                             </div>

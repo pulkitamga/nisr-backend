@@ -71,10 +71,10 @@
                     @endphp
                     @if($inbox)
                     <p><strong>{{ translate('Subject') }}:</strong> <span class="bidi-auto">{{ $inbox->subject ?? translate('No Subject') }}</span></p>
-                    <p><strong>{{ translate('Sender') }}:</strong> <span class="bidi-auto">{{ $inbox->sender_name ?? translate('Unassigned') }}</span> (<span class="bidi-ltr">{{ $inbox->sender_email ?? translate('Not Available') }}</span>)</p>
-                    <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $inbox->sender_phone ?? translate('Not Available') }}</span></p>
+                    <p><strong>{{ translate('Sender') }}:</strong> <span class="bidi-auto">{{ $inbox->sender_name ?? translate('Unassigned') }}</span> (<span class="bidi-ltr">{{ $inbox->sender_email ?? translate('not_available') }}</span>)</p>
+                    <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $inbox->sender_phone ?? translate('not_available') }}</span></p>
                     <p><strong>{{ translate('Message') }}:</strong> <span class="bidi-auto">{{ $inbox->body ?? translate('No Message') }}</span></p>
-                    <p><strong>{{ translate('Received At') }}:</strong> <span class="bidi-ltr">{{ $lead->created_at->format('d M, Y H:i A') }}</span></p>
+                    <p><strong>{{ translate('Received_At') }}:</strong> <span class="bidi-ltr">{{ $lead->created_at->format('d M, Y H:i A') }}</span></p>
                     @if(is_array($inbox->details))
                     <div class="mb-3">
                         <strong>{{ translate('Details') }}:</strong>
@@ -106,12 +106,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6">
-                            <p><strong>{{ translate('company') }}:</strong> <span class="bidi-auto">{{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? translate('Unknown')}}</span></p>
+                            <p><strong>{{ translate('Company') }}:</strong> <span class="bidi-auto">{{ $lead->purchaseOrder?->wholeseller?->wholesalerBusiness?->company_name ?? translate('Unknown')}}</span></p>
                             <p><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->wholeseller?->email ?? translate('N/A') }}</span></p>
                             <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->wholeseller?->phone ?? translate('N/A') }}</span></p>
                         </div>
                         <div class="col-6">
-                            <p><strong>{{ translate('Purchase Order No') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder->purchase_order_no ?? translate('Not Assigned') }}</span></p>
+                            <p><strong>{{ translate('Purchase_Order_No') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder->purchase_order_no ?? translate('not_assigned') }}</span></p>
                             <p><strong>{{ translate('Status') }}:</strong> <span class="bidi-auto">{{ \App\Utils\crm_status_label($lead->purchaseOrder->status ?? null, 'N/A') }}</span></p>
                             <p><strong>{{ translate('Created_At') }}:</strong> <span class="bidi-ltr">{{ $lead->purchaseOrder?->created_at?->format('d M, Y H:i A') ?? translate('N/A') }}</span></p>
                         </div>
@@ -127,7 +127,7 @@
                                 <th>{{ translate('Quantity') }}</th>
                                 <th>{{ translate('Base Price') }}</th>
                                 <th>{{ translate('Tax') }}</th>
-                                <th>{{ translate('Final Price') }}</th>
+                                <th>{{ translate('Final_price') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -202,7 +202,7 @@
                             </li>
                             <li>
                                 <a href="javascript:void(0)" class="nav-link action-btn" data-bs-toggle="collapse" data-bs-target="#collapseFile-{{ $lead->id }}" data-collapse-target="file">
-                                    {{ translate('Upload File') }}
+                                    {{ translate('Upload_File') }}
                                 </a>
                             </li>
                         </ul>
@@ -212,7 +212,7 @@
                         <div class="border-0 shadow-sm mb-3">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6 class="mt-3 mb-2">{{ translate('activities') }}</h6>
+                                    <h6 class="mt-3 mb-2">{{ translate('Activities') }}</h6>
                                 </div>
 
                                 <div id="activity-list-{{ $lead->id }} ">
@@ -233,7 +233,7 @@
                                     <textarea class="form-control" id="noteContent-{{ $lead->id }}" name="note" placeholder="{{ translate('Enter note') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="noteDate-{{ $lead->id }}" class="form-label">{{ translate('Noted At') }}</label>
+                                    <label for="noteDate-{{ $lead->id }}" class="form-label">{{ translate('noted_at') }}</label>
                                     <input type="date" class="form-control" id="noteDate-{{ $lead->id }}" name="noted_at">
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Note') }}</button>
@@ -263,14 +263,14 @@
                                 <input type="hidden" name="task_id" id="task-id-{{ $lead->id }}">
                                 <div class="mb-3">
                                     <label for="taskName-{{ $lead->id }}" class="form-label">{{ translate('Name') }}</label>
-                                    <input type="text" class="form-control" id="taskName-{{ $lead->id }}" name="name" placeholder="{{ translate('Enter name') }}">
+                                    <input type="text" class="form-control" id="taskName-{{ $lead->id }}" name="name" placeholder="{{ translate('enter_name') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskDesc-{{ $lead->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="taskDesc-{{ $lead->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="taskDesc-{{ $lead->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="taskDue-{{ $lead->id }}" class="form-label">{{ translate('Due Date') }}</label>
+                                    <label for="taskDue-{{ $lead->id }}" class="form-label">{{ translate('due_date') }}</label>
                                     <input type="date" class="form-control" id="taskDue-{{ $lead->id }}" name="due_date">
                                 </div>
                                 <div class="mb-3">
@@ -302,7 +302,7 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="callTitle-{{ $lead->id }}" class="form-label">{{ translate('Title') }}</label>
-                                    <input type="text" class="form-control" id="callTitle-{{ $lead->id }}" name="title" placeholder="{{ translate('Enter title') }}">
+                                    <input type="text" class="form-control" id="callTitle-{{ $lead->id }}" name="title" placeholder="{{ translate('enter_title') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callFrom-{{ $lead->id }}" class="form-label">{{ translate('From') }}</label>
@@ -323,11 +323,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="callLocation-{{ $lead->id }}" class="form-label">{{ translate('Location') }}</label>
-                                    <input type="text" class="form-control" id="callLocation-{{ $lead->id }}" name="location" placeholder="{{ translate('Enter location') }}">
+                                    <input type="text" class="form-control" id="callLocation-{{ $lead->id }}" name="location" placeholder="{{ translate('Enter Location') }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="callDesc-{{ $lead->id }}" class="form-label">{{ translate('Description') }}</label>
-                                    <textarea class="form-control" id="callDesc-{{ $lead->id }}" name="description" placeholder="{{ translate('Enter description') }}"></textarea>
+                                    <textarea class="form-control" id="callDesc-{{ $lead->id }}" name="description" placeholder="{{ translate('Enter Description') }}"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">{{ translate('Save Call') }}</button>
                             </form>

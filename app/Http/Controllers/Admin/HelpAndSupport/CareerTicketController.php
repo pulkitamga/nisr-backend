@@ -236,7 +236,7 @@ class CareerTicketController extends BaseController
     }
 
     return response()->json([
-        'message' => translate('status_updated_successfully'),
+        'message' => translate('Status_updated_successfully'),
         'new_status_name' => $nextStatus->name
     ], 200);
 }
@@ -1006,7 +1006,7 @@ public function recordDeclinedOffer(Request $request): RedirectResponse
             abort(404, translate('ticket_not_found'));
         }
         if (!Storage::disk('local')->exists($offer->attachment)) {
-            abort(404, translate('file_not_found'));
+            abort(404, translate('File_not_found'));
         }
 
         return Storage::disk('local')->download($offer->attachment, basename($offer->attachment));

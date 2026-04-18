@@ -20,7 +20,7 @@
             <div class="mb-2 alert--message">
                 <div class="d-flex justify-content-between w-100">
                     <span class="">
-                        <img class="mb-1" src="{{dynamicAsset(path: 'public/assets/back-end/img/warning-icon.png')}}" alt="{{translate('warning')}}">
+                        <img class="mb-1" src="{{dynamicAsset(path: 'public/assets/back-end/img/warning-icon.png')}}" alt="{{translate('Warning')}}">
                         @if($refund['status'] != 'pending' && ($refund['approved_count']<2 || $refund['denied_count']<2))
                             @if($refund['status'] == 'approved' && $refund['approved_count']<2 )
                                 {{translate('you_have_already_approved_refund_status_once').'.'}}
@@ -46,7 +46,7 @@
                         <h4 class="mb-3">{{translate('refund_summary')}}</h4>
                         <ul class="dm-info p-0 m-0">
                             <li class="align-items-center">
-                                <span class="left">{{translate('refund_id')}} </span> <span>:</span> <span class="right">{{$refund->id}}</span>
+                                <span class="left">{{translate('refund_ID')}} </span> <span>:</span> <span class="right">{{$refund->id}}</span>
                             </li>
                             <li class="align-items-center">
                                 <span class="left text-capitalize">{{translate('refund_requested_date')}}</span>
@@ -54,7 +54,7 @@
                                 <span class="right">{!! formatDateTimeForDisplay($refund['created_at'], 'd M Y, h:i A') !!}</span>
                             </li>
                             <li class="align-items-center">
-                                <span class="left">{{translate('refund_status')}}</span> <span>:</span> <span class="right">
+                                <span class="left">{{translate('refund_Status')}}</span> <span>:</span> <span class="right">
                                     @if ($refund['status'] == 'pending')
                                         <span class="badge badge-secondary-2"> {{translate($refund['status'])}}</span>
                                     @elseif($refund['status'] == 'approved')
@@ -67,10 +67,10 @@
                                 </span>
                             </li>
                             <li class="align-items-center">
-                                <span class="left">{{translate('payment_method')}} </span> <span>:</span> <span class="right">{{str_replace('_',' ',$order->payment_method)}}</span>
+                                <span class="left">{{translate('Payment_Method')}} </span> <span>:</span> <span class="right">{{str_replace('_',' ',$order->payment_method)}}</span>
                             </li>
                             <li class="align-items-center">
-                                <span class="left">{{translate('order_details')}} </span> <span>:</span> <span class="right"><a class="badge py-2 badge-soft-primary border border-primary px-2" href="{{route('vendor.orders.details',['id'=>$order->id])}}">{{translate('view_details')}}</a></span>
+                                <span class="left">{{translate('Order_details')}} </span> <span>:</span> <span class="right"><a class="badge py-2 badge-soft-primary border border-primary px-2" href="{{route('vendor.orders.details',['id'=>$order->id])}}">{{translate('view_details')}}</a></span>
                             </li>
                         </ul>
                     </div>
@@ -85,12 +85,12 @@
                                 @if ($refund->change_by !='admin')
                                     @if($refund['status'] != 'rejected' && $refund['denied_count'] < 2)
                                         <button class="btn btn-soft-danger p-2 px-3" data-toggle="modal" data-target="#rejectModal">
-                                            {{ translate('reject') }}
+                                            {{ translate('Reject') }}
                                         </button>
                                     @endif
                                     @if($refund['status'] != 'approved' && $refund['approved_count'] < 2)
                                         <button class="btn btn-soft-success p-2 px-3" data-toggle="modal" data-target="#approveModal">
-                                            {{ translate('approve') }}
+                                            {{ translate('Approve') }}
                                         </button>
                                     @endif
                                 @endif
@@ -114,15 +114,15 @@
                                 </h4>
                                 @if ($refund->orderDetails->variant)
                                 <div class="font-size-sm text-body">
-                                    <strong><u>{{translate('variation')}}</u></strong>
+                                    <strong><u>{{translate('Variation')}}</u></strong>
                                     <span>:</span>
                                         <span class="font-weight-bold">{{$refund->orderDetails->variant}}</span>
                                     </div>
                                 @endif
                                 @if($refund->orderDetails->digital_file_after_sell)
                                     @php($downloadPath =dynamicStorage(path: 'storage/app/public/product/digital-product/'.$refund->orderDetails->digital_file_after_sell))
-                                    <a href="{{file_exists( $downloadPath) ?  $downloadPath : 'javascript:' }}" class="btn btn-outline--primary btn-sm mt-3 {{file_exists( $downloadPath) ?  $downloadPath : 'download-path-not-found'}}" title="{{translate('download')}}">
-                                        {{translate('download')}} <i class="tio-download"></i>
+                                    <a href="{{file_exists( $downloadPath) ?  $downloadPath : 'javascript:' }}" class="btn btn-outline--primary btn-sm mt-3 {{file_exists( $downloadPath) ?  $downloadPath : 'download-path-not-found'}}" title="{{translate('Download')}}">
+                                        {{translate('Download')}} <i class="tio-download"></i>
                                     </a>
                                 @endif
                             </div>
@@ -137,7 +137,7 @@
                                     </span>
                                 </li>
                                 <li>
-                                    <span class="left">{{translate('total_price')}} </span>
+                                    <span class="left">{{translate('total_Price')}} </span>
                                     <span>:</span>
                                     <span class="right">
                                         <strong>
@@ -156,7 +156,7 @@
                                     </span>
                                 </li>
                                 <li>
-                                    <span class="left">{{translate('coupon_discount')}} </span>
+                                    <span class="left">{{translate('Coupon_Discount')}} </span>
                                     <span>:</span>
                                     <span class="right">
                                         <strong>
@@ -166,7 +166,7 @@
                                 </li>
 
                                 <li>
-                                    <span class="left">{{translate('total_tax')}} </span>
+                                    <span class="left">{{translate('total_Tax')}} </span>
                                     <span>:</span>
                                     <span class="right">
                                         <strong>
@@ -176,7 +176,7 @@
                                 </li>
 
                                 <li>
-                                    <span class="left">{{translate('subtotal')}} </span>
+                                    <span class="left">{{translate('Subtotal')}} </span>
                                     <span>:</span>
                                     <span class="right">
                                         <strong>
@@ -228,11 +228,11 @@
                             <div class="key-val-list d-flex flex-column gap-2 min-width--60px">
                                 @if($order->deliveryMan)
                                     <div class="key-val-list-item d-flex gap-3">
-                                        <span class="text-capitalize">{{translate('name')}}</span>:
+                                        <span class="text-capitalize">{{translate('Name')}}</span>:
                                         <span>{{$order->deliveryMan->f_name . ' ' .$order->deliveryMan->l_name}}</span>
                                     </div>
                                     <div class="key-val-list-item d-flex gap-3">
-                                        <span class="text-capitalize">{{translate('email_address')}}</span>:
+                                        <span class="text-capitalize">{{translate('Email_Address')}}</span>:
                                         <span>
                                         <a class="text-dark"
                                            href="mailto:{{ $order->deliveryMan->email }}">{{$order->deliveryMan?->email }}
@@ -240,7 +240,7 @@
                                     </span>
                                     </div>
                                     <div class="key-val-list-item d-flex gap-3">
-                                        <span class="text-capitalize">{{translate('phone_number')}} </span>:
+                                        <span class="text-capitalize">{{translate('phone_Number')}} </span>:
                                         <span>
                                         <a class="text-dark"
                                            href="tel:{{ $order->deliveryMan->phone }}">{{$order->deliveryMan?->phone }}
@@ -250,7 +250,7 @@
                                 @else
                                     <div class="p-2 bg-light rounded">
                                         <div class="media m-1 gap-3">
-                                            <img class="avatar rounded-circle" src="{{dynamicAsset(path: 'public/assets/back-end/img/delivery-man.png')}}" alt="{{translate('image')}}">
+                                            <img class="avatar rounded-circle" src="{{dynamicAsset(path: 'public/assets/back-end/img/delivery-man.png')}}" alt="{{translate('Image')}}">
                                             <div class="media-body">
                                                 <h5 class="mt-3">{{translate('no_delivery_man_assigned')}}</h5>
                                             </div>
@@ -272,9 +272,9 @@
                                     <tr>
                                         <th>{{translate('SL')}}</th>
                                         <th>{{translate('changed_by')}}</th>
-                                        <th>{{translate('Date')}}</th>
+                                        <th>{{translate('DATE')}}</th>
                                         <th>{{translate('approved_/_rejected_note')}}</th>
-                                        <th>{{translate('status')}}</th>
+                                        <th>{{translate('Status')}}</th>
 
                                     </tr>
                                     </thead>
@@ -329,8 +329,8 @@
                                 </div>
                                 <textarea class="form-control text-area-max-min" placeholder="{{translate('please_write_the_reject_reason').'...'}}" name="rejected_note" rows="3"></textarea>
                                 <div class="d-flex flex-wrap justify-content-end gap-3 mt-3">
-                                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('close') }}</button>
-                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-rejected-form" data-message="{{translate('want_to_reject_this_refund_request').'?'}}"  data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('submit') }}</button>
+                                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('Close') }}</button>
+                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-rejected-form" data-message="{{translate('want_to_reject_this_refund_request').'?'}}"  data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('Submit') }}</button>
                                 </div>
                             </div>
                         </form>
@@ -355,8 +355,8 @@
                                 </div>
                                 <textarea class="form-control text-area-max-min" placeholder="{{translate('please_write_the_approve_reason').'...'}}" name="approved_note" rows="3"></textarea>
                                 <div class="d-flex flex-wrap justify-content-end gap-3 mt-3">
-                                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('close') }}</button>
-                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-approve-form" data-message="{{translate('want_to_approve_this_refund_request').'?'}}" data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('submit') }}</button>
+                                    <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('Close') }}</button>
+                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-approve-form" data-message="{{translate('want_to_approve_this_refund_request').'?'}}" data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('Submit') }}</button>
                                 </div>
                             </div>
                         </form>

@@ -52,7 +52,7 @@
                                 <label for="bonus_title"
                                        class="title-color text-capitalize d-flex">{{translate('bonus_title')}}</label>
                                 <input type="text" name="title" class="form-control" id="bonus_title"
-                                       placeholder="{{translate('ex').':'.translate('EID_Dhamaka')}}" value="{{ $data->title }}"
+                                       placeholder="{{translate('Ex').':'.translate('EID_Dhamaka')}}" value="{{ $data->title }}"
                                        required>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                                 <label for="short_desc"
                                        class="title-color text-capitalize d-flex">{{translate('short_description')}}</label>
                                 <input type="text" name="description" class="form-control" id="short_desc"
-                                       placeholder="{{translate('ex').':'.translate('EID_Dhamaka')}}" value="{{ $data->description }}">
+                                       placeholder="{{translate('Ex').':'.translate('EID_Dhamaka')}}" value="{{ $data->description }}">
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-6 col-lg-4">
@@ -81,7 +81,7 @@
                                     {{translate('bonus_amount')}}(<span id="bonus-title-percent">{{translate('%')}}</span>)
                                 </label>
                                 <input type="number" name="bonus_amount" min="0" class="form-control" id="bonus-title-percent"
-                                       placeholder="{{translate('ex').':'.'5'}}"
+                                       placeholder="{{translate('Ex').':'.'5'}}"
                                        value="{{ $data->bonus_type == 'fixed' ? (usdToDefaultCurrency(amount: $data->bonus_amount) ?? 0) : $data->bonus_amount }}"
                                        required>
                             </div>
@@ -92,7 +92,7 @@
                                        class="title-color text-capitalize d-flex">{{translate('minimum_add_amount')}}
                                     ({{ getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default')) }})</label>
                                 <input type="number" name="min_add_money_amount" min="0" class="form-control"
-                                       id="min_add_money_amount" placeholder="{{translate('ex').':'.'100'}}"
+                                       id="min_add_money_amount" placeholder="{{translate('Ex').':'.'100'}}"
                                        value="{{ usdToDefaultCurrency(amount: $data->min_add_money_amount) ?? 0 }}"
                                        required>
                             </div>
@@ -103,7 +103,7 @@
                                        class="title-color text-capitalize d-flex">{{translate('maximum_bonus')}}
                                     ({{getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default'))}})</label>
                                 <input type="number" min="0" name="max_bonus_amount" class="form-control"
-                                       id="max_bonus_amount" placeholder="{{translate('ex').':'.'5000'}}"
+                                       id="max_bonus_amount" placeholder="{{translate('Ex').':'.'5000'}}"
                                        value="{{ usdToDefaultCurrency(amount: $data->max_bonus_amount) ?? 0 }}">
                             </div>
                         </div>
@@ -111,7 +111,7 @@
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <div class="form-group">
                                 <label for="start-date-time"
-                                       class="title-color text-capitalize d-flex">{{translate('start_date')}}</label>
+                                       class="title-color text-capitalize d-flex">{{translate('Start_Date')}}</label>
                                 <input type="date" name="start_date_time" id="start-date-time" class="form-control"
                                        value="{{ date('Y-m-d',strtotime($data['start_date_time'])) }}" required>
                             </div>
@@ -119,7 +119,7 @@
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <div class="form-group">
                                 <label for="end-date-time"
-                                       class="title-color text-capitalize d-flex">{{translate('end_date')}}</label>
+                                       class="title-color text-capitalize d-flex">{{translate('End_Date')}}</label>
                                 <input type="date" name="end_date_time" id="end-date-time" class="form-control"
                                        value="{{ date('Y-m-d',strtotime($data['end_date_time'])) }}">
                             </div>
@@ -127,8 +127,8 @@
                         <div class="col-12">
                             <div class="d-flex gap-3 justify-content-end">
                                 <a href="{{route('admin.customer.wallet.bonus-setup')}}"
-                                   class="btn btn-secondary px-5">{{translate('back')}}</a>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                                   class="btn btn-secondary px-5">{{translate('Back')}}</a>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                             </div>
                         </div>
                     </div>

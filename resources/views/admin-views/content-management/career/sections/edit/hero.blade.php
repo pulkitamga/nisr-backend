@@ -58,7 +58,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 </textarea>
                 </div>
                 <div class="form-group">
-                    <label>{{ translate('Button Text') }} ({{ strtoupper($lang) }})</label>
+                    <label>{{ translate('Button_Text') }} ({{ strtoupper($lang) }})</label>
                     <input type="text" name="buttonText[]" class="form-control" value="{{ $lang == $baseLanguage ? $job->button_text : ($translations[$lang]['buttonText'] ?? '') }}">
                 </div>
             </div>
@@ -70,7 +70,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
 
             <!-- Button Link Field -->
             <div class="form-group">
-                <label>{{ translate('Button Link') }}</label>
+                <label>{{ translate('button_link') }}</label>
                 <input type="url" name="button_link" class="form-control" value="{{ $job->button_link }}">
             </div>
 

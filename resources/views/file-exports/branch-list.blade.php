@@ -14,14 +14,14 @@
                 <td> {{translate('SL')}}</td>
                
               
-                <td> {{translate('branch_Name')}}</td>
-                <td> {{translate('branch_address')}}</td>
+                <td> {{translate('Branch_Name')}}</td>
+                <td> {{translate('Branch_Address')}}</td>
                 <td> {{translate('branch_Zipcode')}}</td>
-                <td> {{translate('phone')}}	</td>
-                <td> {{translate('email')}}	</td>
+                <td> {{translate('Phone')}}	</td>
+                <td> {{translate('Email')}}	</td>
                 <td> {{translate('joined_At')}}	</td>
                 
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['vendors'] as $key=>$item)
                 <tr>

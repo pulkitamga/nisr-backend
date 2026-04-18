@@ -94,19 +94,19 @@ $direction = get_direction();
         @include('layouts.back-end.partials._sign-out-modal')
         @include('layouts.back-end._alert-message')
     </main>
-    <span class="please_fill_out_this_field" data-text="{{ translate('please_fill_out_this_field') }}"></span>
+    <span class="please_fill_out_this_field" data-text="{{ translate('Please_fill_out_this_field') }}"></span>
     <span class="get-application-environment-mode" data-value="{{ env('APP_MODE') == 'demo' ? 'demo':'live' }}"></span>
     <span id="get-currency-symbol"
         data-currency-symbol="{{ getCurrencySymbol(currencyCode: getCurrencyCode(type: 'default')) }}"></span>
 
-    <span id="message-select-word" data-text="{{ translate('select') }}"></span>
-    <span id="message-yes-word" data-text="{{ translate('yes') }}"></span>
-    <span id="message-no-word" data-text="{{ translate('no') }}"></span>
-    <span id="message-cancel-word" data-text="{{ translate('cancel') }}"></span>
-    <span id="message-are-you-sure" data-text="{{ translate('are_you_sure') }} ?"></span>
+    <span id="message-select-word" data-text="{{ translate('Select') }}"></span>
+    <span id="message-yes-word" data-text="{{ translate('Yes') }}"></span>
+    <span id="message-no-word" data-text="{{ translate('No') }}"></span>
+    <span id="message-cancel-word" data-text="{{ translate('Cancel') }}"></span>
+    <span id="message-are-you-sure" data-text="{{ translate('Are_you_sure') }} ?"></span>
     <span id="message-invalid-date-range" data-text="{{ translate('invalid_date_range') }}"></span>
     <span id="message-status-change-successfully" data-text="{{ translate('status_change_successfully') }}"></span>
-    <span id="message-are-you-sure-delete-this" data-text="{{ translate('are_you_sure_to_delete_this') }} ?"></span>
+    <span id="message-are-you-sure-delete-this" data-text="{{ translate('Are_you_sure_to_delete_this') }} ?"></span>
     <span id="message-you-will-not-be-able-to-revert-this"
         data-text="{{ translate('you_will_not_be_able_to_revert_this') }}"></span>
 
@@ -121,10 +121,10 @@ $direction = get_direction();
     <span id="get-clearance-vendor-add-route" data-action="{{route('admin.deal.clearance-sale.vendor-add')}}"></span>
     <span id="get-orders-list-route" data-action="{{ route('admin.orders.list', ['status'=>'all'])}}"></span>
     <span id="get-stock-limit-status" data-action="{{route('admin.products.stock-limit-status',['type'=>'in_house'])}}"></span>
-    <span id="get-product-stock-limit-title" data-title="{{translate('warning')}}"></span>
+    <span id="get-product-stock-limit-title" data-title="{{translate('Warning')}}"></span>
     <span id="get-product-stock-limit-image" data-warning-image="{{ dynamicAsset(path: 'public/assets/back-end/img/warning-2.png') }}"></span>
     <span id="get-product-stock-limit-message"
-        data-message-for-multiple="{{ translate('there_is_not_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
+        data-message-for-multiple="{{ translate('There_is_not_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
         data-message-for-three-plus-product="{{translate('_more_products_have_low_stock') }}"
         data-message-for-one-product="{{translate('this_product_is_low_on_stock')}}">
     </span>
@@ -134,9 +134,9 @@ $direction = get_direction();
     <span id="getChattingNewNotificationCheckRoute" data-route="{{ route('admin.messages.new-notification') }}"></span>
     <span id="route-for-real-time-activities" data-route="{{ route('admin.dashboard.real-time-activities') }}"></span>
     <span class="system-default-country-code" data-value="{{ getWebConfig(name: 'country_code') ?? 'us' }}"></span>
-    <span id="get-confirm-and-cancel-button-text-for-delete-all-products" data-sure="{{translate('are_you_sure').'?'}}"
+    <span id="get-confirm-and-cancel-button-text-for-delete-all-products" data-sure="{{translate('Are_you_sure').'?'}}"
         data-text="{{translate('want_to_clear_all_stock_clearance_products?').'!'}}"
-        data-confirm="{{translate('yes_delete_it')}}" data-cancel="{{translate('cancel')}}"></span>
+        data-confirm="{{translate('yes_delete_it')}}" data-cancel="{{translate('Cancel')}}"></span>
 
     <audio id="myAudio">
         <source src="{{ dynamicAsset(path: 'public/assets/back-end/sound/notification.mp3') }}" type="audio/mpeg">

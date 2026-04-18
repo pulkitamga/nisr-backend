@@ -17,7 +17,7 @@
                         <div class="card-header">
                             <h5 class="mb-0 text-capitalize d-flex text-capitalize">
                                 <i class="tio-user-big"></i>
-                                {{translate('user_details')}}
+                                {{translate('User_details')}}
                             </h5>
                             <form action="{{route('admin.contact.update',$contact->id)}}" method="post" id="submit-form">
                                 @csrf
@@ -46,7 +46,7 @@
                             <table class="table table-user-information table-borderless mb-0">
                                 <tbody>
                                     <tr>
-                                        <td>{{translate('name')}}:</td>
+                                        <td>{{translate('Name')}}:</td>
                                         <td>{{$contact['name']}}</td>
                                     </tr>
                                     <tr>
@@ -54,7 +54,7 @@
                                         <td>{{$contact['mobile_number']}}</td>
                                     </tr>
                                     <tr>
-                                        <td>{{translate('email')}}:</td>
+                                        <td>{{translate('Email')}}:</td>
                                         <td>{{$contact['email']}}</td>
                                     </tr>
                                 </tbody>
@@ -71,24 +71,24 @@
                             <div class="mb-3">
                                 <h5 class="px-2 py-1 badge-soft-info rounded mb-3 d-flex">{{ $contact->name }}</h5>
                                 <div class="flex-start mb-1">
-                                    <strong class="me-1">{{translate('subject')}}: </strong>
+                                    <strong class="me-1">{{translate('Subject')}}: </strong>
                                     <div><strong>{{$contact->subject}}</strong></div>
                                 </div>
                                 <div class="flex-start">
-                                    <strong class="me-1">{{translate('message')}}: </strong>
+                                    <strong class="me-1">{{translate('Message')}}: </strong>
                                     <div>{{$contact->message}}</div>
                                 </div>
                             </div>
                             <div>
-                                <h5 class="px-2 py-1 badge-soft-warning rounded mb-3 d-flex">{{translate('admin')}}</h5>
+                                <h5 class="px-2 py-1 badge-soft-warning rounded mb-3 d-flex">{{translate('Admin')}}</h5>
                                 @if($contact['reply']!=null)
                                     @php($data=json_decode($contact['reply'],true))
                                     <div class="flex-start mb-1">
-                                        <strong class="me-1">{{translate('subject')}}: </strong>
+                                        <strong class="me-1">{{translate('Subject')}}: </strong>
                                         <div><strong>{{$data['subject']}}</strong></div>
                                     </div>
                                     <div class="flex-start">
-                                        <strong class="me-1">{{translate('message')}}: </strong>
+                                        <strong class="me-1">{{translate('Message')}}: </strong>
                                         <div>{{$data['body']}}</div>
                                     </div>
                                 @else
@@ -112,7 +112,7 @@
                                             }
                                         ?>
                                         @if($emailServices_smtp['status'] != 1)
-                                            <label class="badge-soft-danger px-1">{{translate('configure_your_mail_setup_first').'.'}}</label>
+                                            <label class="badge-soft-danger px-1">{{translate('Configure_your_mail_setup_first').'.'}}</label>
                                         @endif
                                     </div>
                                     <form action="{{route('admin.contact.send-mail', $contact->id)}}" method="post">
@@ -120,8 +120,8 @@
                                         <div class="form-group mt-2">
                                             <div class="row">
                                                 <div class="col-md-12">
-                                                    <label class="title-color">{{translate('subject')}}</label>
-                                                    <input class="form-control" name="subject" required placeholder="{{translate('subject')}}">
+                                                    <label class="title-color">{{translate('Subject')}}</label>
+                                                    <input class="form-control" name="subject" required placeholder="{{translate('Subject')}}">
                                                 </div>
                                                 <div class="col-md-12 mt-3">
                                                     <label class="title-color">{{translate('mail_Body')}}</label>
@@ -132,7 +132,7 @@
                                         </div>
                                         <div class="d-flex justify-content-end pt-3 mt-5">
                                             <button type="submit" class="btn btn--primary px-4">
-                                            {{translate('send')}}<i class="tio-send ms-2"></i>
+                                            {{translate('Send')}}<i class="tio-send ms-2"></i>
                                             </button>
                                         </div>
                                     </form>

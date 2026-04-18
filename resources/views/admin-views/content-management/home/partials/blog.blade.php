@@ -31,13 +31,13 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             <input type="hidden" name="lang[]" value="{{ $lang }}">
 
             <div class="col-lg-6">
-                <label class="title-color">{{ translate('heading') }}({{ strtoupper($lang) }})</label>
+                <label class="title-color">{{ translate('Heading') }}({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control" value="{{ $lang == $defaultLanguage ? ($jsonData['heading'] ?? '') : ($translations[$lang]['heading'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="col-lg-6">
-                <label class="title-color">{{ translate('sub_heading') }}({{ strtoupper($lang) }})</label>
+                <label class="title-color">{{ translate('Subheading') }}({{ strtoupper($lang) }})</label>
                 <input type="text" name="paragraph[]" class="form-control " value="{{ $lang == $defaultLanguage ? ($jsonData['paragraph'] ?? '') : ($translations[$lang]['paragraph'] ?? '') }}"
 
                     placeholder="{{ translate('enter_paragraph') }}">
@@ -54,7 +54,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
     </div>
     <div class="d-flex justify-content-end gap-2 mt-4">
-        <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+        <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
     </div>
 </form>

@@ -17,8 +17,8 @@
                         <tr>
                             <th>{{translate('claim_number')}}</th>
                             <th>{{translate('serial')}}</th>
-                            <th>{{translate('description')}}</th>
-                            <th>{{translate('action')}}</th>
+                            <th>{{translate('Description')}}</th>
+                            <th>{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>

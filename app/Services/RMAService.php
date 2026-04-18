@@ -43,7 +43,7 @@ class RMAService
                 if ($mailEnabled) {
                     $data = [
                         'userName' => $warranty?->activated_by_name ?? 'Customer',
-                        'subject' => translate('RMA Issued'),
+                        'subject' => translate('rma_issued'),
                         'title' => translate('Your RMA') . ' ' . $claim->rma_number,
                         'rmaNumber' => $claim->rma_number,
                         'instructions' => $instructions,

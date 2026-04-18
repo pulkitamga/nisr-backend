@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('category'))
+@section('title', translate('Category'))
 
 @section('content')
 <div class="content container-fluid">
@@ -43,7 +43,7 @@
                                     <input name="position" value="0" class="d-none">
                                 </div>
                                 <div class="form-group">
-                                    <label class="title-color" for="priority">{{ translate('priority') }}
+                                    <label class="title-color" for="priority">{{ translate('Priority') }}
                                         <span>
                                             <i class="tio-info-outined" data-toggle="tooltip" data-placement="top" title="{{ translate('the_lowest_number_will_get_the_highest_priority') }}"></i>
                                         </span>
@@ -84,8 +84,8 @@
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
-                            <button type="reset" id="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-                            <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                         </div>
                     </form>
                 </div>
@@ -113,7 +113,7 @@
                                         </div>
                                     </div>
                                     <input id="" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_category_name') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                             <div class="dropdown">
@@ -133,12 +133,12 @@
                             <tr>
                                 <th>{{ translate('ID') }}</th>
                                 <th class="text-center">{{ translate('category_Image') }}</th>
-                                <th>{{ translate('name') }}</th>
-                                <th class="text-center">{{ translate('priority') }}</th>
+                                <th>{{ translate('Name') }}</th>
+                                <th class="text-center">{{ translate('Priority') }}</th>
                                 <th class="text-center">{{ translate('home_category_status') }}</th>
                                 <th class="text-center">{{ translate('exchange_charge') }}</th>
                                 <th class="text-center">{{ translate('installation_charge') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -160,7 +160,7 @@
                                         @csrf
                                         <input type="hidden" name="id" value="{{ $category['id'] }}">
                                         <label class="switcher mx-auto">
-                                            <input type="checkbox" class="switcher_input toggle-switch-message" name="home_status" id="category-status{{ $category['id'] }}" value="1" {{ $category['home_status'] == 1 ? 'checked' : '' }} data-modal-id="toggle-status-modal" data-toggle-id="category-status{{ $category['id'] }}" data-on-image="category-status-on.png" data-off-image="category-status-off.png" data-on-title="{{ translate('Want_to_Turn_ON').' '.$category->getTranslatedField('name').' '. translate('status') }}" data-off-title="{{ translate('Want_to_Turn_OFF').' '.$category->getTranslatedField('name').' '.translate('status') }}" data-on-message="<p>{{ translate('if_enabled_this_category_it_will_be_visible_from_the_category_wise_product_section_in_the_website_and_customer_app_in_the_homepage') }}</p>" data-off-message="<p>{{ translate('if_disabled_this_category_it_will_be_hidden_from_the_category_wise_product_section_in_the_website_and_customer_app_in_the_homepage') }}</p>">
+                                            <input type="checkbox" class="switcher_input toggle-switch-message" name="home_status" id="category-status{{ $category['id'] }}" value="1" {{ $category['home_status'] == 1 ? 'checked' : '' }} data-modal-id="toggle-status-modal" data-toggle-id="category-status{{ $category['id'] }}" data-on-image="category-status-on.png" data-off-image="category-status-off.png" data-on-title="{{ translate('Want_to_Turn_ON').' '.$category->getTranslatedField('name').' '. translate('Status') }}" data-off-title="{{ translate('Want_to_Turn_OFF').' '.$category->getTranslatedField('name').' '.translate('Status') }}" data-on-message="<p>{{ translate('if_enabled_this_category_it_will_be_visible_from_the_category_wise_product_section_in_the_website_and_customer_app_in_the_homepage') }}</p>" data-off-message="<p>{{ translate('if_disabled_this_category_it_will_be_hidden_from_the_category_wise_product_section_in_the_website_and_customer_app_in_the_homepage') }}</p>">
                                             <span class="switcher_control"></span>
                                         </label>
                                     </form>
@@ -197,10 +197,10 @@
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center gap-10">
-                                        <a class="btn btn-outline-info btn-sm square-btn " title="{{ translate('edit') }}" href="{{ route('admin.category.update',[$category['id']]) }}">
+                                        <a class="btn btn-outline-info btn-sm square-btn " title="{{ translate('Edit') }}" href="{{ route('admin.category.update',[$category['id']]) }}">
                                             <i class="tio-edit"></i>
                                         </a>
-                                        <a class="btn btn-outline-danger btn-sm square-btn delete-category" title="{{ translate('delete') }}" data-product-count="{{count($category?->product)}}" data-text="{{translate('there_were_').count($category?->product).translate('_products_under_this_category').'.'.translate('please_update_their_category_from_the_below_list_before_deleting_this_one').'.'}}" id="{{ $category['id'] }}">
+                                        <a class="btn btn-outline-danger btn-sm square-btn delete-category" title="{{ translate('Delete') }}" data-product-count="{{count($category?->product)}}" data-text="{{translate('there_were_').count($category?->product).translate('_products_under_this_category').'.'.translate('please_update_their_category_from_the_below_list_before_deleting_this_one').'.'}}" id="{{ $category['id'] }}">
                                             <i class="tio-delete"></i>
                                         </a>
                                     </div>
@@ -249,8 +249,8 @@
                         </select>
                     </div>
                     <div class="d-flex justify-content-center gap-3">
-                        <button type="submit" class="btn btn--primary min-w-120">{{translate('update')}}</button>
-                        <button type="button" class="btn btn-danger-light min-w-120" data-dismiss="modal">{{ translate('cancel') }}</button>
+                        <button type="submit" class="btn btn--primary min-w-120">{{translate('Update')}}</button>
+                        <button type="button" class="btn btn-danger-light min-w-120" data-dismiss="modal">{{ translate('Cancel') }}</button>
                     </div>
                 </form>
             </div>

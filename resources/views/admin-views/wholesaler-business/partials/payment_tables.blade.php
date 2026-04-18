@@ -12,12 +12,12 @@
                 <thead class="bg-light">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('Date') }}</th>
+                        <th>{{ translate('DATE') }}</th>
                         <th>{{ translate('Amount') }}</th>
                         <th>{{ translate('Method') }}</th>
                         <th>{{ translate('Reference') }}</th>
                         <th>{{ translate('Note') }}</th>
-                        <th>{{ translate('Created_at') }}</th>
+                        <th>{{ translate('Created_At') }}</th>
 
                     </tr>
                 </thead>
@@ -85,7 +85,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">{{ translate('Date') }}</label>
+                                <label class="form-label">{{ translate('DATE') }}</label>
                                 <input type="date" id="date" class="form-control" name="date">
                             </div>
                             <div class="mb-3">

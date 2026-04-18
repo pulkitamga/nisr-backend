@@ -69,7 +69,7 @@ class   EmailTemplatesController extends BaseController
         $this->emailTemplatesRepo->update(id:$emailTemplate['id'],data: $this->emailTemplateService->getUpdateData(request:$request,template: $emailTemplate));
         $requestNames  = ['title','body','button_name','footer_text','copyright_text'];
         $this->addTranslateData(lang:$request['lang'],requestNames: $requestNames,id:$emailTemplate['id'],request: $request);
-        Toastr::success(translate('update_successfully'));
+        Toastr::success(translate('Update_successfully'));
         return redirect()->back();
     }
     protected function addTranslateData($lang,$requestNames,$id,$request):void

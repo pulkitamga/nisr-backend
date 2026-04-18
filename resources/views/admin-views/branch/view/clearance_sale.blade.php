@@ -24,14 +24,14 @@
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="approved">
                                 <button type="submit"
-                                        class="btn btn--primary btn-sm">{{translate('approve')}}</button>
+                                        class="btn btn--primary btn-sm">{{translate('Approve')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm">{{translate('reject')}}</button>
+                                        class="btn btn-danger btn-sm">{{translate('Reject')}}</button>
                             </form>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
         <div class="page-header">
             <div class="flex-between row mx-1">
                 <div>
-                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("shop_Name")." : ".translate("update_Please") }}</h1>
+                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("Shop_Name")." : ".translate("update_Please") }}</h1>
                 </div>
             </div>
             <div class="js-nav-scroller hs-nav-scroller-horizontal">
@@ -52,11 +52,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('order')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('Order')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('Product')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active"
@@ -72,7 +72,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('review')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('Review')}}</a>
                     </li>
                 </ul>
             </div>
@@ -109,7 +109,7 @@
                                                     <div class="d-flex gap-5">
                                                         <div class="pair-list w-100 key-basis-100">
                                                             <div>
-                                                                <span class="key">{{translate('duration')}}</span>
+                                                                <span class="key">{{translate('Duration')}}</span>
                                                                 <span class="px-2">:</span>
                                                                 <span class="value font-weight-semibold">{{ $clearanceConfig?->duration_start_date->format('d M Y') }} - {{ $clearanceConfig?->duration_end_date->format('d M Y') }}</span>
                                                             </div>
@@ -121,7 +121,7 @@
                                                             </div>
                                                             @if($clearanceConfig?->offer_active_time == 'specific_time')
                                                                 <div>
-                                                                    <span class="key">{{translate('time')}}</span>
+                                                                    <span class="key">{{translate('Time')}}</span>
                                                                     <span class="px-2">:</span>
                                                                     <span class="value font-weight-semibold">{{ $clearanceConfig?->offer_active_range_start->format('h:i A') }} - {{ $clearanceConfig?->offer_active_range_end->format('h:i A') }}</span>
                                                                 </div>
@@ -135,13 +135,13 @@
                                                     <div class="d-flex gap-5">
                                                         <div class="pair-list w-100 key-basis-100">
                                                             <div>
-                                                                <span class="key">{{ translate('discount_type') }}</span>
+                                                                <span class="key">{{ translate('Discount_Type') }}</span>
                                                                 <span class="px-2">:</span>
-                                                                <span class="value font-weight-semibold">{{ ucwords(str_replace('_', " ", $clearanceConfig?->discount_type)) . ' ' .  ($clearanceConfig?->discount_type == 'flat' ? translate('discount') : '')}}</span>
+                                                                <span class="value font-weight-semibold">{{ ucwords(str_replace('_', " ", $clearanceConfig?->discount_type)) . ' ' .  ($clearanceConfig?->discount_type == 'flat' ? translate('Discount') : '')}}</span>
                                                             </div>
                                                             @if($clearanceConfig?->discount_type == 'flat')
                                                                 <div>
-                                                                    <span class="key">{{ translate('discount_amount') }}</span>
+                                                                    <span class="key">{{ translate('Discount_Amount') }}</span>
                                                                     <span class="px-2">:</span>
                                                                     <span class="value font-weight-semibold">{{ $clearanceConfig?->discount_amount }}%</span>
                                                                 </div>
@@ -177,7 +177,7 @@
                                                     </div>
                                                 </div>
                                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                                       placeholder="{{ translate('search_by_product_name') }}..." aria-label="{{ translate('Search by Order ID') }}" value="{{ request('searchValue') }}">
+                                                       placeholder="{{ translate('search_by_Product_Name') }}..." aria-label="{{ translate('search_by_Order_ID') }}" value="{{ request('searchValue') }}">
                                                 <button type="submit" class="btn btn--primary input-group-text">
                                                     {{ translate('Search') }}
                                                 </button>
@@ -191,21 +191,21 @@
                                             class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                             <thead class="thead-light thead-50 text-capitalize">
                                             <tr>
-                                                <th>{{ translate('sl') }}</th>
+                                                <th>{{ translate('SL') }}</th>
                                                 <th>
                                                     <div class="d-flex">
                                                         <div class="w-60px">{{translate('Image')}}</div>
-                                                        <div>{{translate('name')}}</div>
+                                                        <div>{{translate('Name')}}</div>
                                                     </div>
                                                 </th>
                                                 <th class="text-center">
-                                                    {{ translate('unit_price') }}
+                                                    {{ translate('Unit_Price') }}
                                                     ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                                                 </th>
                                                 @if(isset($clearanceConfig->discount_type) && $clearanceConfig->discount_type == 'product_wise')
-                                                    <th class="text-center">{{ translate('discount_amount') }} </th>
+                                                    <th class="text-center">{{ translate('Discount_Amount') }} </th>
                                                 @else
-                                                    <th class="text-center">{{ translate('discount_amount') . ' (%)' }} </th>
+                                                    <th class="text-center">{{ translate('Discount_Amount') . ' (%)' }} </th>
                                                 @endif
                                                 <th class="text-center">
                                                     {{ translate('discount_price') }}
@@ -251,7 +251,7 @@
                                                         </div>
                                                     </div>
                                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                                           placeholder="{{ translate('search_by_product_name') }}..." aria-label="{{ translate('Search by Order ID') }}" value="{{ request('searchValue') }}">
+                                                           placeholder="{{ translate('search_by_Product_Name') }}..." aria-label="{{ translate('search_by_Order_ID') }}" value="{{ request('searchValue') }}">
                                                     <button type="submit" class="btn btn--primary input-group-text">
                                                         {{ translate('Search') }}
                                                     </button>
@@ -265,21 +265,21 @@
                                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                                 <thead class="thead-light thead-50 text-capitalize">
                                                 <tr>
-                                                    <th>{{ translate('sl') }}</th>
+                                                    <th>{{ translate('SL') }}</th>
                                                     <th>
                                                         <div class="d-flex">
                                                             <div class="w-60px">{{translate('Image')}}</div>
-                                                            <div>{{translate('name')}}</div>
+                                                            <div>{{translate('Name')}}</div>
                                                         </div>
                                                     </th>
                                                     <th class="text-center">
-                                                        {{ translate('unit_price') }}
+                                                        {{ translate('Unit_Price') }}
                                                         ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                                                     </th>
                                                     @if(isset($clearanceConfig->discount_type) && $clearanceConfig->discount_type == 'product_wise')
-                                                        <th class="text-center">{{ translate('discount_amount') }} </th>
+                                                        <th class="text-center">{{ translate('Discount_Amount') }} </th>
                                                     @else
-                                                        <th class="text-center">{{ translate('discount_amount') . ' (%)' }} </th>
+                                                        <th class="text-center">{{ translate('Discount_Amount') . ' (%)' }} </th>
                                                     @endif
                                                     <th class="text-center">
                                                         {{ translate('discount_price') }}
@@ -306,21 +306,21 @@
                                                                             @if($clearanceProduct?->product?->product_type !== 'digital')
                                                                                 <span class="parent">
                                                                                     <span class="opacity--70">
-                                                                                        {{ translate('current_stock') }}
+                                                                                        {{ translate('Current_Stock') }}
                                                                                     </span>
                                                                                     {{ $clearanceProduct?->product?->current_stock }}
                                                                                 </span>
                                                                             @endif
                                                                             <span class="parent">
                                                                                 <span class="opacity--70">
-                                                                                    {{ translate('category') }}:
+                                                                                    {{ translate('Category') }}:
                                                                                 </span>
                                                                                 {{ $clearanceProduct?->product?->category->getTranslatedField('name') ?? translate('not_found') }}
                                                                             </span>
                                                                             @if($clearanceProduct?->product?->product_type !== 'digital')
                                                                                 <span class="parent">
                                                                                     <span class="opacity--70">
-                                                                                        {{translate('brand')}}:
+                                                                                        {{translate('Brand')}}:
                                                                                     </span>
                                                                                     {{ $clearanceProduct?->product?->brand->getTranslatedField('name') ?? translate('not_found') }}
                                                                                 </span>
@@ -399,7 +399,7 @@
                                 </h6>
                             </a>
                             <div class="mt-30">
-                                <label class="form-label title-color font-weight-medium fz-14 title-color font-medium">{{ translate('Discount Amount') }}
+                                <label class="form-label title-color font-weight-medium fz-14 title-color font-medium">{{ translate('Discount_Amount') }}
                                     <span id="discount-symbol">(%)</span>
                                 </label>
                                 <div class="input-group">

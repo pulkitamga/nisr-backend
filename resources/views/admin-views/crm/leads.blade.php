@@ -50,10 +50,10 @@
             [
                 'type' => 'search',
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
-                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'placeholder' => translate('Search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('Search_by_Name_or_Email_or_Phone'),
                 'col_class' => 'col-xl-4 col-lg-12',
             ],
         ];
@@ -78,7 +78,7 @@
         }
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -139,7 +139,7 @@
                         <th>{{translate('Priority')}}</th>
                         <th>{{translate('Status')}}</th>
                         <th>{{translate('Updated At')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -164,19 +164,19 @@
                         </td>
                         <td>
                             <a href="mailto:{{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email }}">
-                                {{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email ?? translate('Not Available') }}
+                                {{ $inbox?->sender_email ?? $purchaseOrder?->wholeseller?->email ?? translate('not_available') }}
                             </a>
                             <br>
                             <a href="tel:{{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone }}">
-                                {{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone ?? translate('Not Available') }}
+                                {{ $inbox?->sender_phone ?? $purchaseOrder?->wholeseller?->phone ?? translate('not_available') }}
                             </a>
                         </td>
-                        <td>{{ $msg->owner?->name ?? translate('Not Assigned') }}</td>
+                        <td>{{ $msg->owner?->name ?? translate('not_assigned') }}</td>
 
                         <td>{{ $msg->department?->getTranslatedField('name') ?? translate('No Department') }}</td>
 
-                        <td>{{ $msg->employee?->name ?? translate('Not Assigned') }}</td>
-                        <td> {{ $msg?->priority ?? translate('Not Available') }}
+                        <td>{{ $msg->employee?->name ?? translate('not_assigned') }}</td>
+                        <td> {{ $msg?->priority ?? translate('not_available') }}
 
 
                         <td>

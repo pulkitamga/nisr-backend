@@ -26,13 +26,13 @@
             <div class="card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header">{{ translate('candidate_details') }}</div>
                 <div class="card-body">
-                    <p><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{ $supportTicket->customer->name ?? translate('N/A') }}</span></p>
-                    <p><strong>{{ translate('email') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('N/A') }}</span></p>
-                    <p><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{ $supportTicket->customer->name ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->email ?? translate('N/A') }}</span></p>
+                    <p><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->customer->phone ?? translate('N/A') }}</span></p>
                     @if($supportTicket->conversations->whereNotNull('attachment')->count() > 0)
                     <p><strong>{{ translate('cv') }}:</strong>
                         @foreach($supportTicket->conversations->whereNotNull('attachment') as $conv)
-                        <a href="{{ $conv->attachment }}" target="_blank">{{ translate('view') }}</a>
+                        <a href="{{ $conv->attachment }}" target="_blank">{{ translate('View') }}</a>
                         @endforeach
                     </p>
                     @endif
@@ -43,10 +43,10 @@
             <div class="card" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                 <div class="card-header">{{ translate('ticket_details') }}</div>
                 <div class="card-body">
-                    <p><strong>{{ translate('subject') }}:</strong> <span class="bidi-auto">{{ $supportTicket->subject }}</span></p>
-                    <p><strong>{{ translate('status') }}:</strong> <span class="bidi-auto">{{ \App\Utils\crm_status_label($supportTicket->status_details?->getTranslatedField('name') ?? $supportTicket->status_details?->name ?? null, 'N/A') }}</span></p>
+                    <p><strong>{{ translate('Subject') }}:</strong> <span class="bidi-auto">{{ $supportTicket->subject }}</span></p>
+                    <p><strong>{{ translate('Status') }}:</strong> <span class="bidi-auto">{{ \App\Utils\crm_status_label($supportTicket->status_details?->getTranslatedField('name') ?? $supportTicket->status_details?->name ?? null, 'N/A') }}</span></p>
                     <p><strong>{{ translate('recruiter') }}:</strong> <span class="bidi-auto">{{ $supportTicket->employee->name ?? translate('Unassigned') }}</span></p>
-                    <p><strong>{{ translate('created_at') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->created_at->format('d-m-Y H:i') }}</span></p>
+                    <p><strong>{{ translate('Created_At') }}:</strong> <span class="bidi-ltr">{{ $supportTicket->created_at->format('d-m-Y H:i') }}</span></p>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@
                                 <th>{{ translate('Type') }}</th>
                                 <th>{{ translate('Description') }}</th>
                                 <th>{{ translate('Created By') }}</th>
-                                <th>{{ translate('Date') }}</th>
+                                <th>{{ translate('DATE') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -118,9 +118,9 @@
                     <table class="table table-bordered text-start">
                         <thead>
                             <tr>
-                                <th>{{ translate('status') }}</th>
-                                <th>{{ translate('start_date') }}</th>
-                                <th>{{ translate('attachment') }}</th>
+                                <th>{{ translate('Status') }}</th>
+                                <th>{{ translate('Start_Date') }}</th>
+                                <th>{{ translate('Attachment') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,7 +128,7 @@
                             <tr>
                                 <td>{{ \App\Utils\crm_status_label($offer->status, 'N/A') }}</td>
                                 <td>{{ $offer->start_date }}</td>
-                                <td><a href="{{ route('admin.support-ticket.career.offer.download', $offer->id) }}" target="_blank">{{ translate('view') }}</a></td>
+                                <td><a href="{{ route('admin.support-ticket.career.offer.download', $offer->id) }}" target="_blank">{{ translate('View') }}</a></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -139,8 +139,8 @@
                         <thead>
                             <tr>
                                 <th>{{ translate('reason_code') }}</th>
-                                <th>{{ translate('message') }}</th>
-                                <th>{{ translate('date') }}</th>
+                                <th>{{ translate('Message') }}</th>
+                                <th>{{ translate('DATE') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -167,7 +167,7 @@
 
                             @if($pool)
                             <tr>
-                                <td>{{ $pool->consent ? translate('yes') : translate('no') }}</td>
+                                <td>{{ $pool->consent ? translate('Yes') : translate('No') }}</td>
                                 <td>{{ $pool->recontact_date ?? translate('N/A') }}</td>
                             </tr>
                             @else

@@ -5,7 +5,7 @@
                 <img width="48" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/withdraw.png')}}" alt="">
                 <h3 class="for-card-count mb-0 fz-24">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $dashboardData['totalEarning']), currencyCode: getCurrencyCode(type: 'default'))}}</h3>
                 <div class="font-weight-bold text-capitalize mb-30">
-                    {{translate('withdrawable_balance')}}
+                    {{translate('withdrawable_Balance')}}
                 </div>
                 <a href="javascript:"
                     class="btn btn--primary px-4"

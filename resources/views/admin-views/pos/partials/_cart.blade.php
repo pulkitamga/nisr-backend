@@ -25,9 +25,9 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                 <thead class="text-capitalize bg-light">
                     <tr>
                         <th class="border-0 min-w-120">{{ translate('item') }}</th>
-                        <th class="border-0">{{ translate('qty') }}</th>
-                        <th class="border-0">{{ translate('price') }}</th>
-                        <th class="border-0 text-center">{{ translate('delete') }}</th>
+                        <th class="border-0">{{ translate('QTY') }}</th>
+                        <th class="border-0">{{ translate('Price') }}</th>
+                        <th class="border-0 text-center">{{ translate('Delete') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +44,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                             <div class="media align-items-center gap-10">
                                 <img class="avatar avatar-sm"
                                     src="{{ getStorageImages(path:$item['image'], type: 'backend-product') }}"
-                                    alt="{{$item['name'].translate('image')}} ">
+                                    alt="{{$item['name'].translate('Image')}} ">
                                 <div class="media-body">
                                     <h5 class="text-hover-primary mb-0">
                                         {{Str::limit($item['name'], 12)}}
@@ -92,7 +92,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
         <div class="pt-4">
             <dl>
                 <div class="d-flex gap-2 justify-content-between">
-                    <dt class="title-color text-capitalize font-weight-normal">{{ translate('sub_total') }} : </dt>
+                    <dt class="title-color text-capitalize font-weight-normal">{{ translate('Subtotal') }} : </dt>
                     <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['subtotal'] +
                         $cartItems['discountOnProduct']), currencyCode: getCurrencyCode())}}</dd>
                 </div>
@@ -117,7 +117,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <dt class="title-color gap-2 text-capitalize font-weight-normal">{{ translate('coupon_Discount') }}
+                    <dt class="title-color gap-2 text-capitalize font-weight-normal">{{ translate('Coupon_Discount') }}
                         :</dt>
                     <dd>
                         <button id="coupon_discount" class="btn btn-sm p-0" type="button" data-toggle="modal"
@@ -130,7 +130,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                 </div>
 
                 <div class="d-flex gap-2 justify-content-between">
-                    <dt class="title-color text-capitalize font-weight-normal">{{ translate('tax') }} : </dt>
+                    <dt class="title-color text-capitalize font-weight-normal">{{ translate('Tax') }} : </dt>
                     <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: round($cartItems['totalTax'],2) ),
                         currencyCode: getCurrencyCode())}}</dd>
                 </div>
@@ -155,7 +155,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
 
 
                 <div class="d-flex gap-2 border-top justify-content-between pt-2">
-                    <dt class="title-color text-capitalize font-weight-bold title-color">{{ translate('total') }} :
+                    <dt class="title-color text-capitalize font-weight-bold title-color">{{ translate('Total') }} :
                     </dt>
                     <dd class="font-weight-bold title-color">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:
                         $total ), currencyCode: getCurrencyCode())}}</dd>
@@ -177,7 +177,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                         <li>
                             <input type="radio" class="paid-by-cash" id="cash" value="cash" name="type" hidden checked>
                             <label for="cash" class="btn btn--bordered btn--bordered-black px-4 mb-0">{{
-                                translate('cash') }}</label>
+                                translate('Cash') }}</label>
                         </li>
                         <li>
                             <input type="radio" value="card" id="card" name="type" hidden>
@@ -199,7 +199,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                         <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
                         <dd>
                             <input type="number" class="form-control text-end pos-paid-amount-element"
-                                placeholder="{{ translate('ex') }}: 1000"
+                                placeholder="{{ translate('Ex') }}: 1000"
                                 value="{{usdToDefaultCurrency(amount: $total)}}" name="paid_amount"
                                 min="{{ usdToDefaultCurrency (amount: $total) }}"
                                 data-currency-position="{{ getWebConfig('currency_symbol_position') }}"
@@ -216,7 +216,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                     <div class="d-flex gap-2 justify-content-between align-items-center pt-4">
                         <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
                         <dd>
-                            <input type="number" class="form-control text-end" placeholder="{{ translate('ex') }}: 1000"
+                            <input type="number" class="form-control text-end" placeholder="{{ translate('Ex') }}: 1000"
                                 value="{{usdToDefaultCurrency(amount: $total)}}" disabled>
                         </dd>
                     </div>
@@ -232,7 +232,7 @@ $branch_id = (int)($branchId ?? request()->get('branch_id', 1));
                                 data-text="{{ translate('insufficient_balance') }}"></span></dt>
                         <dd>
                             <input type="number" class="form-control text-end wallet-balance-input"
-                                placeholder="{{ translate('ex') }}: 1000"
+                                placeholder="{{ translate('Ex') }}: 1000"
                                 value="{{ usdToDefaultCurrency(amount: $total) }}"
                                 disabled>
                         </dd>

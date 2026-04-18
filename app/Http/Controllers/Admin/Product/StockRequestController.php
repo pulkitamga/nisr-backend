@@ -165,14 +165,14 @@ class StockRequestController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('From Branch'),
+                    translate('From_branch'),
                     translate('Request Date'),
                     translate('Products'),
                     translate('Category'),
                     translate('Variation'),
-                    translate('Qty'),
+                    translate('QTY'),
                 ],
-                title: translate('stock_request_list'),
+                title: translate('Stock_Request_List'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
@@ -180,16 +180,16 @@ class StockRequestController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('date') . ': ' . ($request->input('restock_date') ?: translate('all')),
-                    translate('category') . ': ' . ($request->input('category_id') ?: translate('all')),
-                    translate('brand') . ': ' . ($request->input('brand_id') ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('DATE') . ': ' . ($request->input('restock_date') ?: translate('All')),
+                    translate('Category') . ': ' . ($request->input('category_id') ?: translate('All')),
+                    translate('Brand') . ': ' . ($request->input('brand_id') ?: translate('All')),
                 ])),
                 columnWidths: ['A' => 20, 'B' => 16, 'C' => 32, 'D' => 24, 'E' => 30, 'F' => 12],
                 centerColumns: ['B', 'F'],
                 sumColumns: ['F']
             ),
-            LocalizedExport::fileName(translate('stock_request_list'))
+            LocalizedExport::fileName(translate('Stock_Request_List'))
         );
     }
 

@@ -27,10 +27,10 @@
             [
                 'type' => 'search',
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
-                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'placeholder' => translate('Search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('Search_by_Name_or_Email_or_Phone'),
                 'col_class' => 'col-xl-8 col-lg-8',
             ],
             [
@@ -51,7 +51,7 @@
         ];
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => \Illuminate\Support\Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -100,12 +100,12 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('wholesaler') }}</th>
-                        <th>{{ translate('phone') }}</th>
-                        <th>{{ translate('tier') }}</th>
+                        <th>{{ translate('Wholesaler') }}</th>
+                        <th>{{ translate('Phone') }}</th>
+                        <th>{{ translate('Tier') }}</th>
                         <th class="text-center">{{ translate('Status') }}</th>
                         <th class="text-center">{{ translate('MOQ Override') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,10 +153,10 @@
                                 <div class="crm-row-actions">
                                     <div class="crm-row-actions__primary">
                                         <a class="btn btn-sm btn-info" href="{{ route('admin.wholesale.business.wholesaler.profile', $business->id) }}">
-                                            {{ translate('view') }}
+                                            {{ translate('View') }}
                                         </a>
                                         <a class="btn btn-sm btn-outline--primary" href="{{ route('admin.wholesale.business.wholesaler.profile.edit', $business->id) }}">
-                                            {{ translate('edit') }}
+                                            {{ translate('Edit') }}
                                         </a>
                                     </div>
                                 </div>

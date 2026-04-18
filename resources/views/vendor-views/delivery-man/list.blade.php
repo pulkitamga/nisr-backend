@@ -26,7 +26,7 @@
                                 </div>
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
                                        placeholder="{{translate('search_by_name').','.translate('_contact_info')}}" aria-label="Search" value="{{ request('search') }}" required>
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                     </div>
@@ -50,12 +50,12 @@
                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('name')}}</th>
-                        <th>{{translate('contact_Info')}}</th>
+                        <th>{{translate('Name')}}</th>
+                        <th>{{translate('_contact_info')}}</th>
                         <th>{{translate('total_Orders')}}</th>
-                        <th>{{translate('rating')}}</th>
-                        <th>{{translate('status')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('Rating')}}</th>
+                        <th>{{translate('Status')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                     <tbody id="set-rows">
@@ -114,7 +114,7 @@
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     <a  class="btn btn-outline--primary btn-sm square-btn" href="{{route('vendor.delivery-man.update',[$deliveryMan['id']])}}"
-                                        title="{{translate('edit')}}">
+                                        title="{{translate('Edit')}}">
                                         <i class="tio-edit"></i>
                                     </a>
                                     <a title="Earning Statement"
@@ -124,7 +124,7 @@
                                     </a>
                                     <a class="btn btn-outline-danger btn-sm square-btn delete-data"
                                        data-id="delivery-man-{{$deliveryMan['id']}}"
-                                        title="{{translate('delete')}}"
+                                        title="{{translate('Delete')}}"
                                         href="javascript:"
                                     >
                                         <i class="tio-delete"></i>
@@ -150,7 +150,7 @@
             </div>
         </div>
     </div>
-    <span id="deliveryman-status-message" data-text="{{translate("status_updated_successfully")}}"></span>
+    <span id="deliveryman-status-message" data-text="{{translate("Status_updated_successfully")}}"></span>
 @endsection
 
 @push('script_2')

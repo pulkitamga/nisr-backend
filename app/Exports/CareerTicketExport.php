@@ -42,7 +42,7 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithTitle
                 (string) ($ticket->employee?->name ?? translate('Unassigned')),
                 ucfirst((string) translate((string) ($ticket->priority ?? ''))),
                 $ticket->created_at?->format('Y-m-d H:i') ?? '-',
-                $ticket->careerTalentPool?->consent ? translate('yes') : translate('no'),
+                $ticket->careerTalentPool?->consent ? translate('Yes') : translate('No'),
                 $ticket->careerTalentPool?->recontact_date ?? translate('N/A'),
             ];
         })->all();
@@ -52,13 +52,13 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithTitle
     {
         return [
             translate('ticket_id'),
-            translate('subject'),
+            translate('Subject'),
             translate('candidate_name'),
             translate('candidate_email'),
-            translate('status'),
+            translate('Status'),
             translate('recruiter'),
             translate('Priority'),
-            translate('created_at'),
+            translate('Created_At'),
             translate('talent_pool_consent'),
             translate('recontact_date'),
         ];
@@ -77,11 +77,11 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithTitle
     public function filterSummary(): string
     {
         return implode(' | ', [
-            translate('search') . ': ' . (trim((string) $this->request->get('searchValue', '')) ?: translate('all')),
+            translate('Search') . ': ' . (trim((string) $this->request->get('searchValue', '')) ?: translate('All')),
             translate('Priority') . ': ' . (($this->request->filled('priority') && $this->request->get('priority') !== 'all')
                 ? ucfirst((string) translate((string) $this->request->get('priority')))
-                : translate('all')),
-            translate('status') . ': ' . $this->statusFilterLabel(),
+                : translate('All')),
+            translate('Status') . ': ' . $this->statusFilterLabel(),
             translate('talent_pool') . ': ' . $this->talentPoolFilterLabel(),
         ]);
     }
@@ -138,7 +138,7 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithTitle
         $status = (string) $this->request->get('status', 'all');
 
         if ($status === '' || $status === 'all') {
-            return translate('all');
+            return translate('All');
         }
 
         $statusModel = SupportTicketStatusMaster::with('translations')->find($status);
@@ -151,9 +151,9 @@ class CareerTicketExport implements FromCollection, WithHeadings, WithTitle
     private function talentPoolFilterLabel(): string
     {
         return match ((string) $this->request->get('talent_pool', 'all')) {
-            'yes' => translate('yes'),
-            'no' => translate('no'),
-            default => translate('all'),
+            'yes' => translate('Yes'),
+            'no' => translate('No'),
+            default => translate('All'),
         };
     }
 }

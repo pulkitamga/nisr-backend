@@ -173,7 +173,7 @@ $direction = Session::get('direction');
             <hr>
             <div class="mb-2" id="mail-footer">
                 {{ translate('please_')}}
-                <a href="{{route('contacts')}}" target="_blank">{{ translate('_contact_us')}}</a>
+                <a href="{{route('contacts')}}" target="_blank">{{ translate('Contact_Us')}}</a>
                 {{ translate('_for_any_queries').','.translate('_we_are_always_happy_to_help').'.' }}
             </div>
             <div>

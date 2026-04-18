@@ -31,7 +31,7 @@
         </div>
     @else
         <div class="text-center">
-            <p class="text-muted">{{translate('no_data_found').'!'}}</p>
+            <p class="text-muted">{{translate('no_Data_found').'!'}}</p>
             <img class="w-75" src="{{dynamicAsset(path: 'public/assets/back-end/img/no-data.png')}}" alt="">
         </div>
     @endif

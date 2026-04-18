@@ -34,7 +34,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
+                        <b class="bold black">{{translate('DATE')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
                 </tr>
@@ -51,7 +51,7 @@
                     <td class="p-0 text-start">
                         <table>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('duration')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Duration')}}</th>
                                 <td class="p-0 p-3">: {{ $duration }}</td>
                             </tr>
                             <tr>
@@ -61,13 +61,13 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('customer_Info')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Customer_Info')}}</th>
                                 <td class="p-0 p-3">:
                                     {{ $customer_info }}
                                 </td>
                             </tr>
                             <tr>
-                                <th class="bold black p-0 text-start p-3">{{translate('status')}}</th>
+                                <th class="bold black p-0 text-start p-3">{{translate('Status')}}</th>
                                 <td class="p-0 p-3">:
                                     {{ $status }}
                                 </td>
@@ -120,9 +120,9 @@
                 <tr>
                     <td class="ps-0 pe-0 text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
-                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
+                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Details')}}</td>
                     <td class="text-end"
-                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
+                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
@@ -154,7 +154,7 @@
                 </tr>
                 <tr>
                     <td class="text-center">5</td>
-                    <td>{{translate('total')}} {{translate('VAT/TAX')}}</td>
+                    <td>{{translate('Total')}} {{translate('VAT/TAX')}}</td>
                     <td class="text-end">
                         {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_tax']), currencyCode: getCurrencyCode()) }}
                     </td>
@@ -233,12 +233,12 @@
             <div class="d-flex justify-content-center gap-2">
                 <div class="mb-2">
                     <i class="fa fa-phone"></i>
-                    {{translate('phone')}}
+                    {{translate('Phone')}}
                     : {{ $company_phone }}
                 </div>
                 <div class="mb-2">
                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                    {{translate('email')}}
+                    {{translate('Email')}}
                     : {{ $company_email }}
                 </div>
             </div>

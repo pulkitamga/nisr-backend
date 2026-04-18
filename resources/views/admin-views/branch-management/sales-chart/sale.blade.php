@@ -10,7 +10,7 @@
         <!-- ================= FILTER BOX ================= -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">{{ translate('filters') }}</h5>
+                <h5 class="mb-0">{{ translate('Filters') }}</h5>
             </div>
             <div class="card-body">
                 <div class="row g-3 align-items-end">
@@ -18,9 +18,9 @@
                     <div class="col-md-3">
                         <label class="form-label">{{ translate('date_type') }}</label>
                         <select class="form-control" id="dateType">
-                            <option value="year">{{ translate('this_year') }}</option>
-                            <option value="week">{{ translate('this_week') }}</option>
-                            <option value="month">{{ translate('this_month') }}</option>
+                            <option value="year">{{ translate('this_Year') }}</option>
+                            <option value="week">{{ translate('this_Week') }}</option>
+                            <option value="month">{{ translate('this_Month') }}</option>
                             <option value="day">{{ translate('today') }}</option>
                             <option value="custom">{{ translate('custom_range') }}</option>
                         </select>
@@ -41,7 +41,7 @@
 
                     <!-- Branch Filter -->
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('select_branch') }}</label>
+                        <label class="form-label">{{ translate('Select_Branch') }}</label>
                         <select class="form-control" id="branchFilter">
                             <option value="">{{ translate('all_branches') }}</option>
                             @foreach ($branches as $branch)
@@ -54,9 +54,9 @@
 
                     <!-- Product Filter -->
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('select_product') }}</label>
+                        <label class="form-label">{{ translate('select_Product') }}</label>
                         <select class="form-control" id="productFilter">
-                            <option value="">{{ translate('all_products') }}</option>
+                            <option value="">{{ translate('all_Products') }}</option>
                             @foreach ($products as $product)
                                 @if (!empty(trim($product->name)))
                                     <option value="{{ $product->id }}" data-variations='@json($product->variation)'>
@@ -78,12 +78,12 @@
                     <!-- Apply Button with Loader -->
                     <div class="col-md-12 d-flex gap-2">
                         <button class="btn btn-primary " id="applyFilter">
-                            <span class="apply-text">{{ translate('filter') }}</span>
+                            <span class="apply-text">{{ translate('Filter') }}</span>
                             <span class="spinner-border spinner-border-sm d-none" id="applyLoader"></span>
                         </button>
 
                         <button class="btn btn-outline-secondary " id="resetFilter">
-                            {{ translate('reset') }}
+                            {{ translate('Reset') }}
                         </button>
 
                         <button class="btn btn-outline-success" id="exportReport">
@@ -170,12 +170,12 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>{{ translate('branch_name') }}</th>
-                                <th>{{ translate('product_name') }}</th>
+                                <th>{{ translate('Branch_Name') }}</th>
+                                <th>{{ translate('Product_name') }}</th>
                                 @if (request()->has('variation_type') && request('variation_type'))
-                                    <th>{{ translate('variation') }}</th>
+                                    <th>{{ translate('Variation') }}</th>
                                 @endif
-                                <th>{{ translate('current_stock') }}</th>
+                                <th>{{ translate('Current_Stock') }}</th>
                                 <th>{{ translate('stock_in_out') }}</th>
                                 <th>{{ translate('last_updated') }}</th>
                             </tr>
@@ -211,17 +211,17 @@
     <script>
         const branchStockI18n = {
             allVariations: @json(translate('all_variations')),
-            allProducts: @json(translate('all_products')),
+            allProducts: @json(translate('all_Products')),
             noData: @json(translate('no_data')),
             noDataSelectedFilters: @json(translate('no_data_available_for_the_selected_filters')),
             notAvailable: @json(translate('na_symbol')),
             inLabel: @json(translate('in')),
             outLabel: @json(translate('out')),
-            currentStock: @json(translate('current_stock')),
+            currentStock: @json(translate('Current_Stock')),
             stockQuantity: @json(translate('stock_quantity')),
-            products: @json(translate('products')),
-            branches: @json(translate('branches')),
-            somethingWentWrong: @json(translate('something_went_wrong')),
+            products: @json(translate('Products')),
+            branches: @json(translate('Branches')),
+            somethingWentWrong: @json(translate('Something_went_wrong')),
             requestFailed: @json(translate('request_failed')),
             exportFailed: @json(translate('export_failed')),
             exporting: @json(translate('exporting')),

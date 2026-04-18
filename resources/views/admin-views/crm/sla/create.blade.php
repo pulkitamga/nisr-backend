@@ -28,11 +28,11 @@
                         <option value="retail_deal">{{ translate('Retail Deal') }}</option>
                         <option value="wholesale_deal">{{ translate('Wholesale Deal') }}</option>
                         <option value="warranty_claim">{{ translate('Warranty Claim') }}</option>
-                        <option value="complaint_ticket">{{ translate('Complaint Ticket') }}</option>
-                        <option value="service_ticket">{{ translate('Service Ticket') }}</option>
+                        <option value="complaint_ticket">{{ translate('complaint_Ticket') }}</option>
+                        <option value="service_ticket">{{ translate('service_Ticket') }}</option>
                         <option value="career_ticket">{{ translate('Career Ticket') }}</option>
-                        <option value="support_ticket">{{ translate('Support Ticket') }}</option>
-                        <option value="retail_ticket">{{ translate('Retail Ticket') }}</option>
+                        <option value="support_ticket">{{ translate('support_Ticket') }}</option>
+                        <option value="retail_ticket">{{ translate('retail_ticket') }}</option>
                         <option value="wholesale_ticket">{{ translate('Wholesale Ticket') }}</option>
                     </select>
                 </div>

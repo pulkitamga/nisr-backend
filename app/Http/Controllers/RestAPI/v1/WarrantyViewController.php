@@ -152,7 +152,7 @@ class WarrantyViewController extends Controller
                 'otp_method' => $otpMethod,
                 'temp_token' => encrypt($sessionData),
                 'masked_contact' => $this->maskContact((string)($normalizedContact ?? $request->contact)),
-                'message' => translate('OTP sent successfully')
+                'message' => translate('OTP_sent_successfully')
             ]);
         }
  
@@ -513,7 +513,7 @@ class WarrantyViewController extends Controller
         if (preg_match('/Item received \| Serial:\s*(.*?)\s*\| Branch:\s*(.*?)\s*\| Notes:\s*(.*)$/i', $description, $matches)) {
             return translate('warranty_timeline_item_received') . ' | ' .
                 translate('serial_number') . ': ' . trim($matches[1]) . ' | ' .
-                translate('branch') . ': ' . trim($matches[2]) . ' | ' .
+                translate('Branch') . ': ' . trim($matches[2]) . ' | ' .
                 translate('notes') . ': ' . trim($matches[3]);
         }
 
@@ -525,8 +525,8 @@ class WarrantyViewController extends Controller
         if (preg_match('/Decision:\s*(.*?)\s*\| Code:\s*(.*?)\s*\| Message:\s*(.*)$/i', $description, $matches)) {
             return translate('warranty_timeline_decision') . ': ' .
                 $this->translateDecisionValue(trim($matches[1])) . ' | ' .
-                translate('code') . ': ' . trim($matches[2]) . ' | ' .
-                translate('message') . ': ' . trim($matches[3]);
+                translate('Code') . ': ' . trim($matches[2]) . ' | ' .
+                translate('Message') . ': ' . trim($matches[3]);
         }
 
         return $description;
@@ -597,7 +597,7 @@ class WarrantyViewController extends Controller
             return translate('warranty_timeline_battery_returned_without_repair');
         }
         if (str_starts_with($segment, 'Amount:')) {
-            return translate('amount') . ': ' . trim(substr($segment, strlen('Amount:')));
+            return translate('Amount') . ': ' . trim(substr($segment, strlen('Amount:')));
         }
         if (str_starts_with($segment, 'Payment ID:')) {
             return translate('payment_id') . ': ' . trim(substr($segment, strlen('Payment ID:')));
@@ -619,11 +619,11 @@ class WarrantyViewController extends Controller
 
         if (preg_match('/Diagnosis:\s*(.*?)\s*\| Action:\s*(.*?)\s*\| Tamper:\s*(Yes|No)(?:\s*\| Charges:\s*(.*))?$/i', $description, $matches)) {
             $translated = translate('warranty_timeline_diagnosis') . ': ' . trim($matches[1]) . ' | ' .
-                translate('action') . ': ' . $this->translateClaimAction(trim($matches[2])) . ' | ' .
+                translate('Action') . ': ' . $this->translateClaimAction(trim($matches[2])) . ' | ' .
                 translate('warranty_tamper') . ': ' . $this->translateYesNo(trim($matches[3]));
 
             if (!empty($matches[4])) {
-                $translated .= ' | ' . translate('charges') . ': ' . $this->translateChargeList(trim($matches[4]), '=');
+                $translated .= ' | ' . translate('Charges') . ': ' . $this->translateChargeList(trim($matches[4]), '=');
             }
 
             return $translated;
@@ -660,9 +660,9 @@ class WarrantyViewController extends Controller
     {
         if (preg_match('/RMA\s*(.*?)\s*issued\s*\| Branch:\s*(.*?)\s*\| Deadline:\s*(.*?)\s*\| Instructions:\s*(.*)$/i', $description, $matches)) {
             return translate('warranty_timeline_rma_issued') . ': ' . trim($matches[1]) . ' | ' .
-                translate('branch') . ': ' . trim($matches[2]) . ' | ' .
+                translate('Branch') . ': ' . trim($matches[2]) . ' | ' .
                 translate('deadline') . ': ' . trim($matches[3]) . ' | ' .
-                translate('instructions') . ': ' . trim($matches[4]);
+                translate('Instructions') . ': ' . trim($matches[4]);
         }
 
         return translate('warranty_timeline_rma_issued');
@@ -672,8 +672,8 @@ class WarrantyViewController extends Controller
     {
         if (preg_match('/Resumed from\s*(.*?)\s*→\s*(.*?)\.\s*Notes:\s*(.*)$/u', $description, $matches)) {
             return translate('warranty_timeline_claim_resumed') . ' | ' .
-                translate('from') . ': ' . $this->claimStatusLabel(trim($matches[1])) . ' | ' .
-                translate('to') . ': ' . $this->claimStatusLabel(trim($matches[2])) . ' | ' .
+                translate('From') . ': ' . $this->claimStatusLabel(trim($matches[1])) . ' | ' .
+                translate('To') . ': ' . $this->claimStatusLabel(trim($matches[2])) . ' | ' .
                 translate('notes') . ': ' . trim($matches[3]);
         }
 
@@ -685,7 +685,7 @@ class WarrantyViewController extends Controller
         if (preg_match('/Replacement committed:\s*(.*?)\s*\| Mode:\s*(.*?)\s*\| Warranty:\s*(.*?)\s*\| Notes:\s*(.*)$/i', $description, $matches)) {
             return translate('warranty_timeline_replacement_committed') . ': ' . trim($matches[1]) . ' | ' .
                 translate('mode') . ': ' . trim($matches[2]) . ' | ' .
-                translate('warranty') . ': ' . trim($matches[3]) . ' | ' .
+                translate('Warranty') . ': ' . trim($matches[3]) . ' | ' .
                 translate('notes') . ': ' . trim($matches[4]);
         }
 
@@ -779,7 +779,7 @@ class WarrantyViewController extends Controller
 
     private function translateYesNo(string $value): string
     {
-        return strtolower($value) === 'yes' ? translate('yes') : translate('no');
+        return strtolower($value) === 'yes' ? translate('Yes') : translate('No');
     }
 
     private function translatePaymentDispatchSummary(string $summary): string

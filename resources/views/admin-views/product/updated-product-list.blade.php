@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 text-capitalize mb-1 d-flex gap-2">
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
-                {{ translate('update_product') }}
+                {{ translate('Update_Product') }}
             </h2>
         </div>
 
@@ -35,10 +35,10 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_Product_Name') }}"
-                                               aria-label="{{ translate('Search orders') }}"
+                                               aria-label="{{ translate('search_orders') }}"
                                                value="{{ $searchValue }}" required>
                                         <button type="submit" class="btn btn--primary">
-                                            {{ translate('search') }}
+                                            {{ translate('Search') }}
                                         </button>
                                     </div>
                                 </form>
@@ -52,10 +52,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL') }}</th>
-                                <th>{{ translate('product Name') }}</th>
+                                <th>{{ translate('Product_name') }}</th>
                                 <th>{{ translate('previous_shipping_cost') }}</th>
                                 <th>{{ translate('new_shipping_cost') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -81,13 +81,13 @@
                                                     data-id="{{ $product['id'] }}"
                                                     data-message ="{{translate('want_to_approve_this_update_request').'?'}}"
                                                     data-status="1">
-                                                {{ translate('approved') }}
+                                                {{ translate('Approved') }}
                                             </button>
                                             <button class="btn btn-danger btn-sm update-status"
                                                     data-id="{{ $product['id'] }}"
                                                     data-message ="{{translate('want_to_deny_this_update_request').'?'}}"
                                                     data-status="2">
-                                                {{ translate('denied') }}
+                                                {{ translate('Denied') }}
                                             </button>
                                         </div>
                                     </td>

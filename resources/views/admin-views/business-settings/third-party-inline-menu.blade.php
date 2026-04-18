@@ -15,9 +15,9 @@
                 href="{{route('admin.social-media-chat.view')}}">{{translate('social_media_chat')}}</a></li>
         <li class="{{ Request::is('admin/social-login/'.SocialLoginSettings::VIEW[URI]) ?'active':'' }}"><a
                 class="text-capitalize"
-                href="{{route('admin.social-login.view')}}">{{translate('social_media_login')}}</a></li>
+                href="{{route('admin.social-login.view')}}">{{translate('Social_Media_Login')}}</a></li>
         <li class="{{ Request::is('admin/business-settings/mail') ?'active':'' }}"><a class="text-capitalize"
-                                                                                      href="{{route('admin.business-settings.mail.index')}}">{{translate('mail_config')}}</a>
+                                                                                      href="{{route('admin.business-settings.mail.index')}}">{{translate('Mail_Config')}}</a>
         </li>
         <li class="{{ Request::is('admin/business-settings/ucm') ?'active':'' }}"><a class="text-capitalize"
                                                                                       href="{{route('admin.business-settings.ucm')}}">{{translate('voip_config')}}</a>

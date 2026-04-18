@@ -56,7 +56,7 @@
                 <form method="GET" action="{{ url()->current() }}">
                     <div class="row g-2 align-items-start">
                         <div class="col-md-4">
-                            <label class="form-label mb-1">{{ translate('department') }}</label>
+                            <label class="form-label mb-1">{{ translate('Department') }}</label>
                             <select class="js-select2-custom form-control" name="department_ids[]" multiple>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
@@ -68,7 +68,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label mb-1">{{ translate('employee') }}</label>
+                            <label class="form-label mb-1">{{ translate('Employee') }}</label>
                             <select class="js-select2-custom form-control" name="employee_ids[]" multiple>
                                 @foreach ($employees as $employee)
                                     <option value="{{ $employee->id }}"
@@ -84,13 +84,13 @@
                             <select class="form-control" name="date_type" id="crm_deal_date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
+                                    {{ translate('this_Year') }}</option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
+                                    {{ translate('this_Month') }}</option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
+                                    {{ translate('this_Week') }}</option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}</option>
                                 <option value="custom_date"
@@ -100,18 +100,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_deal_from_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] }}">
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_deal_to_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.report.crm-sales-performance') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.report.crm-sales-performance-export-excel', request()->query()) }}"
                                 class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
@@ -158,16 +158,16 @@
                 <div class="report-kpi-card">
                     <div class="report-kpi-title">{{ translate('won_deals') }}</div>
                     <div class="report-kpi-value">{{ $summary['won_count'] }}</div>
-                    <div class="report-kpi-meta">{{ translate('retail') }}: {{ $summary['retail_won_count'] }} |
-                        {{ translate('wholesale') }}: {{ $summary['wholesale_won_count'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('Retail') }}: {{ $summary['retail_won_count'] }} |
+                        {{ translate('Wholesale') }}: {{ $summary['wholesale_won_count'] }}</div>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
                 <div class="report-kpi-card">
                     <div class="report-kpi-title">{{ translate('lost_deals') }}</div>
                     <div class="report-kpi-value">{{ $summary['lost_count'] }}</div>
-                    <div class="report-kpi-meta">{{ translate('retail') }}: {{ $summary['retail_lost_count'] }} |
-                        {{ translate('wholesale') }}: {{ $summary['wholesale_lost_count'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('Retail') }}: {{ $summary['retail_lost_count'] }} |
+                        {{ translate('Wholesale') }}: {{ $summary['wholesale_lost_count'] }}</div>
                 </div>
             </div>
             <div class="col-md-4 col-lg-2">
@@ -210,14 +210,14 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('department') }}</th>
-                            <th>{{ translate('employee') }}</th>
+                            <th>{{ translate('Department') }}</th>
+                            <th>{{ translate('Employee') }}</th>
                             <th class="text-end">{{ translate('retail_won_sales') }}</th>
                             <th class="text-end">{{ translate('wholesale_won_sales') }}</th>
                             <th class="text-end">{{ translate('won_sales') }}</th>
                             <th class="text-center">{{ translate('won') }}</th>
                             <th class="text-center">{{ translate('lost') }}</th>
-                            <th class="text-center">{{ translate('total') }}</th>
+                            <th class="text-center">{{ translate('Total') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -265,7 +265,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="9" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -302,9 +302,9 @@
             const chartData = @json($chart);
             const wonLabel = @json(translate('won'));
             const lostLabel = @json(translate('lost'));
-            const retailLabel = @json(translate('retail'));
-            const wholesaleLabel = @json(translate('wholesale'));
-            const salesLabel = @json(translate('sales'));
+            const retailLabel = @json(translate('Retail'));
+            const wholesaleLabel = @json(translate('Wholesale'));
+            const salesLabel = @json(translate('Sales'));
 
             const renderChart = (selector, options) => {
                 const el = document.querySelector(selector);
@@ -340,7 +340,7 @@
                 },
                 colors: ['#22c55e', '#ef4444'],
                 noData: {
-                    text: @json(translate('no_data_found'))
+                    text: @json(translate('no_Data_found'))
                 }
             });
 
@@ -356,7 +356,7 @@
                     position: 'bottom'
                 },
                 noData: {
-                    text: @json(translate('no_data_found'))
+                    text: @json(translate('no_Data_found'))
                 }
             });
 
@@ -388,7 +388,7 @@
                 },
                 colors: ['#0ea5e9', '#f59e0b'],
                 noData: {
-                    text: @json(translate('no_data_found'))
+                    text: @json(translate('no_Data_found'))
                 }
             });
 

@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Session;
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/shipping_method.png')}}" alt="">
-                {{translate('shipping_method')}}
+                {{translate('shipping_Method')}}
             </h2>
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder text-capitalize">
-                {{translate('delivery_restriction')}}
+                {{translate('Delivery_restriction')}}
                 <div class="ripple-animation" data-toggle="modal" data-target="#howItWorksModal">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"
                          class="svg replaced-svg">
@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Session;
                         <div class="d-flex flex-column align-items-center gap-2">
                             <img width="80" class="mb-3" src="{{dynamicAsset(path: 'public/assets/back-end/img/delivery-restriction.png')}}"
                                  loading="lazy" alt="">
-                            <h4 class="lh-md text-capitalize">{{translate('delivery_restriction')}}</h4>
+                            <h4 class="lh-md text-capitalize">{{translate('Delivery_restriction')}}</h4>
                             <div class="d-flex flex-column align-items-start">
                                 <p class="text--black">{{'1'.'. '.translate('you_can_only_delivery_in_added_zip_code_areas_that_has_already_selected_by_admin').'.'}}</p>
                                 <p class="text--black">{{'2'.'. '.translate('you_can_only_deliver_orders_to_the_selected_countries_which_admin_selected').'.'}}</p>
@@ -59,7 +59,7 @@ use Illuminate\Support\Facades\Session;
                         <div class="row">
                             <div class="col-12 text-capitalize" style="text-align: {{$direction === "rtl" ? 'right' : 'left'}};">
                                 <select class="form-control text-capitalize w-100 shipping-type" name="shippingCategory">
-                                    <option value="0" selected disabled>{{'---'.translate('select').'---'}}</option>
+                                    <option value="0" selected disabled>{{'---'.translate('Select').'---'}}</option>
                                     <option
                                         value="order_wise" {{$shippingType=='order_wise'?'selected':'' }} >{{translate('order_wise')}} </option>
                                     <option
@@ -72,7 +72,7 @@ use Illuminate\Support\Facades\Session;
                                 <p>
                                     <img width="16" class="mt-n1"
                                          src="{{dynamicAsset(path: 'public/assets/back-end/img/danger-info.png')}}" alt="">
-                                    <strong>{{translate('note').' '.':'}}</strong>
+                                    <strong>{{translate('Note').' '.':'}}</strong>
                                     {{translate('please_make_sure_all_the product`s_delivery_charges_are_up_to_date').'.'}}
                                 </p>
                             </div>
@@ -97,8 +97,8 @@ use Illuminate\Support\Facades\Session;
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="title">{{translate('title')}}</label>
-                                            <input type="text" name="title" class="form-control" placeholder="{{translate('title')}}" required>
+                                            <label class="title-color d-flex" for="title">{{translate('Title')}}</label>
+                                            <input type="text" name="title" class="form-control" placeholder="{{translate('Title')}}" required>
                                         </div>
                                     </div>
                                 </div>
@@ -107,8 +107,8 @@ use Illuminate\Support\Facades\Session;
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="duration">{{translate('duration')}}</label>
-                                            <input type="text" name="duration" class="form-control" placeholder="{{translate('ex').':'.translate('4_to_6_days')}}" required>
+                                            <label class="title-color d-flex" for="duration">{{translate('Duration')}}</label>
+                                            <input type="text" name="duration" class="form-control" placeholder="{{translate('Ex').':'.translate('4_to_6_days')}}" required>
                                         </div>
                                     </div>
                                 </div>
@@ -118,14 +118,14 @@ use Illuminate\Support\Facades\Session;
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
                                             <label class="title-color d-flex" for="cost">{{translate('cost')}}</label>
-                                            <input type="number" min="0" step="0.01" max="1000000" name="cost" class="form-control" placeholder="{{translate('ex').':'.usdToDefaultCurrency('10')}}" required>
+                                            <input type="number" min="0" step="0.01" max="1000000" name="cost" class="form-control" placeholder="{{translate('Ex').':'.usdToDefaultCurrency('10')}}" required>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-10">
-                            <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                            <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                         </div>
                     </form>
                 </div>
@@ -145,11 +145,11 @@ use Illuminate\Support\Facades\Session;
                         <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('title')}}</th>
-                            <th>{{translate('duration')}}</th>
+                            <th>{{translate('Title')}}</th>
+                            <th>{{translate('Duration')}}</th>
                             <th>{{translate('cost')}}</th>
-                            <th class="text-center">{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -187,7 +187,7 @@ use Illuminate\Support\Facades\Session;
                                 <td>
                                     <div class="d-flex gap-2 justify-content-center">
                                         <a  class="btn btn-outline--primary btn-sm square-btn"
-                                            title="{{translate('edit')}}"
+                                            title="{{translate('Edit')}}"
                                             href="{{route('vendor.business-settings.shipping-method.update',[$method['id']])}}">
                                             <i class="tio-edit"></i>
                                         </a>
@@ -230,7 +230,7 @@ use Illuminate\Support\Facades\Session;
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('category_name')}}</th>
+                                <th>{{translate('category_Name')}}</th>
                                 <th>{{translate('cost_per_product')}}</th>
                                 <th class="text-center">{{translate('multiply_with_QTY')}}</th>
                             </tr>
@@ -263,7 +263,7 @@ use Illuminate\Support\Facades\Session;
                                 <tr>
                                     <td colspan="4">
                                         <div class="d-flex justify-content-end">
-                                            <button type="submit" class="btn btn--primary ">{{translate('save')}}</button>
+                                            <button type="submit" class="btn btn--primary ">{{translate('Save')}}</button>
                                         </div>
                                     </td>
                                 </tr>

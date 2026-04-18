@@ -50,8 +50,8 @@
     <div class="content container-fluid">
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="{{ translate('3rd_party') }}">
-                {{translate('3rd_party')}}
+                <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="{{ translate('3rd_Party') }}">
+                {{translate('3rd_Party')}}
             </h2>
         </div>
 
@@ -117,7 +117,7 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('UCM_IP_address_or_domain')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="host"
-                                                       placeholder="{{ translate('ex').':'.'192.168.1.100' }}"
+                                                       placeholder="{{ translate('Ex').':'.'192.168.1.100' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['host']??'')}}">
                                             </div>
                                         </div>
@@ -128,18 +128,18 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('default_8089')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="port"
-                                                       placeholder="{{ translate('ex').':'.'8089' }}"
+                                                       placeholder="{{ translate('Ex').':'.'8089' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['port']??'8089')}}">
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                                    <label class="title-color mb-0">{{translate('username')}}</label>
+                                                    <label class="title-color mb-0">{{translate('Username')}}</label>
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('API_username_from_UCM')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="username"
-                                                       placeholder="{{ translate('ex').':'.'api_user' }}"
+                                                       placeholder="{{ translate('Ex').':'.'api_user' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['username']??'')}}">
                                             </div>
                                         </div>
@@ -161,7 +161,7 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('use_1.0_for_UCM62xx_series')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="api_version"
-                                                       placeholder="{{ translate('ex').':'.'1.0' }}"
+                                                       placeholder="{{ translate('Ex').':'.'1.0' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['api_version']??'1.0')}}">
                                             </div>
                                         </div>
@@ -172,7 +172,7 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('UCM_will_send_API_reports_to_this_URL_after_login')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="report_url"
-                                                       placeholder="{{ translate('ex').':'.'https://crm.example.com/ucm/events' }}"
+                                                       placeholder="{{ translate('Ex').':'.'https://crm.example.com/ucm/events' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['report_url']??'')}}">
                                             </div>
                                         </div>
@@ -183,7 +183,7 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('set_a_token_and_send_it_as_X-UCM-Webhook-Token_header_or_token_query_param')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="webhook_token"
-                                                       placeholder="{{ translate('ex').':'.'ucm_webhook_shared_secret' }}"
+                                                       placeholder="{{ translate('Ex').':'.'ucm_webhook_shared_secret' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['webhook_token']??'')}}">
                                             </div>
                                         </div>
@@ -194,7 +194,7 @@
                                                     <i class="tio-info-outined" data-toggle="tooltip" title="{{translate('server_path_to_PEM_chain_for_TLS_verification')}}"></i>
                                                 </div>
                                                 <input type="text" class="form-control" name="ca_path"
-                                                       placeholder="{{ translate('ex').':'.'/etc/ssl/certs/ucm6204-chain.pem' }}"
+                                                       placeholder="{{ translate('Ex').':'.'/etc/ssl/certs/ucm6204-chain.pem' }}"
                                                        value="{{env('APP_MODE')=='demo'?'':($ucm['ca_path']??'')}}">
                                             </div>
                                         </div>
@@ -219,10 +219,10 @@
                                     </div>
 
                                     <div class="d-flex flex-wrap justify-content-end gap-10">
-                                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                                         <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                                 class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">
-                                            {{translate('save')}}
+                                            {{translate('Save')}}
                                         </button>
                                     </div>
                                 </div>

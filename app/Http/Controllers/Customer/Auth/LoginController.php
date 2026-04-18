@@ -232,7 +232,7 @@ class LoginController extends Controller
             $user->save();
 
             $time = $temp_block_time;
-            $message = translate('too_many_attempts._please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
+            $message = translate('Too_many_attempts. please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans();
             Toastr::error($message);
 
             return $request->ajax()

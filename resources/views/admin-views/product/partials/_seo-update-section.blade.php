@@ -135,7 +135,7 @@
                 <div class="item w-120px flex-grow-0">
                     <select class="form-control h-30 py-0" name="meta_max_image_preview_value">
                         <option value="large" {{ $product?->seoInfo?->max_image_preview_value == 'large' ? 'selected' : '' }}>{{ translate('large') }}</option>
-                        <option value="medium" {{ $product?->seoInfo?->max_image_preview_value == 'medium' ? 'selected' : '' }}>{{ translate('medium') }}</option>
+                        <option value="medium" {{ $product?->seoInfo?->max_image_preview_value == 'medium' ? 'selected' : '' }}>{{ translate('Medium') }}</option>
                         <option value="small" {{ $product?->seoInfo?->max_image_preview_value == 'small' ? 'selected' : '' }}>{{ translate('small') }}</option>
                     </select>
                 </div>

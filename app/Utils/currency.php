@@ -10,9 +10,21 @@ if (!function_exists('loadCurrency')) {
     {
         $defaultCurrency = getWebConfig(name: 'system_default_currency');
         $currentCurrencyInfo = session('system_default_currency_info');
-        if (!session()->has('system_default_currency_info') || $defaultCurrency != $currentCurrencyInfo['id']) {
+        $currentCurrencyId = is_array($currentCurrencyInfo) ? ($currentCurrencyInfo['id'] ?? null) : ($currentCurrencyInfo?->id);
+
+        if (!session()->has('system_default_currency_info') || $defaultCurrency != $currentCurrencyId) {
             $id = getWebConfig(name: 'system_default_currency');
+            if (blank($id)) {
+                session()->forget(['system_default_currency_info', 'currency_code', 'currency_symbol', 'currency_exchange_rate', 'usd', 'default', 'EGP']);
+                return;
+            }
+
             $currency = Currency::find($id);
+            if (!$currency) {
+                session()->forget(['system_default_currency_info', 'currency_code', 'currency_symbol', 'currency_exchange_rate', 'usd', 'default', 'EGP']);
+                return;
+            }
+
             session()->put('system_default_currency_info', $currency);
             session()->put('currency_code', $currency->code);
             session()->put('currency_symbol', $currency->symbol);
@@ -239,7 +251,7 @@ if (!function_exists('getCurrencyCode')) {
                 $currencyCode = session('system_default_currency_info')->code;
             } else {
                 $currencyId = getWebConfig('system_default_currency');
-                $currencyCode = Currency::where('id', $currencyId)->first()->code;
+                $currencyCode = Currency::where('id', $currencyId)->first()?->code ?? '';
             }
         }
         return $currencyCode;

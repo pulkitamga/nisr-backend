@@ -32,31 +32,31 @@
         $quotationSummary = [];
         if (request()->filled('date_from') || request()->filled('date_to')) {
             $quotationSummary[] = [
-                'label' => translate('date'),
+                'label' => translate('DATE'),
                 'value' => trim((request('date_from') ?: '...') . ' - ' . (request('date_to') ?: '...')),
             ];
         }
         if (request('tier') && request('tier') !== 'all') {
             $quotationSummary[] = [
-                'label' => translate('tier'),
+                'label' => translate('Tier'),
                 'value' => request('tier'),
             ];
         }
         if (request('status') && request('status') !== 'all') {
             $quotationSummary[] = [
-                'label' => translate('status'),
+                'label' => translate('Status'),
                 'value' => request('status'),
             ];
         }
         if (request('price_sort')) {
             $quotationSummary[] = [
-                'label' => translate('price'),
+                'label' => translate('Price'),
                 'value' => request('price_sort') === 'low_high' ? translate('Low to High') : translate('High to Low'),
             ];
         }
         if (request()->filled('searchValue')) {
             $quotationSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
             ];
         }
@@ -89,7 +89,7 @@
                 'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                 'options' => collect($tiers ?? [])
                     ->pluck('name', 'name')
-                    ->prepend(translate('all'), 'all')
+                    ->prepend(translate('All'), 'all')
                     ->all(),
             ],
             [
@@ -99,7 +99,7 @@
                 'value' => request('status', 'all'),
                 'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                 'options' => [
-                    'all' => translate('all'),
+                    'all' => translate('All'),
                     'sent' => translate('sent'),
                     'accepted' => translate('accepted'),
                     'rejected' => translate('rejected'),
@@ -128,7 +128,7 @@
             ],
             [
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'type' => 'search',
                 'value' => request('searchValue'),
                 'placeholder' => translate('Search...'),
@@ -162,7 +162,7 @@
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
-                                    <th>{{translate('Date')}}</th>
+                                    <th>{{translate('DATE')}}</th>
                                     <th>{{translate('Order_No')}}</th>
                                     <th>{{translate('Quotation_No')}}</th>
                                     <th>{{translate('Wholesaler')}}</th>
@@ -211,11 +211,11 @@
                                             <div class="crm-row-actions__primary">
                                                 <a class="btn btn-sm btn-info"
                                                     href="{{ route('admin.wholesale.business.orders.invoice', $order->id) }}">
-                                                    {{ translate('view') }}
+                                                    {{ translate('View') }}
                                                 </a>
                                                 <a class="btn btn-sm btn-outline--primary"
                                                     href="{{ route('admin.wholesale.business.orders.invoice.edit', $order->id) }}">
-                                                    {{ translate('edit') }}
+                                                    {{ translate('Edit') }}
                                                 </a>
                                             </div>
                                             <div class="dropdown crm-row-actions__menu">
@@ -238,7 +238,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="11" class="text-center py-4 text-muted">
-                                        {{ translate('No order found') }}
+                                        {{ translate('No_Order_Found') }}
                                     </td>
                                 </tr>
                                 @endforelse

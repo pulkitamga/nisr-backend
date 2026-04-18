@@ -14,31 +14,31 @@
                 <label class="badge {{$details['approved'] == 1 ? 'badge-success-2' : ($details['approved'] == 0 ? 'badge--primary-2':'badge--danger-2')}} mb-0">{{translate($details['approved'] == 1 ? 'approved' : ($details['approved'] == 0 ? 'pending':'denied'))}}</label>
             </div>
             <div class="d-flex gap-2 align-items-center fs-12">
-                <span class="text-capitalize">{{translate('request_time').' : '}}</span>
+                <span class="text-capitalize">{{translate('request_Time').' : '}}</span>
                 <span>{{ date_format( $details['created_at'], 'd-M-Y, h:i:s A') }}</span>
             </div>
         </div>
         <div class="card mb-3">
             <div class="card-header">
-                <h6 class="mb-0 font-medium text-capitalize font-weight-bold">{{translate('bank_info')}}</h6>
+                <h6 class="mb-0 font-medium text-capitalize font-weight-bold">{{translate('bank_Info')}}</h6>
             </div>
             <div class="card-body">
                 <div class="key-val-list d-flex flex-column gap-2 min-width--60px">
                     <div class="key-val-list-item d-flex gap-3">
-                        <span class="text-capitalize">{{translate('bank_name')}}</span>:
-                        <span>{{$details?->deliveryMan?->bank_name ?? translate('no_data_found')}}</span>
+                        <span class="text-capitalize">{{translate('bank_Name')}}</span>:
+                        <span>{{$details?->deliveryMan?->bank_name ?? translate('no_Data_found')}}</span>
                     </div>
                     <div class="key-val-list-item d-flex gap-3">
-                        <span>{{translate('branch')}}</span>:
-                        <span>{{$details?->deliveryMan?->branch ?? translate('no_data_found') }}</span>
+                        <span>{{translate('Branch')}}</span>:
+                        <span>{{$details?->deliveryMan?->branch ?? translate('no_Data_found') }}</span>
                     </div>
                     <div class="key-val-list-item d-flex gap-3">
-                        <span class="text-capitalize">{{translate('holder_name')}} </span>:
-                        <span>{{$details?->deliveryMan?->holder_name ?? translate('no_data_found') }}</span>
+                        <span class="text-capitalize">{{translate('holder_Name')}} </span>:
+                        <span>{{$details?->deliveryMan?->holder_name ?? translate('no_Data_found') }}</span>
                     </div>
                     <div class="key-val-list-item d-flex gap-3">
-                        <span class="text-capitalize">{{translate('account_no')}}</span>:
-                        <span>{{$details?->deliveryMan?->account_no ??  translate('no_data_found') }}</span>
+                        <span class="text-capitalize">{{translate('account_No')}}</span>:
+                        <span>{{$details?->deliveryMan?->account_no ??  translate('no_Data_found') }}</span>
                     </div>
                 </div>
             </div>
@@ -50,15 +50,15 @@
             <div class="card-body">
                 <div class="key-val-list d-flex flex-column gap-2 min-width--60px">
                     <div class="key-val-list-item d-flex gap-3">
-                        <span>{{translate('name')}}</span>:
+                        <span>{{translate('Name')}}</span>:
                         <span>{{$details?->deliveryMan?->f_name.' '.$details?->deliveryMan?->l_name}}</span>
                     </div>
                     <div class="key-val-list-item d-flex gap-3">
-                        <span>{{translate('email')}}</span>:
+                        <span>{{translate('Email')}}</span>:
                         <a href="mailto:{{$details?->deliveryMan?->email}}" class="text-dark">{{$details?->deliveryMan?->email}}</a>
                     </div>
                     <div class="key-val-list-item d-flex gap-3">
-                        <span>{{translate('phone')}}</span>:
+                        <span>{{translate('Phone')}}</span>:
                         <a href="tel:{{$details?->deliveryMan?->phone}}" class="text-dark">{{$details?->deliveryMan?->phone}}</a>
                     </div>
                 </div>
@@ -106,12 +106,12 @@
         <div class="withdraw-details">
             @if ($details['approved'] == 0)
                 <button type="button" class="btn btn-soft-danger min-w-100px open-note mx-2" data-id="denial-note" data-message="{{translate('want_to_deny_this_withdraw_request').'?'}}">{{translate('deny')}}</button>
-                <button type="button" class="btn btn-success min-w-100px open-note" data-id="approval-note" data-message="{{translate('want_to_approve_this_withdraw_request').'?'}}">{{translate('approve')}}</button>
+                <button type="button" class="btn btn-success min-w-100px open-note" data-id="approval-note" data-message="{{translate('want_to_approve_this_withdraw_request').'?'}}">{{translate('Approve')}}</button>
             @endif
         </div>
         <div class="d-none note-section">
-            <button type="button" class="btn btn-soft-secondary min-w-100px back-to-details mx-2"> {{translate('back')}}</button>
-            <button type="button" class="btn btn-primary min-w-100px form-submit" data-form-id="" data-message="">{{translate('complete')}}</button>
+            <button type="button" class="btn btn-soft-secondary min-w-100px back-to-details mx-2"> {{translate('Back')}}</button>
+            <button type="button" class="btn btn-primary min-w-100px form-submit" data-form-id="" data-message="">{{translate('Complete')}}</button>
         </div>
     </div>
 </div>

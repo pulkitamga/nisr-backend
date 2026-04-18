@@ -3,7 +3,7 @@
     <div class="model-lg modal-dialog modal-dialog-centered" style="max-width: 800px;">
         <div class="modal-content">
             <div class="modal-header border-0 pb-2 d-flex">
-            	<h3>{{ __('Select Branch') }}</h3>
+            	<h3>{{ __('Select_Branch') }}</h3>
                 <button type="button" class="radius-50 btn-close border-0" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                 	<i class="tio-clear"></i>
                 </button>

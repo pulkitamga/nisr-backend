@@ -31,7 +31,7 @@
                                 @if($product->product_type == 'physical')
                                     <span class="text-nowrap cat-item border-end">
                                         <span class="opacity--70">
-                                            {{ translate('current_stock') }}:
+                                            {{ translate('Current_Stock') }}:
                                         </span>
                                         {{ $product->current_stock }}
                                     </span>
@@ -56,7 +56,7 @@
                     @if(isset($clearanceConfig) && $clearanceConfig->discount_type == 'product_wise')
                         <div class="">
                             <label
-                                class="form-label title-color font-weight-medium fz-12">{{ translate('Discount Amount') }}
+                                class="form-label title-color font-weight-medium fz-12">{{ translate('Discount_Amount') }}
                             </label>
                             <div class="custom-group-btn border max-width-200px">
                                 <div class="flex-sm-grow-1">

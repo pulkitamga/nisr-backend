@@ -18,13 +18,13 @@
                             <div class="form-group">
                                 <label class="title-color" for="store">{{translate('store')}}</label>
                                 <select name="vendor_id" class="form-control js-select2-custom product-gallery-filter">
-                                    <option value="in_house" {{'in_house' == request('vendor_id') ? 'selected': ''}}>{{translate('in-house')}}</option> 
+                                    <option value="in_house" {{'in_house' == request('vendor_id') ? 'selected': ''}}>{{translate('in_House')}}</option> 
                                 </select>
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-3">
                             <div class="form-group">
-                                <label class="title-color" for="store">{{translate('brand')}}</label>
+                                <label class="title-color" for="store">{{translate('Brand')}}</label>
                                 <select name="brand_id" class="form-control js-select2-custom product-gallery-filter">
                                     <option value="all">{{translate('all_brand')}}</option>
                                     @foreach($brands as $brand)
@@ -35,7 +35,7 @@
                         </div>
                         <div class="col-sm-6 col-lg-3">
                             <div class="form-group">
-                                <label class="title-color" for="store">{{translate('category')}}</label>
+                                <label class="title-color" for="store">{{translate('Category')}}</label>
                                 <select name="category_id" class="form-control js-select2-custom product-gallery-filter">
                                     <option value="all">{{translate('all_category')}}</option>
                                     @foreach($categories as $category)
@@ -56,9 +56,9 @@
                                     <input type="hidden" name="category_id" value="{{ request('category_id') }}">
                                     <input type="hidden" name="vendor_id" value="{{ request('vendor_id') }}">
                                     <input type="search" name="searchValue" class="form-control"
-                                           placeholder="{{translate('search_by_product_name')}}"
-                                           aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                           placeholder="{{translate('search_by_Product_Name')}}"
+                                           aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                    <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                 </div>
                             </form>
                         </div>
@@ -89,10 +89,10 @@
                                         </div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
-                                        <h4 class="mb-3 text-capitalize">{{ translate('general_information') }}</h4>
+                                        <h4 class="mb-3 text-capitalize">{{ translate('general_Information') }}</h4>
                                         <div class="pair-list">
                                             <div>
-                                                <span class="key text-nowrap">{{ translate('brand') }}</span>
+                                                <span class="key text-nowrap">{{ translate('Brand') }}</span>
                                                 <span>:</span>
                                                 <span class="value">
                                             {{isset($product->brand) ? $product->brand->getTranslatedField('name') : translate('brand_not_found') }}
@@ -100,7 +100,7 @@
                                             </div>
 
                                             <div>
-                                                <span class="key text-nowrap">{{ translate('category') }}</span>
+                                                <span class="key text-nowrap">{{ translate('Category') }}</span>
                                                 <span>:</span>
                                                 <span class="value">
                                             {{isset($product->category) ? $product->category->getTranslatedField('name') : translate('category_not_found') }}
@@ -108,7 +108,7 @@
                                             </div>
 
                                             <div>
-                                                <span class="key text-nowrap text-capitalize">{{ translate('product_type') }}</span>
+                                                <span class="key text-nowrap text-capitalize">{{ translate('product_Type') }}</span>
                                                 <span>:</span>
                                                 <span class="value">{{ translate($product->product_type) }}</span>
                                             </div>
@@ -119,7 +119,7 @@
                                                     <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                                                 </div>
                                                 <div>
-                                                    <span class="key text-nowrap">{{ translate('current_Stock') }}</span>
+                                                    <span class="key text-nowrap">{{ translate('Current_Stock') }}</span>
                                                     <span>:</span>
                                                     <span class="value">{{ $product->current_stock}}</span>
                                                 </div>
@@ -156,7 +156,7 @@
                                             @endif
                                             @if (isset($product['colorsName']))
                                                 <div>
-                                                    <span class="key text-nowrap">{{ translate('color') }}</span>
+                                                    <span class="key text-nowrap">{{ translate('Color') }}</span>
                                                     <span>:</span>
                                                     <span class="value">
                                                         @foreach ($product['colorsName'] as $key => $color)
@@ -174,7 +174,7 @@
                                     @endif
                                     @if(count($product->tags)>0)
                                         <div class="col-sm-6 col-xl-4">
-                                            <h4 class="mb-3">{{ translate('tags') }}</h4>
+                                            <h4 class="mb-3">{{ translate('Tags') }}</h4>
                                             <div class="pair-list"><div>
                                             <span class="value">
                                                 @foreach ($product->tags as $key=>$tag)
@@ -193,11 +193,11 @@
                             </div>
                             <div class="mt-3">
                                 <div class="view--more rich-editor-html-content">
-                                    <label class="text-gulf-blue font-weight-bold">{{ translate('description').' : ' }}</label>
+                                    <label class="text-gulf-blue font-weight-bold">{{ translate('Description').' : ' }}</label>
                                     {!! $product['details'] !!}
                                     <button class="no-gutter expandable-btn d-none">
-                                        <span class="more">{{translate('View More')}}</span>
-                                        <span class="less d-none">{{translate('View Less')}}</span>
+                                        <span class="more">{{translate('view_more')}}</span>
+                                        <span class="less d-none">{{translate('view_less')}}</span>
                                     </button>
                                 </div>
                             </div>

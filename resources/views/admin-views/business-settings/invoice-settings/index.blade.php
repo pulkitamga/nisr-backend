@@ -5,7 +5,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: '/public/assets/back-end/img/business-setup.png')}}" alt="">
-                {{translate('business_setup')}}
+                {{translate('business_Setup')}}
             </h2>
             <div class="btn-group">
                 <div class="ripple-animation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -16,7 +16,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: '/public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -27,7 +27,7 @@
             <div class="border-bottom px-4 py-3">
                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 text-capitalize">
                     <img src="{{dynamicAsset(path: '/public/assets/back-end/img/header-logo.png')}}" alt="">
-                    {{translate('invoice_settings')}}
+                    {{translate('invoice_Settings')}}
                 </h5>
             </div>
             <div class="card-body">
@@ -87,7 +87,7 @@
                         </div>
                         <div class="col-md-12 d-flex justify-content-end gap-3">
                             <button type="button" class="btn btn--primary px-4 {{env('APP_MODE')!= 'demo'? 'form-submit' : 'call-demo'}}" data-form-id="update-invoice-settings" data-message="{{translate('want_update_this_invoice_settings').'?'}}" >
-                                {{translate('save')}}
+                                {{translate('Save')}}
                             </button>
                         </div>
                     </div>

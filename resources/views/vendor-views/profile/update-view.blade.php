@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-sm-auto">
                     <a class="btn btn--primary" href="{{ route('vendor.dashboard.index') }}">
-                        <i class="tio-home me-1"></i> {{ translate('dashboard') }}
+                        <i class="tio-home me-1"></i> {{ translate('Dashboard') }}
                     </a>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                             >
                             <img id="viewer"    class="avatar-img"
                                  src="{{ getStorageImages(path:$vendor->image_full_url, type:'backend-profile') }}"
-                                 alt="{{ translate('image') }}">
+                                 alt="{{ translate('Image') }}">
                             <label class="change-profile-image-icon" for="custom-file-upload">
                                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/add-photo.png') }}" alt="">
                             </label>
@@ -101,7 +101,7 @@
                                     <div class="mb-3">
                                         <div class="input-group input-group-sm-down-break">
                                             <input type="text" class="form-control" name="f_name" id="firstNameLabel"
-                                                   placeholder="{{ translate('ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
+                                                   placeholder="{{ translate('Ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
                                                    value="{{ $vendor->f_name }}">
                                         </div>
                                     </div>
@@ -118,7 +118,7 @@
                                     <div class="mb-3">
                                         <div class="input-group input-group-sm-down-break">
                                             <input type="text" class="form-control" name="l_name" id="lastNameLabel"
-                                                   placeholder="{{ translate('ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
+                                                   placeholder="{{ translate('Ex') }}: {{ translate('ABC') }}" aria-label=" {{ translate('ABC') }}"
                                                    value="{{ $vendor->l_name }}">
                                         </div>
                                     </div>
@@ -137,7 +137,7 @@
                                     <div class="mb-3">
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                                type="tel" id="phoneLabel" value="{{$vendor->phone ?? old('phone')}}"
-                                               placeholder="{{ translate('ex') }}: {{ translate('123456789') }}" required>
+                                               placeholder="{{ translate('Ex') }}: {{ translate('123456789') }}" required>
                                         <input type="hidden" class="country-picker-phone-number w-50" value="{{$vendor->phone}}" name="phone" readonly>
                                     </div>
                                 </div>
@@ -145,7 +145,7 @@
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center mb-2">
                                         <label for="newEmailLabel" class="input-label mb-0">
-                                            {{translate('email')}}
+                                            {{translate('Email')}}
                                             <span class="text-danger px-1">*</span>
                                         </label>
 
@@ -156,7 +156,7 @@
                                     <div class="mb-3">
                                         <input type="email" class="form-control" name="email" id="newEmailLabel"
                                                value="{{$vendor->email}}" readonly
-                                               placeholder="{{ translate('ex') }}: {{ 'admin@admin.com' }}">
+                                               placeholder="{{ translate('Ex') }}: {{ 'admin@admin.com' }}">
                                     </div>
                                 </div>
 

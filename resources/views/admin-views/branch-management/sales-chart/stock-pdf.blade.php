@@ -446,16 +446,16 @@
             @endif
         </span>
         @if (isset($product))
-            | {{ translate('product') }}: <strong>{{ $product->name }}</strong>
+            | {{ translate('Product') }}: <strong>{{ $product->name }}</strong>
         @endif
         @if (!empty($filters['variation_type']))
-            | {{ translate('variation') }}: <strong>{{ $filters['variation_type'] }}</strong>
+            | {{ translate('Variation') }}: <strong>{{ $filters['variation_type'] }}</strong>
         @endif
         @if (!empty($filters['branch_id']))
             @php
                 $branch = \App\Models\Branch::find($filters['branch_id']);
             @endphp
-            | {{ translate('branch') }}:
+            | {{ translate('Branch') }}:
             <strong>{{ $branch ? $branch->getTranslatedField('branch_name') : translate('selected_branch') }}</strong>
         @endif
     </div>
@@ -528,12 +528,12 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>{{ translate('branch_name') }}</th>
-                        <th>{{ translate('product_name') }}</th>
+                        <th>{{ translate('Branch_Name') }}</th>
+                        <th>{{ translate('Product_name') }}</th>
                         @if (!empty($filters['variation_type']))
-                            <th>{{ translate('variation') }}</th>
+                            <th>{{ translate('Variation') }}</th>
                         @endif
-                        <th>{{ translate('current_stock') }}</th>
+                        <th>{{ translate('Current_Stock') }}</th>
                         <th>{{ translate('stock_in_out') }}</th>
                         <th>{{ translate('last_updated') }}</th>
                     </tr>
@@ -552,7 +552,7 @@
                             $stockOut = $branch['total_out'] ?? 0;
 
                             // Determine product name to display
-                            $productName = translate('all_products');
+                            $productName = translate('all_Products');
                             if (isset($product) && $product) {
                                 $productName = $product->name;
                             } elseif (isset($branch['product_name']) && $branch['product_name']) {

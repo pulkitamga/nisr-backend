@@ -32,14 +32,14 @@
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Phone') }}</label>
-                    <input type="text" name="customer_phone" id="manualActivationCustomerPhone" value="{{ old('customer_phone') }}" class="form-control @error('customer_phone') is-invalid @enderror" placeholder="{{ translate('Enter phone number') }}">
+                    <input type="text" name="customer_phone" id="manualActivationCustomerPhone" value="{{ old('customer_phone') }}" class="form-control @error('customer_phone') is-invalid @enderror" placeholder="{{ translate('enter_phone_number') }}">
                     @error('customer_phone')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="form-group">
                     <label>{{ translate('Email') }}</label>
-                    <input type="email" name="customer_email" id="manualActivationCustomerEmail" value="{{ old('customer_email') }}" class="form-control @error('customer_email') is-invalid @enderror" placeholder="{{ translate('Enter email') }}">
+                    <input type="email" name="customer_email" id="manualActivationCustomerEmail" value="{{ old('customer_email') }}" class="form-control @error('customer_email') is-invalid @enderror" placeholder="{{ translate('enter_email') }}">
                     @error('customer_email')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
@@ -55,7 +55,7 @@
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label>{{translate('reason')}}</label>
+                    <label>{{translate('Reason')}}</label>
                     <textarea name="reason" class="form-control @error('reason') is-invalid @enderror" required>{{ old('reason') }}</textarea>
                     @error('reason')
                         <div class="invalid-feedback d-block">{{ $message }}</div>

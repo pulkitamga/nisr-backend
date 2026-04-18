@@ -50,7 +50,7 @@
                                       class="btn btn-outline--primary me-1 mt-2 text-nowrap d-flex align-items-center justify-content-center gap-1 getDownloadFileUsingFileUrl" data-toggle="tooltip" data-placement="top" data-title="{{translate('Download')}}">
                                     <i class="tio-download"></i>
                                     <span class="d-block d-md-none">
-                                    {{ translate('download') }}
+                                    {{ translate('Download') }}
                                     </span>
                                 </span>
                             @endif
@@ -121,7 +121,7 @@
                                 <div class="d-flex flex-column gap-2">
                                     <div class="d-flex gap-3 flex-nowrap justify-content-sm-end align-items-center lh-1 badge badge--primary-light height-30px ">
                                         <span class="text-dark">
-                                            {{ count($product->orderDetails) }} {{ translate('orders') }}
+                                            {{ count($product->orderDetails) }} {{ translate('Orders') }}
                                         </span>
                                             <span class="border-left py-2"></span>
                                             <div class="review-hover position-relative cursor-pointer d-flex gap-2 align-items-center">
@@ -130,7 +130,7 @@
                                                 {{ count($product->rating)>0 ? number_format($product->rating[0]->average, 2, '.', ' '):0 }}
                                             </span>
                                                 <div class="review-details-popup">
-                                                    <h6 class="mb-2">{{ translate('rating') }}</h6>
+                                                    <h6 class="mb-2">{{ translate('Rating') }}</h6>
                                                     <div class="">
                                                         <ul class="list-unstyled list-unstyled-py-2 mb-0">
                                                             @php($total = $product->reviews->count())
@@ -220,9 +220,9 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <span>{{translate('Status')}}</span>
                                         @if($product['request_status'] == 0)
-                                            <span class="__badge badge badge--primary-2">{{translate('pending')}}</span>
+                                            <span class="__badge badge badge--primary-2">{{translate('Pending')}}</span>
                                         @elseif($product['request_status'] == 1)
-                                            <span class="__badge badge badge-soft-success">{{translate('approved')}}</span>
+                                            <span class="__badge badge badge-soft-success">{{translate('Approved')}}</span>
                                         @else
                                             <span class="__badge badge badge-soft-danger">{{translate('rejected')}}</span>
                                         @endif
@@ -237,7 +237,7 @@
                                             <h2 class="mb-2 pb-1 text-gulf-blue">{{ $product->getTranslatedField('name', $language) }}</h2>
                                         </div>
                                         <div class="">
-                                            <label class="text-gulf-blue font-weight-bold">{{ translate('description').' : ' }}</label>
+                                            <label class="text-gulf-blue font-weight-bold">{{ translate('Description').' : ' }}</label>
                                             <div class="rich-editor-html-content">
                                                 {!! $product->getTranslatedField('description', $language, $product['details']) !!}
                                             </div>
@@ -267,11 +267,11 @@
 
                     <div class="row gy-3 flex-grow-1">
                         <div class="col-sm-6 col-xl-4">
-                            <h4 class="mb-3 text-capitalize">{{ translate('general_information') }}</h4>
+                            <h4 class="mb-3 text-capitalize">{{ translate('general_Information') }}</h4>
                             <div class="pair-list">
                                 @if($product?->product_type == 'physical')
                                 <div>
-                                    <span class="key text-nowrap">{{ translate('brand') }}</span>
+                                    <span class="key text-nowrap">{{ translate('Brand') }}</span>
                                     <span>:</span>
                                     <span class="value">
                                         {{isset($product->brand) ? $product->brand->getTranslatedField('name') : translate('brand_not_found') }}
@@ -280,7 +280,7 @@
                                 @endif
 
                                 <div>
-                                    <span class="key text-nowrap">{{ translate('category') }}</span>
+                                    <span class="key text-nowrap">{{ translate('Category') }}</span>
                                     <span>:</span>
                                     <span class="value">
                                         {{isset($product->category) ? $product->category->getTranslatedField('name') : translate('category_not_found') }}
@@ -288,7 +288,7 @@
                                 </div>
 
                                 <div>
-                                    <span class="key text-nowrap">{{ translate('product_type') }}</span>
+                                    <span class="key text-nowrap">{{ translate('product_Type') }}</span>
                                     <span>:</span>
                                     <span class="value">{{ translate($product->product_type) }}</span>
                                 </div>
@@ -299,7 +299,7 @@
                                         <span class="value">{{ getUnitLabel($product['unit']) }}</span>
                                     </div>
                                     <div>
-                                        <span class="key text-nowrap">{{ translate('current_Stock') }}</span>
+                                        <span class="key text-nowrap">{{ translate('Current_Stock') }}</span>
                                         <span>:</span>
                                         <span class="value">{{ $product->current_stock}}</span>
                                     </div>
@@ -316,7 +316,7 @@
                             <div class="pair-list">
                                 <div>
                                     <span class="key text-nowrap text-capitalize">
-                                        {{ translate('unit_price') }}
+                                        {{ translate('Unit_Price') }}
                                     </span>
                                     <span>:</span>
                                     <span class="value">
@@ -325,7 +325,7 @@
                                 </div>
 
                                 <div>
-                                    <span class="key text-nowrap">{{ translate('tax') }}</span>
+                                    <span class="key text-nowrap">{{ translate('Tax') }}</span>
                                     <span>:</span>
                                     @if ($product->tax_type =='percent')
                                         <span class="value">
@@ -354,7 +354,7 @@
                                 @if($product->discount > 0)
                                     <div>
                                         <span class="key text-nowrap">
-                                            {{ translate('discount') }}
+                                            {{ translate('Discount') }}
                                         </span>
                                         <span>:</span>
                                         @if ($product->discount_type == 'percent')
@@ -370,7 +370,7 @@
                         </div>
                         @if(count($product->tags)>0)
                             <div class="col-sm-6 col-xl-4">
-                                <h4 class="mb-3">{{ translate('tags') }}</h4>
+                                <h4 class="mb-3">{{ translate('Tags') }}</h4>
                                 <div class="pair-list">
                                     <div>
                                         <span class="value">
@@ -404,8 +404,8 @@
                                     <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
                                         <th class="text-center">{{ translate('SKU') }}</th>
-                                        <th class="text-center text-capitalize">{{ translate('variation_wise_price') }}</th>
-                                        <th class="text-center">{{ translate('stock') }}</th>
+                                        <th class="text-center text-capitalize">{{ translate('variation_Wise_Price') }}</th>
+                                        <th class="text-center">{{ translate('Stock') }}</th>
                                         <th></th>
                                     </tr>
                                     </thead>
@@ -446,7 +446,7 @@
                                         <th class="text-center">{{ translate('SL') }}</th>
                                         <th class="text-center">{{ translate('Variation_Name') }}</th>
                                         <th class="text-center">{{ translate('SKU') }}</th>
-                                        <th class="text-center">{{ translate('price') }}</th>
+                                        <th class="text-center">{{ translate('Price') }}</th>
                                         @if($product->digital_product_type == 'ready_product')
                                             <th class="text-center">{{ translate('Action') }}</th>
                                         @endif
@@ -472,7 +472,7 @@
 
                                             @if($product->digital_product_type == 'ready_product')
                                                 <td class="text-center">
-                                                    <span class="btn p-0 getDownloadFileUsingFileUrl" data-toggle="tooltip" title="{{ !is_null($variation->file_full_url['path']) ? translate('download') : translate('File_not_found') }}" data-file-path="{{ $variation->file_full_url['path'] }}" download>
+                                                    <span class="btn p-0 getDownloadFileUsingFileUrl" data-toggle="tooltip" title="{{ !is_null($variation->file_full_url['path']) ? translate('Download') : translate('File_not_found') }}" data-file-path="{{ $variation->file_full_url['path'] }}" download>
                                                         <img src="{{ asset(path: 'public/assets/back-end/img/icons/download-green.svg') }}" alt="">
                                                     </span>
                                                 </td>
@@ -508,7 +508,7 @@
                                    href="{{ getStorageImages(path:$product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-basic') }}"
                                    data-lightbox="meta-thumbnail">
                                     <img class="max-width-100px rounded"
-                                         src="{{ getStorageImages(path:$product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-basic') }}" alt="{{translate('meta_image')}}">
+                                         src="{{ getStorageImages(path:$product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-basic') }}" alt="{{translate('meta_Image')}}">
                                 </a>
                             </div>
                         @endif
@@ -562,14 +562,14 @@
                         <th>{{ translate('SL') }}</th>
                         <th>{{ translate('Review_ID') }}</th>
                         <th>{{ translate('reviewer') }}</th>
-                        <th>{{ translate('rating') }}</th>
-                        <th>{{ translate('review') }}</th>
+                        <th>{{ translate('Rating') }}</th>
+                        <th>{{ translate('Review') }}</th>
                         @if($vendorReviewReplyStatus)
                             <th>{{ translate('Reply') }}</th>
                         @endif
-                        <th class="text-center">{{ translate('date') }}</th>
+                        <th class="text-center">{{ translate('DATE') }}</th>
                         <th class="text-center">{{ translate('Status') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                     </thead>
 
@@ -739,7 +739,7 @@
                                                 @if($review?->reply?->reply_text)
                                                     {{ translate('Update') }}
                                                 @else
-                                                    {{ translate('submit') }}
+                                                    {{ translate('Submit') }}
                                                 @endif
                                             </button>
                                         </div>

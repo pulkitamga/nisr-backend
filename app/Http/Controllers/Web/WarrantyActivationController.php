@@ -70,13 +70,13 @@ class WarrantyActivationController extends Controller
                             $response = \file_get_contents($url);
                             $response = json_decode($response);
                             if (!$response->success) {
-                                $fail(translate('ReCAPTCHA Failed'));
+                                $fail(translate('ReCAPTCHA_Failed'));
                             }
                         },
                     ],
                 ]);
             } catch (\Exception $exception) {
-                return back()->withErrors(translate('Captcha Failed'))->withInput($request->input());
+                return back()->withErrors(translate('captcha_failed'))->withInput($request->input());
             }
         } else {
             if (strtolower($request->default_captcha_value) != strtolower(Session('default_captcha_code'))) {

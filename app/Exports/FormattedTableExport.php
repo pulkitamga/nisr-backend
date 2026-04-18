@@ -72,7 +72,7 @@ class FormattedTableExport implements FromArray, WithHeadings, WithEvents, WithC
 
                 $this->renderMetaPairs($sheet, $lastColumn, $textAlignment);
 
-                $sheet->setCellValue('A3', translate('filters'));
+                $sheet->setCellValue('A3', translate('Filters'));
                 $sheet->mergeCells("B3:{$lastColumn}3");
                 $sheet->setCellValue('B3', $this->filterSummary ?: '-');
 

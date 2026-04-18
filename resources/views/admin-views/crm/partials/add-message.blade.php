@@ -39,7 +39,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ translate('Message Type') }} <span class="input-required-icon">*</span></label>
+                            <label class="form-label">{{ translate('message_type') }} <span class="input-required-icon">*</span></label>
                             <select class="form-control" name="message_type" required>
                                 <option value="support">{{ translate('Support') }}</option>
                                 <option value="service">{{ translate('Service') }}</option>

@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png')}}" class="mb-1 me-1" alt="">
-                {{translate('add_new_product')}}
+                {{translate('add_New_Product')}}
             </h2>
         </div>
         <div class="row">
@@ -26,7 +26,7 @@
                                         <div class="dropdown select-product-search w-100">
                                             <div class="search-form" data-toggle="dropdown" aria-expanded="false">
                                                 <button type="button" class="btn"><i class="tio-down-ui"></i></button>
-                                                <input type="text" class="js-form-search form-control search-bar-input search-product" placeholder="{{translate('search_by_product_name').'...'}}" multiple>
+                                                <input type="text" class="js-form-search form-control search-bar-input search-product" placeholder="{{translate('search_by_Product_Name').'...'}}" multiple>
                                             </div>
                                             <div class="dropdown-menu w-100 px-2">
                                                 <div class="d-flex flex-column max-h-300 overflow-y-auto overflow-x-hidden search-result-box">
@@ -41,8 +41,8 @@
                                 </div>
                             </div>
                             <div class="d-flex gap-3 justify-content-end">
-                                <button type="button" class="btn btn-secondary font-weight-bold px-4 reset-selected-products">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary font-weight-bold px-4">{{ translate('add')}}</button>
+                                <button type="button" class="btn btn-secondary font-weight-bold px-4 reset-selected-products">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary font-weight-bold px-4">{{ translate('Add')}}</button>
                             </div>
                         </form>
                     </div>
@@ -64,11 +64,11 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL')}}</th>
-                                <th>{{ translate('image')}}</th>
-                                <th>{{ translate('name')}}</th>
+                                <th>{{ translate('Image')}}</th>
+                                <th>{{ translate('Name')}}</th>
                                 <th>{{ translate('shop')}}</th>
-                                <th>{{ translate('price')}}</th>
-                                <th class="text-center">{{ translate('action')}}</th>
+                                <th>{{ translate('Price')}}</th>
+                                <th class="text-center">{{ translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>

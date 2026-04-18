@@ -300,7 +300,7 @@ class WarrantyController extends Controller
         return Excel::download(
             new FormattedTableExport(
                 rows: $rows,
-                headings: [translate('date'), translate('count')],
+                headings: [translate('DATE'), translate('count')],
                 title: translate('import_history'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
@@ -308,7 +308,7 @@ class WarrantyController extends Controller
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                 columnWidths: ['A' => 18, 'B' => 14],
                 centerColumns: ['A', 'B'],
                 sumColumns: ['B']
@@ -472,11 +472,11 @@ class WarrantyController extends Controller
                 rows: $rows,
                 headings: [
                     translate('serial'),
-                    translate('customer'),
-                    translate('method'),
-                    translate('Start Date'),
-                    translate('End Date'),
-                    translate('status'),
+                    translate('Customer'),
+                    translate('Method'),
+                    translate('Start_Date'),
+                    translate('End_Date'),
+                    translate('Status'),
                 ],
                 title: translate('activations'),
                 locale: LocalizedExport::locale(),
@@ -486,8 +486,8 @@ class WarrantyController extends Controller
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('method') . ': ' . ($request->input('method') ? $this->resolveActivationMethodLabel((string) $request->input('method')) : translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('Method') . ': ' . ($request->input('method') ? $this->resolveActivationMethodLabel((string) $request->input('method')) : translate('All')),
                     $limit !== null ? translate('Rows_to_show') . ': ' . $limit : null,
                 ])),
                 columnWidths: ['A' => 18, 'B' => 24, 'C' => 22, 'D' => 16, 'E' => 16, 'F' => 16],
@@ -538,7 +538,7 @@ class WarrantyController extends Controller
         return Excel::download(
             new FormattedTableExport(
                 rows: $rows,
-                headings: [translate('serial'), translate('reason'), translate('blacklisted_at')],
+                headings: [translate('serial'), translate('Reason'), translate('blacklisted_at')],
                 title: translate('blacklist'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
@@ -547,7 +547,7 @@ class WarrantyController extends Controller
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                     $limit !== null ? translate('Rows_to_show') . ': ' . $limit : null,
                 ])),
                 columnWidths: ['A' => 20, 'B' => 38, 'C' => 18],
@@ -711,16 +711,16 @@ class WarrantyController extends Controller
         return Excel::download(
             new FormattedTableExport(
                 rows: $rows,
-                headings: [translate('serial'), translate('product'), translate('status'), translate('Created At')],
+                headings: [translate('serial'), translate('Product'), translate('Status'), translate('Created_At')],
                 title: translate('import_history') . ' ' . (string) $date,
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
-                    ['label' => translate('date'), 'value' => (string) $date],
+                    ['label' => translate('DATE'), 'value' => (string) $date],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $search) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $search) ?: translate('All')),
                 columnWidths: ['A' => 18, 'B' => 28, 'C' => 16, 'D' => 18],
                 centerColumns: ['D']
             ),
@@ -888,11 +888,11 @@ class WarrantyController extends Controller
                     return [
                         translate('claim_number'),
                         translate('serial'),
-                        translate('status'),
-                        translate('customer'),
+                        translate('Status'),
+                        translate('Customer'),
                         translate('submitted_at'),
                         translate('resolution_sla'),
-                        translate('branch'),
+                        translate('Branch'),
                     ];
                 }
                 public function styles(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): array
@@ -1156,10 +1156,10 @@ class WarrantyController extends Controller
                         translate('sla_type'),
                         translate('claim_number'),
                         translate('serial'),
-                        translate('product'),
+                        translate('Product'),
                         translate('due_date'),
                         translate('completed_at'),
-                        translate('status'),
+                        translate('Status'),
                         translate('claim_status'),
                     ];
                 }
@@ -1408,13 +1408,13 @@ class WarrantyController extends Controller
             // Define headings in correct order
             $headings = [
                 translate('serial'),
-                translate('product'),
-                translate('customer'),
-                translate('branch'),
+                translate('Product'),
+                translate('Customer'),
+                translate('Branch'),
                 translate('activation_method'),
                 translate('activated_at'),
                 translate('warranty_end'),
-                translate('status'),
+                translate('Status'),
             ];
 
             // Reverse for RTL

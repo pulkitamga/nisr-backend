@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('add_new_Branch'))
+@section('title', translate('add_New_Branch'))
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/css/intlTelInput.css') }}">
 @endpush
@@ -21,7 +21,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" class="mb-1" alt="">
-            {{ translate('add_new_Branch') }}
+            {{ translate('add_New_Branch') }}
         </h2>
     </div>
     <form class="user" action="{{route('admin.branch.add')}}" method="post" enctype="multipart/form-data" id="add-branch-form">
@@ -32,7 +32,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                 <input type="hidden" name="status" value="approved">
                 <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 ps-4">
                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png') }}" class="mb-1" alt="">
-                    {{ translate('branch_information') }}
+                    {{ translate('Branch_information') }}
                 </h5>
 
 
@@ -57,7 +57,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                                 <input class="form-control" type="text" name="branch_name[]" value="" placeholder="{{ translate('enter_branch_name') }}">
                             </div>
                             <div class="col-sm-6 col-lg-6">
-                                <label class="title-color d-flex">{{ translate('Branch_address') }} ({{ strtoupper($lang) }})</label>
+                                <label class="title-color d-flex">{{ translate('Branch_Address') }} ({{ strtoupper($lang) }})</label>
                                 <input type="text" value="" name="branch_address[]" class="form-control" placeholder="{{ translate('your_branch_address') }}">
                             </div>
                         </div>
@@ -65,19 +65,19 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                     @endforeach
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{ translate('phone') }}</label>
+                            <label class="title-color d-flex">{{ translate('Phone') }}</label>
                             <input class="form-control" type="text" name="phone" value="" placeholder="{{ translate('01xxxxxxxx') }}">
                         </div>
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{ translate('email') }}</label>
+                            <label class="title-color d-flex">{{ translate('Email') }}</label>
                             <input class="form-control" type="text" name="email" value="" placeholder="{{ translate('company@gmail.com') }}">
                         </div>
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{ translate('country') }}</label>
+                            <label class="title-color d-flex">{{ translate('Country') }}</label>
                             <select id="branch_country" name="branch_country" class="form-control js-select2-custom">
                                 @foreach(COUNTRIES as $country)
                                 <option value="{{ $country['code'] }}" {{ $selectedCountry === $country['code'] ? 'selected' : '' }}>
@@ -89,7 +89,7 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="form-group">
-                            <label class="title-color d-flex">{{ translate('state') }}</label>
+                            <label class="title-color d-flex">{{ translate('State') }}</label>
                             <select id="branch_state" name="branch_state" class="form-control js-select2-custom">
                                 @foreach($states as $state)
                                 <option value="{{ $state->getRawOriginal('name') }}" {{ $selectedState === $state->getRawOriginal('name') ? 'selected' : '' }}>
@@ -339,8 +339,8 @@ $selectedDeliveryRestrictions = collect(old('delivery_restriction', []))->map(fn
             <div class="card-footer">
                 <div class="d-flex align-items-center justify-content-end gap-10">
                     <input type="hidden" name="from_submit" value="admin">
-                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
-                    <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-branch-form" data-redirect-route="{{route('admin.branch.branch-list')}}" data-message="{{translate('want_to_add_this_branch').'?'}}">{{translate('submit')}}</button>
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
+                    <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-branch-form" data-redirect-route="{{route('admin.branch.branch-list')}}" data-message="{{translate('want_to_add_this_branch').'?'}}">{{translate('Submit')}}</button>
                 </div>
             </div>
         </div>

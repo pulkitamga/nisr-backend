@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{{ translate('Password Reset') }}</title>
+    <title>{{ translate('password_reset') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/email-basic.css') }}">
 </head>
@@ -30,7 +30,7 @@ $companyLogo = getWebConfig(name: 'company_web_logo');
         </div>
 
         <div class="card-header mb-3 text-center">
-            {{ translate('Reset Your password') }}
+            {{ translate('Reset_your_password') }}
         </div>
         <div class="card-body">
             <a class="btn btn--primary d-block text-center width-100" href="{{$url}}">

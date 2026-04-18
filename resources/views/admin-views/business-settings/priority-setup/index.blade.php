@@ -23,7 +23,7 @@
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}"
                             alt="">
-                        <h5 class="text-primary mb-0">{{ translate('note') }}</h5>
+                        <h5 class="text-primary mb-0">{{ translate('Note') }}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">
                         {{ translate('please_click_save_information_button_below_to_save_all_the_changes') }}</p>

@@ -21,14 +21,14 @@ use Illuminate\Support\Facades\Session;
                     <div class="col-lg-6">
                         <div class="form-group mb-4">
                             <label for="name" class="title-color">
-                                {{translate('role_name')}}
+                                {{translate('role_Name')}}
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('role_name_english_only_hint') }}">
                                     <img src="{{ dynamicAsset('public/assets/back-end/img/info-circle.svg') }}" alt="" width="14">
                                 </span>
                             </label>
                             <input type="text" name="name" class="form-control" id="name"
                                 aria-describedby="emailHelp"
-                                placeholder="{{translate('ex').':'.translate('store')}}" required
+                                placeholder="{{translate('Ex').':'.translate('store')}}" required
                                 pattern="[a-zA-Z0-9_\- ]+"
                                 oninput="this.value.match(/[^a-zA-Z0-9_\-\s]/) ? this.classList.add('is-invalid') : this.classList.remove('is-invalid')">
                             <small class="text-muted d-block mt-1">{{ translate('role_name_english_only_hint') }}</small>
@@ -60,7 +60,7 @@ use Illuminate\Support\Facades\Session;
                             <label>{{ translate('select_crud_permissions') }}</label>
                             <div>
                                 <input type="checkbox" name="permissions[]" value="{{ $module }}.create" id="create_{{ $module }}">
-                                <label for="create_{{ $module }}">{{ translate('create') }}</label>
+                                <label for="create_{{ $module }}">{{ translate('Create') }}</label>
                             </div>
                             <div>
                                 <input type="checkbox" name="permissions[]" value="{{ $module }}.read" id="read_{{ $module }}">
@@ -68,18 +68,18 @@ use Illuminate\Support\Facades\Session;
                             </div>
                             <div>
                                 <input type="checkbox" name="permissions[]" value="{{ $module }}.update" id="update_{{ $module }}">
-                                <label for="update_{{ $module }}">{{ translate('update') }}</label>
+                                <label for="update_{{ $module }}">{{ translate('Update') }}</label>
                             </div>
                             <div>
                                 <input type="checkbox" name="permissions[]" value="{{ $module }}.delete" id="delete_{{ $module }}">
-                                <label for="delete_{{ $module }}">{{ translate('delete') }}</label>
+                                <label for="delete_{{ $module }}">{{ translate('Delete') }}</label>
                             </div>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                    <button type="submit" class="btn btn--primary">{{translate('Submit')}}</button>
                 </div>
             </form>
         </div>
@@ -105,7 +105,7 @@ use Illuminate\Support\Facades\Session;
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_role')}}"
                                 value="{{ request('searchValue') }}">
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -123,11 +123,11 @@ use Illuminate\Support\Facades\Session;
                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('role_name')}}</th>
-                            <th>{{translate('modules')}}</th>
-                            <th>{{translate('created_at')}}</th>
-                            <th>{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th>{{translate('role_Name')}}</th>
+                            <th>{{translate('Modules')}}</th>
+                            <th>{{translate('Created_At')}}</th>
+                            <th>{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -169,13 +169,13 @@ use Illuminate\Support\Facades\Session;
                                 <div class="d-flex gap-2 justify-content-center">
                                     <a href="{{route('admin.custom-role.update',[$role['id']])}}"
                                         class="btn btn-outline--primary btn-sm square-btn"
-                                        title="{{translate('edit') }}">
+                                        title="{{translate('Edit') }}">
                                         <i class="tio-edit"></i>
                                     </a>
                                     <a href="javascript:"
                                         class="btn btn-outline-danger btn-sm delete-data-without-form"
                                         data-action="{{route('admin.custom-role.delete')}}"
-                                        title="{{translate('delete') }}" data-id="{{$role['id']}}">
+                                        title="{{translate('Delete') }}" data-id="{{$role['id']}}">
                                         <i class="tio-delete"></i>
                                     </a>
                                 </div>

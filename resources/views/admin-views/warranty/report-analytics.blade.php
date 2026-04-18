@@ -106,15 +106,15 @@ session('direction') === 'rtl' ||
                         <select class="form-control" name="date_type" id="date_type">
                             <option value="this_year"
                                 {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                {{ translate('this_year') }}
+                                {{ translate('this_Year') }}
                             </option>
                             <option value="this_month"
                                 {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                {{ translate('this_month') }}
+                                {{ translate('this_Month') }}
                             </option>
                             <option value="this_week"
                                 {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                {{ translate('this_week') }}
+                                {{ translate('this_Week') }}
                             </option>
                             <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                 {{ translate('today') }}
@@ -127,23 +127,23 @@ session('direction') === 'rtl' ||
                     </div>
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('from') }}</label>
+                        <label class="form-label mb-1">{{ translate('From') }}</label>
                         <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                     </div>
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label mb-1">{{ translate('to') }}</label>
+                        <label class="form-label mb-1">{{ translate('To') }}</label>
                         <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('claim_status') }}</label>
                         <input type="text" class="form-control" name="claim_status"
-                            value="{{ $filters['claim_status'] ?? '' }}" placeholder="{{ translate('all') }}">
+                            value="{{ $filters['claim_status'] ?? '' }}" placeholder="{{ translate('All') }}">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label mb-1">{{ translate('product') }}</label>
+                        <label class="form-label mb-1">{{ translate('Product') }}</label>
                         <select class="form-control" name="product_id">
-                            <option value="0">{{ translate('all') }}</option>
+                            <option value="0">{{ translate('All') }}</option>
                             @foreach ($products as $product)
                             <option value="{{ $product->id }}"
                                 {{ (int) ($filters['product_id'] ?? 0) === (int) $product->id ? 'selected' : '' }}>
@@ -153,9 +153,9 @@ session('direction') === 'rtl' ||
                         </select>
                     </div>
                     <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                        <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                         <a href="{{ route('admin.warranty.report.analytics') }}"
-                            class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                         <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'excel'])) }}"
                             class="btn btn-outline-success"> <i class="tio-download-to me-1"></i> {{ translate('excel') }}</a>
                         <a href="{{ route('admin.warranty.report.analytics', array_merge(request()->query(), ['download' => 'pdf'])) }}"
@@ -305,7 +305,7 @@ session('direction') === 'rtl' ||
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>{{ translate('product') }}</th>
+                                <th>{{ translate('Product') }}</th>
                                 <th class="text-end">{{ translate('claims') }}</th>
                             </tr>
                         </thead>
@@ -478,7 +478,7 @@ session('direction') === 'rtl' ||
                 data: {
                     labels: chargeData.labels || [],
                     datasets: [{
-                        label: @json(translate('amount')),
+                        label: @json(translate('Amount')),
                         data: chargeData.amounts || [],
                         backgroundColor: 'rgba(180, 83, 9, 0.75)',
                         borderRadius: 8

@@ -16,7 +16,7 @@
     <div class="row vh-100 align-content-center">
         <div class="col-12">
             <div class="text-center">
-                <img class="object-fit-contain height-300px" loading="lazy" src="{{dynamicAsset(path: 'public/assets/front-end/img/maintenance-mode-icon.png')}}" alt="{{ translate('maintenance-mode') }}">
+                <img class="object-fit-contain height-300px" loading="lazy" src="{{dynamicAsset(path: 'public/assets/front-end/img/maintenance-mode-icon.png')}}" alt="{{ translate('Maintenance_Mode') }}">
                 <h3 class="mt-3">
                     {{ __('System database is being refreshed, please keep patience. System will be up in 2 minutes....') }}
                 </h3>

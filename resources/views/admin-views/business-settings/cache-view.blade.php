@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('clear_cache'))
+@section('title', translate('Clear_cache'))
 
 @section('content')
 

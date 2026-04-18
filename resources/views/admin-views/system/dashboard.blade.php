@@ -1,6 +1,6 @@
 @php use App\Utils\Helpers; @endphp
 @extends('layouts.back-end.app')
-@section('title', translate('dashboard'))
+@section('title', translate('Dashboard'))
 @push('css_or_js')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush
@@ -29,7 +29,7 @@
                     <select class="custom-select w-auto" name="statistics_type" id="statistics_type">
                         <option value="overall"
                             {{ session()->has('statistics_type') && session('statistics_type') == 'overall' ? 'selected' : '' }}>
-                            {{ translate('overall_statistics') }}
+                            {{ translate('overall_Statistics') }}
                         </option>
                         <option value="today"
                             {{ session()->has('statistics_type') && session('statistics_type') == 'today' ? 'selected' : '' }}>
@@ -85,19 +85,19 @@
                         </div>
                         <div class="apex-legends flex-column">
                             <div class="before-bg-0">
-                                <span class="text-capitalize">{{ translate('total_customer') . ' ' . '(' . $data['getTotalCustomerCount'] . ')' }}
+                                <span class="text-capitalize">{{ translate('Total_Customer') . ' ' . '(' . $data['getTotalCustomerCount'] . ')' }}
                                 </span>
                             </div>
                             @if($web_config['business_mode'] == 'multi' && $web_config['seller_registration'])
 
                             <div class="before-bg-2">
                                 <span
-                                    class="text-capitalize">{{ translate('total_vendor') . ' ' . '(' . $data['getTotalVendorCount'] . ')' }}</span>
+                                    class="text-capitalize">{{ translate('total_Vendor') . ' ' . '(' . $data['getTotalVendorCount'] . ')' }}</span>
                             </div>
                             @endif
                             <div class="before-bg-1">
                                 <span
-                                    class="text-capitalize">{{ translate('total_delivery_man') . ' ' . '(' . $data['getTotalDeliveryManCount'] . ')' }}</span>
+                                    class="text-capitalize">{{ translate('Total_Delivery_Man') . ' ' . '(' . $data['getTotalDeliveryManCount'] . ')' }}</span>
                             </div>
                         </div>
                     </div>
@@ -164,7 +164,7 @@
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col-12 mb-2 mb-sm-0">
-                <h3 class="text-center">{{ translate('hi') }} {{ auth('admin')->user()->name }}
+                <h3 class="text-center">{{ translate('Hi') }} {{ auth('admin')->user()->name }}
                     {{ ' , ' . translate('welcome_to_dashboard') }}.
                 </h3>
             </div>
@@ -175,14 +175,14 @@
 
 <span id="earning-statistics-url" data-url="{{ route('admin.dashboard.earning-statistics') }}"></span>
 <span id="order-status-url" data-url="{{ route('admin.dashboard.order-status') }}"></span>
-<span id="seller-text" data-text="{{ translate('vendor') }}"></span>
+<span id="seller-text" data-text="{{ translate('Vendor') }}"></span>
 <span id="message-commission-text" data-text="{{ translate('commission') }}"></span>
-<span id="in-house-text" data-text="{{ translate('In-house') }}"></span>
-<span id="customer-text" data-text="{{ translate('customer') }}"></span>
+<span id="in-house-text" data-text="{{ translate('in_House') }}"></span>
+<span id="customer-text" data-text="{{ translate('Customer') }}"></span>
 <span id="store-text" data-text="{{ translate('store') }}"></span>
-<span id="product-text" data-text="{{ translate('product') }}"></span>
-<span id="order-text" data-text="{{ translate('order') }}"></span>
-<span id="brand-text" data-text="{{ translate('brand') }}"></span>
+<span id="product-text" data-text="{{ translate('Product') }}"></span>
+<span id="order-text" data-text="{{ translate('Order') }}"></span>
+<span id="brand-text" data-text="{{ translate('Brand') }}"></span>
 <span id="business-text" data-text="{{ translate('business') }}"></span>
 <span id="orders-text" data-text="{{ $data['order'] }}"></span>
 <span id="user-overview-data" style="background-color: #000;" data-customer="{{ $data['getTotalCustomerCount'] }}"

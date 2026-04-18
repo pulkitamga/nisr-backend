@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-                {{translate('business_setup')}}
+                {{translate('business_Setup')}}
             </h2>
             <div class="btn-group">
                 <div class="ripple-animation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -23,7 +23,7 @@
                     class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -171,7 +171,7 @@
                         <div class="col-xl-4 col-md-6">
                             <div class="d-flex justify-content-between align-items-center gap-10 form-control">
                                 <span class="title-color">
-                                    {{translate('add_Fund_to_Wallet')}}
+                                    {{translate('Add_Fund_To_Wallet')}}
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           data-placement="right"
                                           title="{{translate('enabling_the_option,_customers_will_be_able_to_add_funds_to_the_wallet_through_the_available_payment_method.')}}">
@@ -204,7 +204,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="minimum_add_fund_amount"
                                        id="minimum_add_fund_amount"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        value="{{ Convert::default($minimumAddFundAmount) ?? 0 }}" {{ $walletStatus == 0?'disabled':'' }}>
                             </div>
                         </div>
@@ -217,7 +217,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="maximum_add_fund_amount"
                                        id="maximum_add_fund_amount"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        value="{{ Convert::default($maximumAddFundAmount) ?? 0 }}" {{ $walletStatus == 0?'disabled':'' }}>
                             </div>
                         </div>
@@ -247,7 +247,7 @@
                                 <input type="text" class="form-control" name="loyalty_point_exchange_rate"
                                        {{ $loyaltyPointStatus == 0?'disabled':'' }}
                                        id="loyalty_point_exchange_rate"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        value="{{ $loyaltyPointExchangeRate ?? 0 }}">
                             </div>
                         </div>
@@ -259,7 +259,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="item_purchase_point"
                                        id="item_purchase_point"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        {{ $loyaltyPointStatus == 0?'disabled':'' }}
                                        value="{{ $loyaltyPointItemPurchasePoint ?? 1 }}">
                             </div>
@@ -279,7 +279,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="minimun_transfer_point"
                                        id="minimum_transfer_point"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        {{ $loyaltyPointStatus == 0?'disabled':'' }}
                                        value="{{ $loyaltyPointMinimumPoint ?? 0 }}">
                             </div>
@@ -315,7 +315,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="ref_earning_exchange_rate"
                                        id="ref_earning_exchange_rate"
-                                       placeholder="{{translate('ex').':'.'10'}}"
+                                       placeholder="{{translate('Ex').':'.'10'}}"
                                        {{ $refEarningStatus == 0?'disabled':'' }}
                                        value="{{ Convert::default($refEarningExchangeRate) ?? 0 }}">
                             </div>
@@ -324,7 +324,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-end my-3">
-                <button class="btn btn--primary px-5">{{translate('save')}}</button>
+                <button class="btn btn--primary px-5">{{translate('Save')}}</button>
             </div>
         </form>
     </div>

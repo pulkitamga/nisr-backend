@@ -14,8 +14,8 @@
     <thead>
     <tr>
         <th>{{ __('Channel') }}</th>
-        <th>{{ __('Total Qty') }}</th>
-        <th>{{ __('Total Sales') }}</th>
+        <th>{{ __('total_qty') }}</th>
+        <th>{{ __('total_sales') }}</th>
     </tr>
     </thead>
     <tbody>
@@ -49,7 +49,7 @@
         <th>#</th>
         <th>{{ __('Product') }}</th>
         <th>{{ __('Branch') }}</th>
-        <th>{{ __('Qty') }}</th>
+        <th>{{ __('QTY') }}</th>
         <th>{{ __('Orders') }}</th>
         <th>{{ __('Sales') }}</th>
     </tr>
@@ -75,7 +75,7 @@
         <th>#</th>
         <th>{{ __('Product') }}</th>
         <th>{{ __('Branch') }}</th>
-        <th>{{ __('Qty') }}</th>
+        <th>{{ __('QTY') }}</th>
         <th>{{ __('Orders') }}</th>
         <th>{{ __('Sales') }}</th>
     </tr>
@@ -101,7 +101,7 @@
         <th>#</th>
         <th>{{ __('Product') }}</th>
         <th>{{ __('Branch') }}</th>
-        <th>{{ __('Qty') }}</th>
+        <th>{{ __('QTY') }}</th>
         <th>{{ __('Orders') }}</th>
         <th>{{ __('Sales') }}</th>
     </tr>

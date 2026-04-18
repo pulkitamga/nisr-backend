@@ -55,9 +55,9 @@
                 <form method="GET" action="{{ url()->current() }}">
                     <div class="row g-2 align-items-start">
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('category') }}</label>
+                            <label class="form-label mb-1">{{ translate('Category') }}</label>
                             <select class="js-select2-custom form-control" name="category_id">
-                                <option value="all">{{ translate('all') }}</option>
+                                <option value="all">{{ translate('All') }}</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category['id'] }}"
                                         {{ ($filters['category_id'] ?? 'all') == $category['id'] ? 'selected' : '' }}>
@@ -67,7 +67,7 @@
                             </select>
                         </div>
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('product') }}</label>
+                            <label class="form-label mb-1">{{ translate('Product') }}</label>
                             <select class="js-select2-custom form-control" name="product_ids[]" multiple>
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}"
@@ -79,7 +79,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('branch') }}</label>
+                            <label class="form-label mb-1">{{ translate('Branch') }}</label>
                             <select class="js-select2-custom form-control" name="branch_ids[]" multiple>
                                 @foreach ($branches as $branch)
                                     <option value="{{ $branch->id }}"
@@ -91,7 +91,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('state') }}</label>
+                            <label class="form-label mb-1">{{ translate('State') }}</label>
                             <select class="js-select2-custom form-control" name="states[]" multiple>
                                 @foreach ($stateOptions as $stateOption)
                                     <option value="{{ $stateOption }}"
@@ -103,7 +103,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('city') }}</label>
+                            <label class="form-label mb-1">{{ translate('City') }}</label>
                             <select class="js-select2-custom form-control" name="cities[]" multiple>
                                 @foreach ($cityOptions as $cityOption)
                                     <option value="{{ $cityOption }}"
@@ -115,7 +115,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-xl-2 col-md-4">
-                            <label class="form-label mb-1">{{ translate('area') }}</label>
+                            <label class="form-label mb-1">{{ translate('Area') }}</label>
                             <select class="js-select2-custom form-control" name="areas[]" multiple>
                                 @foreach ($areaOptions as $areaOption)
                                     <option value="{{ $areaOption }}"
@@ -131,13 +131,13 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
+                                    {{ translate('this_Year') }}</option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
+                                    {{ translate('this_Month') }}</option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
+                                    {{ translate('this_Week') }}</option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}</option>
                                 <option value="custom_date"
@@ -147,18 +147,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range" id="custom_from_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') == 'custom_date' ? 'display: block;' : 'display: none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range" id="custom_to_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') == 'custom_date' ? 'display: block;' : 'display: none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.report.inhouse-product-sale') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.report.inhouse-product-sale-export-excel', request()->query()) }}"
                                 class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
@@ -186,7 +186,7 @@
                     <div class="report-kpi-value">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['total_amount']), currencyCode: getCurrencyCode()) }}
                     </div>
-                    <div class="report-kpi-meta">{{ translate('qty') }}: {{ $summary['total_qty'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('QTY') }}: {{ $summary['total_qty'] }}</div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -195,7 +195,7 @@
                     <div class="report-kpi-value">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['pos_amount']), currencyCode: getCurrencyCode()) }}
                     </div>
-                    <div class="report-kpi-meta">{{ translate('qty') }}: {{ $summary['pos_qty'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('QTY') }}: {{ $summary['pos_qty'] }}</div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -204,16 +204,16 @@
                     <div class="report-kpi-value">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['online_amount']), currencyCode: getCurrencyCode()) }}
                     </div>
-                    <div class="report-kpi-meta">{{ translate('qty') }}: {{ $summary['online_qty'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('QTY') }}: {{ $summary['online_qty'] }}</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="report-kpi-card">
-                    <div class="report-kpi-title">{{ translate('wholesale') }}</div>
+                    <div class="report-kpi-title">{{ translate('Wholesale') }}</div>
                     <div class="report-kpi-value">
                         {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary['wholesale_amount']), currencyCode: getCurrencyCode()) }}
                     </div>
-                    <div class="report-kpi-meta">{{ translate('qty') }}: {{ $summary['wholesale_qty'] }}</div>
+                    <div class="report-kpi-meta">{{ translate('QTY') }}: {{ $summary['wholesale_qty'] }}</div>
                 </div>
             </div>
         </div>
@@ -278,11 +278,11 @@
                     <thead class="thead-light">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('branch') }}</th>
-                        <th class="text-center">{{ translate('qty') }}</th>
-                        <th class="text-center">{{ translate('orders') }}</th>
-                        <th class="text-end">{{ translate('sales') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Branch') }}</th>
+                        <th class="text-center">{{ translate('QTY') }}</th>
+                        <th class="text-center">{{ translate('Orders') }}</th>
+                        <th class="text-end">{{ translate('Sales') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -298,7 +298,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_data_found') }}</td></tr>
+                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_Data_found') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -314,11 +314,11 @@
                     <thead class="thead-light">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('branch') }}</th>
-                        <th class="text-center">{{ translate('qty') }}</th>
-                        <th class="text-center">{{ translate('orders') }}</th>
-                        <th class="text-end">{{ translate('sales') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Branch') }}</th>
+                        <th class="text-center">{{ translate('QTY') }}</th>
+                        <th class="text-center">{{ translate('Orders') }}</th>
+                        <th class="text-end">{{ translate('Sales') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -334,7 +334,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_data_found') }}</td></tr>
+                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_Data_found') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -343,18 +343,18 @@
 
         <div class="card mb-3">
             <div class="card-header border-0">
-                <h4 class="mb-0">{{ translate('wholesale') }}</h4>
+                <h4 class="mb-0">{{ translate('Wholesale') }}</h4>
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table">
                     <thead class="thead-light">
                     <tr>
                         <th>{{ translate('SL') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('branch') }}</th>
-                        <th class="text-center">{{ translate('qty') }}</th>
-                        <th class="text-center">{{ translate('orders') }}</th>
-                        <th class="text-end">{{ translate('sales') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Branch') }}</th>
+                        <th class="text-center">{{ translate('QTY') }}</th>
+                        <th class="text-center">{{ translate('Orders') }}</th>
+                        <th class="text-end">{{ translate('Sales') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -370,7 +370,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_data_found') }}</td></tr>
+                        <tr><td colspan="6" class="text-center py-4">{{ translate('no_Data_found') }}</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -388,11 +388,11 @@
                         <tr>
                             <th>{{ translate('SL') }}</th>
                             <th>{{ translate('period') }}</th> {{-- NEW COLUMN --}}
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th class="text-center">{{ translate('qty') }}</th>
-                            <th class="text-center">{{ translate('orders') }}</th>
-                            <th class="text-end">{{ translate('sales') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th class="text-center">{{ translate('QTY') }}</th>
+                            <th class="text-center">{{ translate('Orders') }}</th>
+                            <th class="text-end">{{ translate('Sales') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -422,7 +422,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="7" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -448,11 +448,11 @@
                         <tr>
                             <th>{{ translate('SL') }}</th>
                             <th>{{ translate('period') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th class="text-center">{{ translate('qty') }}</th>
-                            <th class="text-center">{{ translate('orders') }}</th>
-                            <th class="text-end">{{ translate('sales') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th class="text-center">{{ translate('QTY') }}</th>
+                            <th class="text-center">{{ translate('Orders') }}</th>
+                            <th class="text-end">{{ translate('Sales') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -482,7 +482,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="7" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -493,7 +493,7 @@
         {{-- Wholesale Table --}}
         <div class="card mb-3">
             <div class="card-header border-0">
-                <h4 class="mb-0">{{ translate('wholesale') }}</h4>
+                <h4 class="mb-0">{{ translate('Wholesale') }}</h4>
                 @if (($filters['date_type'] ?? 'this_year') == 'this_year')
                     <span class="badge badge-soft-info ms-2">{{ translate('monthly_breakdown') }}</span>
                 @elseif(($filters['date_type'] ?? '') == 'this_month')
@@ -508,11 +508,11 @@
                         <tr>
                             <th>{{ translate('SL') }}</th>
                             <th>{{ translate('period') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th class="text-center">{{ translate('qty') }}</th>
-                            <th class="text-center">{{ translate('orders') }}</th>
-                            <th class="text-end">{{ translate('sales') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th class="text-center">{{ translate('QTY') }}</th>
+                            <th class="text-center">{{ translate('Orders') }}</th>
+                            <th class="text-end">{{ translate('Sales') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -542,7 +542,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                <td colspan="7" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -551,9 +551,9 @@
         </div>
 
         @php($locationTableSections = [
-            ['title' => translate('state_sales_summary'), 'column' => translate('state'), 'rows' => $retailStateRows],
-            ['title' => translate('city_sales_summary'), 'column' => translate('city'), 'rows' => $retailCityRows],
-            ['title' => translate('area_sales_summary'), 'column' => translate('area'), 'rows' => $retailAreaRows],
+            ['title' => translate('state_sales_summary'), 'column' => translate('State'), 'rows' => $retailStateRows],
+            ['title' => translate('city_sales_summary'), 'column' => translate('City'), 'rows' => $retailCityRows],
+            ['title' => translate('area_sales_summary'), 'column' => translate('Area'), 'rows' => $retailAreaRows],
         ])
         <div class="row g-2 mb-3">
             @foreach ($locationTableSections as $section)
@@ -568,9 +568,9 @@
                                     <tr>
                                         <th>{{ translate('SL') }}</th>
                                         <th>{{ $section['column'] }}</th>
-                                        <th class="text-center">{{ translate('qty') }}</th>
-                                        <th class="text-center">{{ translate('orders') }}</th>
-                                        <th class="text-end">{{ translate('sales') }}</th>
+                                        <th class="text-center">{{ translate('QTY') }}</th>
+                                        <th class="text-center">{{ translate('Orders') }}</th>
+                                        <th class="text-end">{{ translate('Sales') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -586,7 +586,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center py-4">{{ translate('no_data_found') }}</td>
+                                            <td colspan="5" class="text-center py-4">{{ translate('no_Data_found') }}</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -606,8 +606,8 @@
             const chartData = @json($chart);
             const posLabel = @json(translate('POS'));
             const onlineLabel = @json(translate('online'));
-            const wholesaleLabel = @json(translate('wholesale'));
-            const salesLabel = @json(translate('sales'));
+            const wholesaleLabel = @json(translate('Wholesale'));
+            const salesLabel = @json(translate('Sales'));
 
             const renderChart = (selector, options) => {
                 const el = document.querySelector(selector);

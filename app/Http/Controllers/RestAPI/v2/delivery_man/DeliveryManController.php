@@ -702,7 +702,7 @@ class DeliveryManController extends Controller
             $order->save();
             return response()->json(['message' => translate('otp_verified_successfully')], 200);
         } else {
-            return response()->json(["message" => translate("invalid_otp")], 403);
+            return response()->json(["message" => translate("invalid_OTP")], 403);
         }
     }
 

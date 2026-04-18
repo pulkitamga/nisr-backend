@@ -12,7 +12,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/deal_of_the_day.png')}}" alt="">
-                {{translate('deal_of_the_day')}}
+                {{translate('deal_Of_The_Day')}}
             </h2>
         </div>
         <div class="row">
@@ -43,9 +43,9 @@
                                     <div class="row {{$lang != $defaultLanguage ? 'd-none':''}} lang-form"
                                          id="{{$lang}}-form">
                                         <div class="col-md-12">
-                                            <label for="name">{{ translate('title')}} ({{strtoupper($lang)}})</label>
+                                            <label for="name">{{ translate('Title')}} ({{strtoupper($lang)}})</label>
                                             <input type="text" name="title[]" class="form-control" id="title"
-                                                   placeholder="{{translate('ex').' '.':'.' '.translate('LUX')}}"
+                                                   placeholder="{{translate('Ex').' '.':'.' '.translate('LUX')}}"
                                                 {{$lang == $defaultLanguage? 'required':''}}>
                                         </div>
                                     </div>
@@ -53,12 +53,12 @@
                                 @endforeach
                                 <div class="row">
                                     <div class="col-md-12 mt-3">
-                                        <label for="name" class="title-color">{{ translate('products')}}</label>
+                                        <label for="name" class="title-color">{{ translate('Products')}}</label>
                                         <input type="text" class="product_id" name="product_id" hidden>
                                         <div class="dropdown select-product-search w-100">
                                             <button class="form-control text-start dropdown-toggle text-capitalize select-product-button"
                                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" type="button">
-                                                {{translate('select_product')}}
+                                                {{translate('select_Product')}}
                                             </button>
                                             <div class="dropdown-menu w-100 px-2">
                                                 <div class="search-form mb-3">
@@ -66,7 +66,7 @@
                                                     </button>
                                                     <input type="text"
                                                            class="js-form-search form-control search-bar-input search-product"
-                                                           placeholder="{{translate('search menu').'...'}}">
+                                                           placeholder="{{translate('search_menu').'...'}}">
                                                 </div>
                                                 <div
                                                     class="d-flex flex-column gap-3 max-h-40vh overflow-y-auto overflow-x-hidden search-result-box">
@@ -79,8 +79,8 @@
                             </div>
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary px-5 reset-button">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{ translate('submit')}}</button>
+                                        class="btn btn-secondary px-5 reset-button">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{ translate('Submit')}}</button>
                             </div>
                         </form>
                     </div>
@@ -94,7 +94,7 @@
                         <div class="row align-items-center">
                             <div class="col-sm-4 col-md-6 col-lg-8 mb-2 mb-sm-0">
                                 <h5 class="d-flex align-items-center gap-2">
-                                    {{ translate('deal_of_the_day')}}
+                                    {{ translate('deal_Of_The_Day')}}
                                     <span class="badge badge-soft-dark radius-50 fz-12">{{ $deals->total() }}</span>
                                 </h5>
                             </div>
@@ -108,9 +108,9 @@
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
-                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('Search orders') }}"
+                                               placeholder="{{translate('search_by_Title')}}" aria-label="{{ translate('search_orders') }}"
                                                value="{{ $searchValue ?? '' }}" required>
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -121,10 +121,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL')}}</th>
-                                <th>{{ translate('title')}}</th>
-                                <th>{{ translate('product_info')}}</th>
-                                <th>{{ translate('status')}}</th>
-                                <th class="text-center">{{ translate('action')}}</th>
+                                <th>{{ translate('Title')}}</th>
+                                <th>{{ translate('product_Info')}}</th>
+                                <th>{{ translate('Status')}}</th>
+                                <th class="text-center">{{ translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>

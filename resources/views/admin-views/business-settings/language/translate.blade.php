@@ -44,7 +44,7 @@
                             <a href="{{route('admin.business-settings.language.index')}}"
                                class="btn btn-danger btn-icon-split float-end">
                                 <i class="tio-first-page"></i>
-                                <span class="text text-capitalize">{{translate('back')}}</span>
+                                <span class="text text-capitalize">{{translate('Back')}}</span>
                             </a>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                                     <th class="width-400px border-0">{{translate('key')}}</th>
                                     <th class="max-width-300px border-0">{{translate('value')}}</th>
                                     <th class="max-width-150px border-0">{{translate('auto_translate')}}</th>
-                                    <th class="max-width-150px border-0">{{translate('update')}}</th>
+                                    <th class="max-width-150px border-0">{{translate('Update')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -102,7 +102,7 @@
                             <img src="{{ dynamicAsset('public/assets/back-end/img/invalid-icon.png') }}" alt="">
                         </div>
                         <div class="w-0 flex-grow-1">
-                            <h3>{{ translate('warning') }}!</h3>
+                            <h3>{{ translate('Warning') }}!</h3>
                             <p class="mb-0">
                                 {{ translate('are_you_sure,_want_to_start_auto_translation') }} ?
                             </p>
@@ -120,7 +120,7 @@
                         @endif
 
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                            {{ translate('cancel') }}
+                            {{ translate('Cancel') }}
                         </button>
                     </div>
                 </div>
@@ -203,17 +203,17 @@
     <span id="get-data-table-route-and-text"
           data-route="{{ route('admin.business-settings.language.translate.list', ['lang' => $lang]) }}"
           data-page-length="{{ getWebConfig(name:'pagination_limit') }}"
-          data-info="{{ translate('showing').' '.'_START_'.' '.translate('To').' '.'_END_'.' '.translate('of').' '.'_TOTAL_'.' '.translate('entries') }}"
-          data-info-empty="{{ translate('showing').' '. 0 .translate('To').' '. 0 .' ' .translate('of').' '. 0 .' '.translate('entries') }}"
+          data-info="{{ translate('Showing').' '.'_START_'.' '.translate('To').' '.'_END_'.' '.translate('of').' '.'_TOTAL_'.' '.translate('entries') }}"
+          data-info-empty="{{ translate('Showing').' '. 0 .translate('To').' '. 0 .' ' .translate('of').' '. 0 .' '.translate('entries') }}"
           data-info-filtered="{{ translate('filtered').' '.'_MAX_'.' '.translate('total_entries') }}"
-          data-empty-table="{{  translate('no_data_found') }}"
+          data-empty-table="{{  translate('no_Data_found') }}"
           data-zero-records="{{ translate('no_matching_data_found') }}"
-          data-search="{{ translate('search').':' }}"
+          data-search="{{ translate('Search').':' }}"
           data-length-menu="{{ translate('show').'_MENU_'.translate('entries')  }}"
           data-paginate-first="{{translate('first')}}"
           data-paginate-last="{{translate('last')}}"
-          data-paginate-next="{{translate('next')}}"
-          data-paginate-previous="{{translate('previous')}}"
+          data-paginate-next="{{translate('Next')}}"
+          data-paginate-previous="{{translate('Previous')}}"
     ></span>
 @endsection
 

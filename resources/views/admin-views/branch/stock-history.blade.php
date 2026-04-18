@@ -70,7 +70,7 @@
                 <table class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
                     <thead class="thead-light">
                         <tr>
-                            <th>{{ translate('Date') }}</th>
+                            <th>{{ translate('DATE') }}</th>
                             <th>{{ translate('Type') }}</th>
                             <th>{{ translate('Quantity') }}</th>
                             <th>{{ translate('Reference') }}</th>
@@ -89,7 +89,7 @@
                             <td>{{ \Carbon\Carbon::parse($date)->format('Y-m-d h:i A') }}</td>
                             <td>
                                 <span class="{{ $typeClass }} font-weight-bold">
-                                    {{ $isStockIn ? translate('Stock In') : translate('Stock Out') }}
+                                    {{ $isStockIn ? translate('stock_in') : translate('stock_out') }}
                                 </span>
                             </td>
                             <td class="{{ $typeClass }} font-weight-bold">

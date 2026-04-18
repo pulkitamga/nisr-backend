@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="_token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{{ translate('vendor_Login')}}</title>
+    <title>{{ translate('Vendor_Login')}}</title>
     <link rel="shortcut icon" href="{{getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type:'backend-logo')}}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/google-fonts.css') }}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/vendor.min.css') }}">
@@ -132,7 +132,7 @@
                     <div class="card-footer">
                         <div class="row">
                             <div class="col-10">
-                                <span id="vendor-email" data-email="{{ \App\Enums\DemoConstant::VENDOR['email'] }}">{{translate('email')}} : {{ \App\Enums\DemoConstant::VENDOR['email'] }}</span><br>
+                                <span id="vendor-email" data-email="{{ \App\Enums\DemoConstant::VENDOR['email'] }}">{{translate('Email')}} : {{ \App\Enums\DemoConstant::VENDOR['email'] }}</span><br>
                                 <span id="vendor-password" data-password="{{ \App\Enums\DemoConstant::VENDOR['password'] }}">{{translate('password')}} : {{ \App\Enums\DemoConstant::VENDOR['password'] }}</span>
                             </div>
                             <div class="col-2">

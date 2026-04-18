@@ -10,7 +10,7 @@
                 <th></th>
                 <th>
                     @if(isset($data['vendor']))
-                        {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                        {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
                         <br>
                     @endif
                         {{translate('total_Delivery_Man').' '.'-'.' '.count($data['delivery_men'])}}
@@ -30,12 +30,12 @@
                 <td> {{translate('delivery_Man_Image')}}</td>
                 <td> {{translate('first_Name')}}</td>
                 <td> {{translate('last_Name')}}</td>
-                <td> {{translate('phone')}}	</td>
-                <td> {{translate('email')}}	</td>
+                <td> {{translate('Phone')}}	</td>
+                <td> {{translate('Email')}}	</td>
                 <td> {{translate('identity_Number')}}	</td>
                 <td> {{translate('total_Order')}} </td>
-                <td> {{translate('rating')}} </td>
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Rating')}} </td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['delivery_men'] as $key=>$item)
                 <tr>

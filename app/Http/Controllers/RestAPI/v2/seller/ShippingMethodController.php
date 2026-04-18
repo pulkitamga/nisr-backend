@@ -141,7 +141,7 @@ class ShippingMethodController extends Controller
             'updated_at' => now()
         ]);
 
-        return response()->json(['message' => translate('successfully_updated')], 200);
+        return response()->json(['message' => translate('Successfully_Updated')], 200);
     }
 
     public function delete(Request $request)

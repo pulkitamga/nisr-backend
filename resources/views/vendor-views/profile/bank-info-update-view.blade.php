@@ -14,7 +14,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="mb-0 text-capitalize">{{translate('edit_bank_info')}}</h4>
+                        <h4 class="mb-0 text-capitalize">{{translate('edit_Bank_info')}}</h4>
                     </div>
                     <div class="card-body">
                         <form action="{{route('vendor.profile.update-bank-info',[$vendor->id])}}" method="post"
@@ -29,7 +29,7 @@
                                                required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="name" class="title-color">{{translate('branch_Name')}} <span class="text-danger">*</span></label>
+                                        <label for="name" class="title-color">{{translate('Branch_Name')}} <span class="text-danger">*</span></label>
                                         <input type="text" name="branch" value="{{$vendor->branch}}" class="form-control"
                                                id="name"
                                                required>
@@ -50,8 +50,8 @@
                             </div>
 
                             <div class="d-flex justify-content-end gap-2">
-                                <a class="btn btn-danger" href="{{route('vendor.profile.index')}}">{{translate('cancel')}}</a>
-                                <button type="submit" class="btn btn--primary" id="btn_update">{{translate('update')}}</button>
+                                <a class="btn btn-danger" href="{{route('vendor.profile.index')}}">{{translate('Cancel')}}</a>
+                                <button type="submit" class="btn btn--primary" id="btn_update">{{translate('Update')}}</button>
                             </div>
                         </form>
                     </div>

@@ -32,7 +32,7 @@
         $wholesaleProductSummary = [];
         if (request()->filled('searchValue')) {
             $wholesaleProductSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
             ];
         }
@@ -54,11 +54,11 @@
             ],
             [
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'type' => 'search',
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Product_name'),
-                'aria_label' => translate('search_by_Product_name'),
+                'placeholder' => translate('search_by_Product_Name'),
+                'aria_label' => translate('search_by_Product_Name'),
                 'col_class' => 'col-xl-4 col-lg-6 col-md-6',
             ],
         ],
@@ -96,9 +96,9 @@
                                 <th>{{translate('Product_name')}}</th>
                                 <th>{{translate('Product_Category')}}</th>
                                 <th>{{translate('product_Sub_Category')}}</th>
-                                <th>{{translate('variation')}}</th>
+                                <th>{{translate('Variation')}}</th>
                                 <th>{{translate('Status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,7 +112,7 @@
                                 </td>
                                 <td>{{ $product->category->getTranslatedField('name') ?? __('N/A') }}</td>
                                 <td>{{ $product->subcategory->getTranslatedField('name') ?? __('N/A') }}</td>
-                                <td>{{ $product->variation_type ?? __('No Variation') }}</td>
+                                <td>{{ $product->variation_type ?? __('no_variation') }}</td>
 
                                 <td>
                                     <label class="switcher mx-auto">
@@ -129,11 +129,11 @@
                                         <div class="crm-row-actions__primary">
                                             <a class="btn btn-sm btn-info"
                                                 href="{{ route('admin.wholesale.product.view', $product->id) }}">
-                                                {{ translate('view') }}
+                                                {{ translate('View') }}
                                             </a>
                                             <a class="btn btn-sm btn-outline--primary"
                                                 href="{{ route('admin.wholesale.product.edit', $product->id) }}">
-                                                {{ translate('edit') }}
+                                                {{ translate('Edit') }}
                                             </a>
                                         </div>
                                         <div class="dropdown crm-row-actions__menu">
@@ -146,7 +146,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="dropdown-item text-danger confirm-delete-btn">
-                                                        {{ translate('delete') }}
+                                                        {{ translate('Delete') }}
                                                     </button>
                                                 </form>
                                             </div>

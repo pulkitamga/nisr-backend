@@ -6,7 +6,7 @@
     </tr>
     <tr>
 
-        <th>{{ translate('filter_Criteria') .' '.'-'}}</th>
+        <th>{{ translate('Filter_Criteria') .' '.'-'}}</th>
         <th></th>
         <th>
 
@@ -17,16 +17,16 @@
             {{translate('date_type').' '.'-'.' '.translate($data['date_type'])}}
             <br>
             @if($data['from'] && $data['to'])
-                {{translate('from').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
+                {{translate('From').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
                 <br>
-                {{translate('to').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
+                {{translate('To').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
                 <br>
             @endif
         </th>
     </tr>
     <tr>
         <td> {{translate('SL')}}</td>
-        <td> {{translate('product_Name')}}    </td>
+        <td> {{translate('Product_name')}}    </td>
         <td> {{translate('product_Unit_Price')}}    </td>
         <td> {{translate('total_Amount Sold')}}</td>
         <td> {{translate('total_Quantity_Sold')}}</td>
@@ -48,7 +48,7 @@
                 }}
             </td>
             <td>
-                {{ $item->product_type == 'digital' ? ($item->status==1 ? translate('available') : translate('not_available')) : $item->current_stock }}
+                {{ $item->product_type == 'digital' ? ($item->status==1 ? translate('Available') : translate('not_available')) : $item->current_stock }}
             </td>
             <td>{{$item?->rating && count($item->rating) > 0 ?  number_format($item->rating[0]->average,2) : 0}}
                 ( {{$item->reviews->count()}} )

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('inhouse_shop'))
+@section('title', translate('in-house_Shop'))
 
 @section('content')
     <div class="content container-fluid">
@@ -23,7 +23,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
-                        <h5 class="text-primary mb-0">{{ translate('note') }}</h5>
+                        <h5 class="text-primary mb-0">{{ translate('Note') }}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -37,7 +37,7 @@
                     @csrf
                     <div class="border rounded border-color-c1 px-4 py-3 d-flex justify-content-between mb-1">
                         <h5 class="mb-0 d-flex gap-1 c1">
-                            {{ translate('temporary_close') }}
+                            {{ translate('temporary_Close') }}
                         </h5>
                         <div class="position-relative">
                             <label class="switcher">
@@ -68,7 +68,7 @@
                 <div class="d-flex flex-wrap gap-3 justify-content-between mb-4">
                     <div class="d-flex flex-column gap-1">
                         <h3 class="mb-0 d-flex gap-2 flex-wrap text-capitalize">{{ translate('shop_details') }}</h3>
-                        <p class="mb-0">{{ translate('created_at') }} {{ date('d M, Y', strtotime($admin['updated_at']) ) }}</p>
+                        <p class="mb-0">{{ translate('Created_At') }} {{ date('d M, Y', strtotime($admin['updated_at']) ) }}</p>
                     </div>
                     <div class="d-flex flex-wrap gap-3">
                         <button class="btn btn-outline--primary" data-toggle="modal" data-target="#vacation_mode_modal">
@@ -109,7 +109,7 @@
                                 <div class="border-bottom p-3">
                                     <h5 class="mb-0 text-capitalize d-flex gap-2">
                                         <i class="tio-photo-square-outlined"></i>
-                                        {{ translate('shop_settings') }}
+                                        {{ translate('shop_Settings') }}
                                     </h5>
                                 </div>
                                 <div class="card-body">
@@ -119,7 +119,7 @@
                                             <div class="col-lg-4 col-mg-6">
                                                 <div class="form-group">
                                                     <label class="title-color d-flex" for="minimum_order_amount">
-                                                        {{ translate('minimum_order_amount') }} {{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}
+                                                        {{ translate('minimum_Order_Amount') }} {{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}
                                                         <span class="input-label-secondary cursor-pointer"
                                                               data-toggle="tooltip" data-placement="right"
                                                               title="{{ translate('set_the_minimum_order_amount_a_customer_must_order_from_the_inhouse_shop') }}">
@@ -130,7 +130,7 @@
                                                     </label>
                                                     <input type="number" min="0" class="form-control"
                                                            name="minimum_order_amount" id="minimum_order_amount"
-                                                           placeholder="{{ translate('ex') }}: 10"
+                                                           placeholder="{{ translate('Ex') }}: 10"
                                                            value="{{ usdToDefaultCurrency(amount: $minimumOrderAmount['value']) }}">
                                                 </div>
                                             </div>
@@ -145,7 +145,7 @@
                                                     <input type="number" min="0" class="form-control"
                                                            name="free_delivery_over_amount"
                                                            id="free_delivery_over_amount"
-                                                           placeholder="{{ translate('ex') }}: 10"
+                                                           placeholder="{{ translate('Ex') }}: 10"
                                                            value="{{ usdToDefaultCurrency(amount: $freeDeliveryOverAmount['value'] ) }}">
                                                 </div>
                                             </div>
@@ -215,10 +215,10 @@
 
                             <div class="text-end gap-5 mt-2">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                    {{ translate('close') }}
+                                    {{ translate('Close') }}
                                 </button>
                                 <button type="submit" class="btn btn--primary">
-                                    {{ translate('update') }}
+                                    {{ translate('Update') }}
                                 </button>
                             </div>
                         </div>

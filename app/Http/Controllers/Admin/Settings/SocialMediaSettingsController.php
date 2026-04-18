@@ -75,7 +75,7 @@ class SocialMediaSettingsController extends BaseController
     public function updateStatus(Request $request): JsonResponse|RedirectResponse
     {
         $this->socialMediaRepo->update(id: $request['id'], data: ['active_status' => $request['status']]);
-        Toastr::success(translate('status_updated_successfully'));
+        Toastr::success(translate('Status_updated_successfully'));
         return $request->ajax() ? response()->json(['success' => 1], 200) : back();
     }
 

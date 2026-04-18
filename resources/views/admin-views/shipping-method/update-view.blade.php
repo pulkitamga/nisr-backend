@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('shipping_method'))
+@section('title', translate('shipping_Method'))
 
 @section('content')
 <div class="content container-fluid">
@@ -41,9 +41,9 @@
                                 @foreach($language as $lang)
                                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
                                         id="shipping-method-update-title-{{$lang}}-form" data-language="{{$lang}}">
-                                        <label class="title-color" for="shipping-method-update-title-{{$lang}}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color" for="shipping-method-update-title-{{$lang}}">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="title[]" value="{{$lang == $defaultLanguage ? $method->getRawOriginal('title') : $method->getTranslatedField('title', $lang, '') }}"
-                                            class="form-control" id="shipping-method-update-title-{{$lang}}" placeholder="{{translate('title')}}">
+                                            class="form-control" id="shipping-method-update-title-{{$lang}}" placeholder="{{translate('Title')}}">
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{$lang}}">
                                 @endforeach
@@ -52,9 +52,9 @@
                                 @foreach($language as $lang)
                                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
                                         id="shipping-method-update-duration-{{$lang}}-form" data-language="{{$lang}}">
-                                        <label class="title-color" for="shipping-method-update-duration-{{$lang}}">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color" for="shipping-method-update-duration-{{$lang}}">{{ translate('Duration') }} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="duration[]" value="{{$lang == $defaultLanguage ? $method->getRawOriginal('duration') : $method->getTranslatedField('duration', $lang, '') }}"
-                                            class="form-control" id="shipping-method-update-duration-{{$lang}}" placeholder="{{translate('ex').' '.':'.' '.translate('4_to_6_days')}}">
+                                            class="form-control" id="shipping-method-update-duration-{{$lang}}" placeholder="{{translate('Ex').' '.':'.' '.translate('4_to_6_days')}}">
                                     </div>
                                 @endforeach
                             </div>
@@ -67,12 +67,12 @@
                                     <input type="number" min="0" max="1000000" name="cost"
                                            value="{{usdToDefaultCurrency(amount: $method['cost'])}}"
                                            class="form-control"
-                                           placeholder="{{translate('ex').' '.':'.' '.setCurrencySymbol(amount: usdToDefaultCurrency(amount: 10), currencyCode: getCurrencyCode())}}">
+                                           placeholder="{{translate('Ex').' '.':'.' '.setCurrencySymbol(amount: usdToDefaultCurrency(amount: 10), currencyCode: getCurrencyCode())}}">
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex gap-10 flex-wrap justify-content-end">
-                            <button type="submit" class="btn btn--primary px-4">{{translate('update')}}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{translate('Update')}}</button>
                         </div>
                     </form>
                 </div>

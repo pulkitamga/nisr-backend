@@ -719,7 +719,7 @@ class CartController extends Controller
             $count = $firstProduct?->restock_product_customers_count ?? 0;
             $data = [
                 'title' => $firstProduct?->product?->name ?? '',
-                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('restock_request') : translate('This_product_has') . ' 99+ ' . translate('restock_request'),
+                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('Restock_Request') : translate('This_product_has') . ' 99+ ' . translate('Restock_Request'),
                 'image' => getStorageImages(path: $firstProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
                 'firebase_token' => $product?->seller?->cm_firebase_token
             ];

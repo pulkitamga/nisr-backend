@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -25,7 +25,7 @@
                                 <div class="card-header">
                                     <div class="d-flex align-items-center gap-2">
                                         <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img')}}/{{$socialLoginService['login_medium']}}{{('-logo.png')}}" alt="">
-                                        <h4 class="mb-0">{{translate($socialLoginService['login_medium'])}} {{translate('login')}}</h4>
+                                        <h4 class="mb-0">{{translate($socialLoginService['login_medium'])}} {{translate('Login')}}</h4>
                                     </div>
                                 </div>
                                 <div class="card-body">
@@ -56,7 +56,7 @@
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <input type="text" class="form-control form-ellipsis" name="client_id" placeholder="{{translate('ex')}}:{{translate('client_ID')}}"
+                                        <input type="text" class="form-control form-ellipsis" name="client_id" placeholder="{{translate('Ex')}}:{{translate('client_ID')}}"
                                                value="{{env('APP_MODE')!='demo'? $socialLoginService['client_id']??"":''}}">
                                     </div>
                                     <div class="form-group">
@@ -66,12 +66,12 @@
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <input type="text" class="form-control form-ellipsis" name="client_secret" placeholder="{{translate('ex')}}:{{translate('client_secret_key')}}"
+                                        <input type="text" class="form-control form-ellipsis" name="client_secret" placeholder="{{translate('Ex')}}:{{translate('client_secret_key')}}"
                                                value="{{env('APP_MODE')!='demo'?$socialLoginService['client_secret']??"":''}}">
                                     </div>
                                     <div class="d-flex justify-content-end flex-wrap gap-3">
-                                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                        <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('save')}}</button>
+                                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                        <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Save')}}</button>
                                     </div>
                                 </div>
                             </form>
@@ -91,7 +91,7 @@
                                 <div class="card-header">
                                     <div class="d-flex align-items-center gap-2">
                                         <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/apple.png')}}" alt="">
-                                        <h4 class="mb-0">{{translate($appleLoginService['login_medium'])}} {{translate('login')}}</h4>
+                                        <h4 class="mb-0">{{translate($appleLoginService['login_medium'])}} {{translate('Login')}}</h4>
                                     </div>
                                 </div>
                                 <div class="card-body">
@@ -103,32 +103,32 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="d-flex mb-2 gap-2 align-items-center">
-                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('client_id')}}</label>
+                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('client_ID')}}</label>
                                             <span data-toggle="tooltip" data-title="{{translate('add_the_unique_client_ID')}}">
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <input type="text" class="form-control" name="client_id" placeholder="{{translate('ex')}}:{{translate('client_ID')}}"
+                                        <input type="text" class="form-control" name="client_id" placeholder="{{translate('Ex')}}:{{translate('client_ID')}}"
                                                value="{{ $appleLoginService['client_id'] }}">
                                     </div>
                                     <div class="form-group">
                                         <div class="d-flex mb-2 gap-2 align-items-center">
-                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('team_id')}}</label>
+                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('team_ID')}}</label>
                                             <span data-toggle="tooltip" data-title="{{translate('team_ID')}}">
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <input type="text" class="form-control" name="team_id"  placeholder="{{translate('ex').':'.translate('team_id')}}"
+                                        <input type="text" class="form-control" name="team_id"  placeholder="{{translate('Ex').':'.translate('team_ID')}}"
                                                value="{{ $appleLoginService['team_id'] }}">
                                     </div>
                                     <div class="form-group">
                                         <div class="d-flex mb-2 gap-2 align-items-center">
-                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('key_id')}}</label>
+                                            <label class="form-label mb-0 title-color font-weight-bold ">{{translate('key_ID')}}</label>
                                             <span data-toggle="tooltip" data-title="{{translate('add_key_id')}}">
                                                 <img width="16" class="svg" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" loading="lazy" alt="">
                                             </span>
                                         </div>
-                                        <input type="text" class="form-control" name="key_id"  placeholder="{{translate('ex').':'.translate('key_ID')}}"
+                                        <input type="text" class="form-control" name="key_id"  placeholder="{{translate('Ex').':'.translate('key_ID')}}"
                                                value="{{ $appleLoginService['key_id'] }}">
                                     </div>
                                     <div class="form-group">
@@ -138,8 +138,8 @@
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end flex-wrap gap-3">
-                                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                        <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}" >{{translate('save')}}</button>
+                                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                        <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}" >{{translate('Save')}}</button>
                                     </div>
                                 </div>
                             </form>

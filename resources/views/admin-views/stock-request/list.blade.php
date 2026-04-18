@@ -33,7 +33,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_product_name_or_code'),
             'aria_label' => translate('search_by_product_name_or_code'),
@@ -46,7 +46,7 @@
         $toolbarSummary[] = ['label' => translate('Request Date'), 'value' => Str::limit(request('restock_date'), 28), 'muted' => true];
     }
     if (request()->filled('searchValue')) {
-        $toolbarSummary[] = ['label' => translate('search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
+        $toolbarSummary[] = ['label' => translate('Search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
     }
     if (request()->filled('choose_first')) {
         $toolbarSummary[] = ['label' => translate('Rows_to_show'), 'value' => request('choose_first'), 'muted' => true];
@@ -61,7 +61,7 @@
         ],
         [
             'type' => 'button',
-            'label' => translate('add_New_Stock_Request'),
+            'label' => translate('Add_New_Stock_Request'),
             'href' => route('admin.stock-request.add'),
             'class' => 'btn btn--primary text-nowrap',
             'icon_html' => '<i class="tio-add"></i>',
@@ -88,7 +88,7 @@
 
     <div class="card">
         @include('admin-views.crm.partials._list-card-header', [
-            'listHeaderTitle' => translate('stock_Request_List'),
+            'listHeaderTitle' => translate('Stock_Request_List'),
             'listHeaderTotal' => $aStockRequests->total(),
             'listHeaderActions' => $headerActions,
         ])
@@ -98,13 +98,13 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th class="text-center">{{ translate('SL') }}</th>
-                        <th class="text-start">{{ translate('From Branch') }}</th>
+                        <th class="text-start">{{ translate('From_branch') }}</th>
                         <th class="text-start">{{ translate('Request Date') }}</th>
                         <th>{{ translate('Products') }}</th>
                         <th>{{ translate('Category') }}</th>
                         <th>{{ translate('Variation') }}</th>
-                        <th class="text-center">{{ translate('Qty') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th class="text-center">{{ translate('QTY') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -143,8 +143,8 @@
                             <td class="text-center">
                                 <div class="crm-row-actions">
                                     <div class="crm-row-actions__primary">
-                                        <a title="{{ translate('view') }}" class="btn btn-outline-info btn-sm" href="{{ route('admin.stock-request.view', $transferRequest->id) }}">
-                                            {{ translate('view') }}
+                                        <a title="{{ translate('View') }}" class="btn btn-outline-info btn-sm" href="{{ route('admin.stock-request.view', $transferRequest->id) }}">
+                                            {{ translate('View') }}
                                         </a>
                                     </div>
                                 </div>
@@ -171,7 +171,7 @@
     </div>
 </div>
 
-<span id="message-select-word" data-text="{{ translate('select') }}"></span>
+<span id="message-select-word" data-text="{{ translate('Select') }}"></span>
 <div class="modal fade update-stock-modal restock-stock-update" id="update-stock" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -181,9 +181,9 @@
                     <div class="rest-part-content"></div>
                     <div class="btn--container">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="{{ translate('Close') }}">
-                            {{ translate('close') }}
+                            {{ translate('Close') }}
                         </button>
-                        <button class="btn btn--primary" type="submit">{{ translate('update') }}</button>
+                        <button class="btn btn--primary" type="submit">{{ translate('Update') }}</button>
                     </div>
                 </div>
             </form>

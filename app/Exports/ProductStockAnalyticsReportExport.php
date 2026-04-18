@@ -16,8 +16,8 @@ class ProductStockAnalyticsReportExport implements WithMultipleSheets
         $isRtl = session('direction') === 'rtl';
 
         $summaryRows = [
-            [translate('from'), (string)($this->data['filters']['from'] ?? '')],
-            [translate('to'), (string)($this->data['filters']['to'] ?? '')],
+            [translate('From'), (string)($this->data['filters']['from'] ?? '')],
+            [translate('To'), (string)($this->data['filters']['to'] ?? '')],
             [translate('total_current_stock'), (int)($this->data['summary']['total_current_stock'] ?? 0)],
             [translate('total_stock_in'), (int)($this->data['summary']['total_stock_in'] ?? 0)],
             [translate('total_stock_out'), (int)($this->data['summary']['total_stock_out'] ?? 0)],
@@ -80,8 +80,8 @@ class ProductStockAnalyticsReportExport implements WithMultipleSheets
                 title: translate('stock_by_product'),
                 headings: [
                     translate('SL'),
-                    translate('product'),
-                    translate('current_stock'),
+                    translate('Product'),
+                    translate('Current_Stock'),
                     translate('stock_in'),
                     translate('stock_out'),
                     translate('net_stock_movement'),
@@ -93,8 +93,8 @@ class ProductStockAnalyticsReportExport implements WithMultipleSheets
                 title: translate('stock_by_branch'),
                 headings: [
                     translate('SL'),
-                    translate('branch'),
-                    translate('current_stock'),
+                    translate('Branch'),
+                    translate('Current_Stock'),
                     translate('products_count'),
                 ],
                 rows: $stockByBranchRows,
@@ -104,9 +104,9 @@ class ProductStockAnalyticsReportExport implements WithMultipleSheets
                 title: translate('stock_by_branch_and_product'),
                 headings: [
                     translate('SL'),
-                    translate('branch'),
-                    translate('product'),
-                    translate('current_stock'),
+                    translate('Branch'),
+                    translate('Product'),
+                    translate('Current_Stock'),
                 ],
                 rows: $stockByBranchProductRows,
                 isRtl: $isRtl
@@ -115,13 +115,13 @@ class ProductStockAnalyticsReportExport implements WithMultipleSheets
                 title: translate('stock_movement_history'),
                 headings: [
                     translate('SL'),
-                    translate('date'),
-                    translate('product'),
-                    translate('branch'),
-                    translate('type'),
-                    translate('quantity'),
-                    translate('category'),
-                    translate('reference'),
+                    translate('DATE'),
+                    translate('Product'),
+                    translate('Branch'),
+                    translate('Type'),
+                    translate('Quantity'),
+                    translate('Category'),
+                    translate('Reference'),
                 ],
                 rows: $movementRows,
                 isRtl: $isRtl

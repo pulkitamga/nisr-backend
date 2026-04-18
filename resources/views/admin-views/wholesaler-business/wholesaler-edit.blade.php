@@ -11,7 +11,7 @@
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/vendor-information.png')}}" alt="">
-            {{ translate('wholesaler') . ' # ' . $wholesaler->id }}
+            {{ translate('Wholesaler') . ' # ' . $wholesaler->id }}
         </h2>
     </div>
 
@@ -25,7 +25,7 @@
                         <h5
                             class="mb-0 page-header-title d-flex text-capitalize align-items-center gap-2 border-bottom pb-3 mb-3">
                             <i class="tio-user"></i>
-                            {{ translate('general_information') }}
+                            {{ translate('general_Information') }}
                         </h5>
                         <div class="row">
                             <div class="col-md-6">
@@ -33,16 +33,16 @@
                                 <div class="form-group">
                                     <label for="name" class="title-color">{{ translate('full_Name') }}</label>
                                     <input type="text" name="name" class="form-control" id="name"
-                                        placeholder="{{ translate('ex') }} : John Doe"
+                                        placeholder="{{ translate('Ex') }} : John Doe"
                                         value="{{ $wholesaler->f_name . ' ' . $wholesaler->l_name }}" readonly>
                                 </div>
                                 <div class="form-group">
-                                    <label for="phone" class="title-color">{{ translate('contact') }}</label>
+                                    <label for="phone" class="title-color">{{ translate('Contact') }}</label>
                                     <input type="tel" name="phone" class="form-control" value="{{ $wholesaler->phone }}"
                                         readonly>
                                 </div>
                                 <div class="form-group">
-                                    <label for="email" class="title-color">{{ translate('email') }}</label>
+                                    <label for="email" class="title-color">{{ translate('Email') }}</label>
                                     <input type="email" name="email" class="form-control"
                                         value="{{ $wholesaler->email }}" readonly>
                                 </div>
@@ -54,7 +54,7 @@
                                 <div class="form-group">
                                     <label for="referred_by" class="title-color">{{ translate('referred_by') }}</label>
                                     <input type="text" name="referred_by" class="form-control"
-                                        value="{{ $wholesaler->refferd_by ?? translate('no_data_found') }}" readonly>
+                                        value="{{ $wholesaler->refferd_by ?? translate('no_Data_found') }}" readonly>
                                 </div>
                                 <div class="form-group">
                                     <label for="moq_override" class="title-color">{{ translate('MOQ Override')
@@ -102,7 +102,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="tier" class="title-color">{{ translate('tier') }}</label>
+                                    <label for="tier" class="title-color">{{ translate('Tier') }}</label>
                                     <select name="tier" class="form-control" required>
                                         @foreach($tiers as $tier)
                                         <option value="{{ $tier->name }}" {{ $wholesaler->tier == $tier->name ?
@@ -128,16 +128,16 @@
                                     <label for="status" class="title-color">{{ translate('Status') }}</label>
                                     <select name="wholesaler_status" class="form-control" required>
                                         <option value="1" {{ $wholesaler->wholesaler_status == 1 ? 'selected' : '' }}>{{
-                                            translate('active') }}</option>
+                                            translate('Active') }}</option>
                                         <option value="0" {{ $wholesaler->wholesaler_status == 0 ? 'selected' : '' }}>{{
-                                            translate('inactive') }}</option>
+                                            translate('Inactive') }}</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="submit" class="btn btn--primary px-4">{{ translate('update') }}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{ translate('Update') }}</button>
                         </div>
                     </div>
                 </div>

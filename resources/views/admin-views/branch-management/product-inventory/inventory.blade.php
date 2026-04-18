@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('Branch Product Inventory'))
+@section('title', translate('branch_product_inventory'))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -22,7 +22,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_product_name_or_code'),
             'aria_label' => translate('search_by_product_name_or_code'),
@@ -32,7 +32,7 @@
 
     $toolbarSummary = [];
     if (request()->filled('searchValue')) {
-        $toolbarSummary[] = ['label' => translate('search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
+        $toolbarSummary[] = ['label' => translate('Search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
     }
     if (request()->filled('choose_first')) {
         $toolbarSummary[] = ['label' => translate('Rows_to_show'), 'value' => request('choose_first'), 'muted' => true];
@@ -58,7 +58,7 @@
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
             <img src="{{ asset('public/assets/back-end/img/stock.png') }}" alt="" width="30">
-            {{ translate('Branch Product Inventory') }}
+            {{ translate('branch_product_inventory') }}
             <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $products->total() }}</span>
         </h2>
     </div>
@@ -73,7 +73,7 @@
 
     <div class="card">
         @include('admin-views.crm.partials._list-card-header', [
-            'listHeaderTitle' => translate('Branch Product Inventory'),
+            'listHeaderTitle' => translate('branch_product_inventory'),
             'listHeaderTotal' => $products->total(),
             'listHeaderActions' => $headerActions,
         ])
@@ -86,21 +86,21 @@
                         <th>{{ translate('Name') }}</th>
                         <th>{{ translate('Code') }}</th>
                         <th>{{ translate('Category') }}</th>
-                        <th>{{ translate('Sub Category') }}</th>
-                        <th>{{ translate('Sub Sub Category') }}</th>
+                        <th>{{ translate('Sub_Category') }}</th>
+                        <th>{{ translate('sub_Sub_Category') }}</th>
                         <th>{{ translate('Brand') }}</th>
                         <th>{{ translate('Unit') }}</th>
                         <th>{{ translate('Type') }}</th>
                         <th>{{ translate('Details') }}</th>
                         <th>{{ translate('Price') }}</th>
-                        <th>{{ translate('Purchase Price') }}</th>
+                        <th>{{ translate('purchase_price') }}</th>
                         <th>{{ translate('Tax') }}</th>
                         <th>{{ translate('Discount') }}</th>
-                        <th>{{ translate('Current Stock') }}</th>
+                        <th>{{ translate('Current_Stock') }}</th>
                         <th>{{ translate('Min Order Qty') }}</th>
                         <th>{{ translate('Status') }}</th>
                         <th>{{ translate('Request Status') }}</th>
-                        <th>{{ translate('Shipping Cost') }}</th>
+                        <th>{{ translate('shipping_cost') }}</th>
                         <th>{{ translate('Images') }}</th>
                     </tr>
                 </thead>

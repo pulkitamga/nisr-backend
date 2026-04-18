@@ -41,13 +41,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
-                        <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control" {{ $lang==$defaultLanguage ? 'required'
                             : '' }}>
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="description[]" rows="5" class="form-control"></textarea>
                     </div>
 
@@ -56,7 +56,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @endforeach
 
                 <div class="form-group">
-                    <label>{{ translate('image') }}</label>
+                    <label>{{ translate('Image') }}</label>
                     <input type="file" name="image" class="form-control" accept="image/*"
                         onchange="previewImage(event)">
                 </div>
@@ -70,7 +70,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

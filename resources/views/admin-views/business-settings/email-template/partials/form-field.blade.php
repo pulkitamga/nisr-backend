@@ -39,18 +39,18 @@
             <div class="input-group">
                 <div class="custom-file">
                     <input type="file" class="custom-file-input image-input" name="logo" id="mail-logo" data-image-id="view-mail-logo" accept="image/*">
-                    <label class="custom-file-label" for="mail-logo">{{translate('choose_file')}}</label>
+                    <label class="custom-file-label" for="mail-logo">{{translate('choose_File')}}</label>
                 </div>
             </div>
     </div>
     @endif
     @if(!in_array('icon',$template['hide_field']))
     <div class="form-group">
-        <label class="title-color">{{translate('icon')}}</label>
+        <label class="title-color">{{translate('Icon')}}</label>
         <div class="input-group">
             <div class="custom-file">
                 <input type="file" class="custom-file-input image-input" name="icon" id="mail-icon" data-image-id="view-mail-icon" accept="image/*">
-                <label class="custom-file-label" for="mail-icon">{{translate('choose_file')}}</label>
+                <label class="custom-file-label" for="mail-icon">{{translate('choose_File')}}</label>
             </div>
         </div>
     </div>
@@ -65,16 +65,16 @@
 
             <div class="{{ $lang != $activeLang ? 'd-none' : ''}} form-system-language-form" id="{{ $lang}}-form">
                 <div class="form-group">
-                    <label class="title-color text-capitalize" for="{{ $lang}}-main-title">{{ translate('title') }}
+                    <label class="title-color text-capitalize" for="{{ $lang}}-main-title">{{ translate('Title') }}
                         ({{strtoupper($lang) }})</label>
                     <input type="text" name="title[{{$lang}}]" data-id="mail-title"
                            id="{{ $lang}}-main-title"
                            value="{{ $template->getTranslatedField('title', $lang, $lang == $defaultLang ? $template['title'] : '')}}"
-                           class="form-control" placeholder="{{translate('ex').' : '.translate('title')}}">
+                           class="form-control" placeholder="{{translate('Ex').' : '.translate('Title')}}">
                 </div>
                 <input type="hidden" name="lang[]" value="{{$lang}}">
                 <div class="form-group">
-                    <label class="title-color">{{ translate('mail_body') }} ({{strtoupper($lang) }})</label>
+                    <label class="title-color">{{ translate('mail_Body') }} ({{strtoupper($lang) }})</label>
                     <textarea name="body[{{$lang}}]" data-id="mail-body" class="summernote">{!! $template->getTranslatedField('body', $lang, $lang == $defaultLang ? $template['body'] : '') !!}</textarea>
                 </div>
             </div>
@@ -104,7 +104,7 @@
         <div class="input-group">
             <div class="custom-file">
                 <input type="file" class="custom-file-input" name="banner_image" id="inputGroupFile01" accept="image/*">
-                <label class="custom-file-label" for="inputGroupFile01">{{translate('choose_file')}}</label>
+                <label class="custom-file-label" for="inputGroupFile01">{{translate('choose_File')}}</label>
             </div>
         </div>
     </div>
@@ -142,7 +142,7 @@
                         </div>
                         <input type="text"  id="{{ $lang}}-button-name" name="button_name[{{ $lang}}]"  data-id="button-content"
                                value="{{ $template->getTranslatedField('button_name', $lang, $lang == $defaultLang ? $template['button_name'] : '')}}"
-                               placeholder="{{translate('ex').' : '.translate('submit')}}" class="form-control">
+                               placeholder="{{translate('Ex').' : '.translate('Submit')}}" class="form-control">
                     </div>
                     @endforeach
 
@@ -160,7 +160,7 @@
                         </span>
                     </div>
                     <input type="text" id="redirect_link" name="button_url" data-id="button-link" value="{{$template['button_url']}}"
-                           placeholder="{{translate('ex').' : '.'www.google.com'}}" class="form-control" >
+                           placeholder="{{translate('Ex').' : '.'www.google.com'}}" class="form-control" >
                 </div>
             </div>
             @endif
@@ -203,7 +203,7 @@
                     <input type="text" name="footer_text[{{ $lang}}]" data-id="footer-text"
                            id="{{ $lang}}-footer-text"
                            value="{{ $template->getTranslatedField('footer_text', $lang, $lang == $defaultLang ? $template['footer_text'] : '')}}"
-                           class="form-control" placeholder="{{translate('ex').' : '.translate('please_contact_us_for_any_queries').','.translate('we_are_always_happy_to_help').'.'}}">
+                           class="form-control" placeholder="{{translate('Ex').' : '.translate('please_contact_us_for_any_queries').','.translate('_we_are_always_happy_to_help').'.'}}">
                 </div>
             </div>
         @endforeach
@@ -212,24 +212,24 @@
             <div class="d-flex flex-wrap align-items-center gap-3 pages">
                 <div class="d-flex gap-2 align-items-center">
                     <input type="checkbox" name="pages[privacy_policy]" data-from="pages" data-id="privacy-policy" id="privacy_policy" {{!empty($template['pages']) && in_array('privacy_policy',$template['pages'])? 'checked': (empty($template['pages']) ? 'checked' :'')}} >
-                    <label class="mb-0 text-dark" for="privacy_policy">{{translate('privacy_policy')}}</label>
+                    <label class="mb-0 text-dark" for="privacy_policy">{{translate('Privacy_Policy')}}</label>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <input type="checkbox" name="pages[refund_policy]" data-from="pages" data-id="refund-policy" id="refund_policy" {{!empty($template['pages']) && in_array('refund_policy',$template['pages'])? 'checked': (empty($template['pages']) ? 'checked' :'')}}>
-                    <label class="mb-0 text-dark" for="refund_policy">{{translate('refund_policy')}}</label>
+                    <label class="mb-0 text-dark" for="refund_policy">{{translate('Refund_Policy')}}</label>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <input type="checkbox" name="pages[cancellation_policy]" data-from="pages" data-id="cancellation-policy" id="cancellation_policy" {{!empty($template['pages']) && in_array('cancellation_policy',$template['pages']) ? 'checked': (empty($template['pages']) ? 'checked' :'')}}>
-                    <label class="mb-0 text-dark" for="cancellation_policy">{{translate('cancellation_policy')}}</label>
+                    <label class="mb-0 text-dark" for="cancellation_policy">{{translate('Cancellation_Policy')}}</label>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <input type="checkbox" name="pages[contact_us]" data-from="pages" data-id="contact-us" id="contact_us" {{!empty($template['pages']) && in_array('contact_us',$template['pages'])? 'checked': (empty($template['pages']) ? 'checked' :'')}}>
-                    <label class="mb-0 text-dark" for="contact_us">{{translate('contact_us')}}</label>
+                    <label class="mb-0 text-dark" for="contact_us">{{translate('Contact_Us')}}</label>
                 </div>
             </div>
         </div>
         <div class="mb-5">
-            <label class="title-color font-weight-bold">{{translate('social_media_links')}}</label>
+            <label class="title-color font-weight-bold">{{translate('social_Media_Links')}}</label>
             <div class="d-flex flex-wrap align-items-center gap-3">
                 @foreach($socialMedia as $key=>$media)
                     <div class="d-flex gap-2 align-items-center">
@@ -248,13 +248,13 @@
                     <input type="text" name="copyright_text[{{ $lang}}]" data-id="copyright-text"
                            id="{{ $lang}}-copyright-text"
                            value="{{ $template->getTranslatedField('copyright_text', $lang, $lang == $defaultLang ? $template['copyright_text'] : '')}}"
-                           class="form-control" placeholder="{{translate('ex').' : '.translate('copyright').' @ '.translate('all_right_reserved')}}">
+                           class="form-control" placeholder="{{translate('Ex').' : '.translate('copyright_').' @ '.translate('all_right_reserved')}}">
                 </div>
             </div>
         @endforeach
     </div>
     <div class="d-flex justify-content-end gap-3">
-        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-        <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+        <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
     </div>
 </form>

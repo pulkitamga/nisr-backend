@@ -136,7 +136,7 @@ class CustomerController extends BaseController
             'title' => $customer['is_active'] ? translate('Account_Unblocked') . ' !' : translate('Account_Blocked') . ' !',
         ];
         event(new CustomerStatusUpdateEvent(email: $customer['email'], data: $data));
-        return response()->json(['message' => translate('update_successfully')]);
+        return response()->json(['message' => translate('Update_successfully')]);
     }
 
     public function getView(Request $request, $id): View|RedirectResponse

@@ -27,13 +27,13 @@
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('phone')}}</span>
+                                    <span class="key">{{translate('Phone')}}</span>
                                     <span>:</span>
                                     <span class="value">{{ $stockRequest->fromBranch ? $stockRequest->fromBranch->phone : 'N/A' }}</span>
                                 </div>
 
                                 <div>
-                                    <span class="key">{{translate('address')}}</span>
+                                    <span class="key">{{translate('Address')}}</span>
                                     <span>:</span>
                                     <span class="value">{{ $stockRequest->fromBranch ? $stockRequest->fromBranch->branch_address : 'N/A' }}</span>
                                 </div>
@@ -64,9 +64,9 @@
                                     <th class="">{{ translate('Products') }}</th>
                                     <th class="">{{ translate('Category') }}</th>
                                     <th class="">{{ translate('Variation') }}</th>
-                                    <th class="text-center">{{ translate('Qty') }}</th>
-                                    <th class="">{{ translate('From Branch') }}</th>
-                                    <th class="">{{ translate('To Branch') }}</th>
+                                    <th class="text-center">{{ translate('QTY') }}</th>
+                                    <th class="">{{ translate('From_branch') }}</th>
+                                    <th class="">{{ translate('to_branch') }}</th>
                                 </tr>
                             </thead>
                             <tbody>

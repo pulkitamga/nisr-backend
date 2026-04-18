@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('branch_stocks'))
+@section('title', translate('branch_Stocks'))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -52,7 +52,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_branch_name_or_product_name'),
             'aria_label' => translate('search_by_branch_name_or_product_name'),
@@ -71,7 +71,7 @@
         $toolbarSummary[] = ['label' => translate('Attribute'), 'value' => Str::limit(request('attribute'), 28), 'muted' => true];
     }
     if (request()->filled('searchValue')) {
-        $toolbarSummary[] = ['label' => translate('search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
+        $toolbarSummary[] = ['label' => translate('Search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
     }
     if (request()->filled('choose_first')) {
         $toolbarSummary[] = ['label' => translate('Rows_to_show'), 'value' => request('choose_first'), 'muted' => true];
@@ -116,10 +116,10 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th class="text-center">{{ translate('SL') }}</th>
-                        <th>{{ translate('branch_name') }}</th>
-                        <th>{{ translate('product_name') }}</th>
-                        <th>{{ translate('variation') }}</th>
-                        <th class="text-center">{{ translate('Current_stock') }}</th>
+                        <th>{{ translate('Branch_Name') }}</th>
+                        <th>{{ translate('Product_name') }}</th>
+                        <th>{{ translate('Variation') }}</th>
+                        <th class="text-center">{{ translate('Current_Stock') }}</th>
                         <th class="text-center">{{ translate('Actions') }}</th>
                     </tr>
                 </thead>
@@ -241,7 +241,7 @@
                             <span id="modalVariation">-</span>
                         </div>
                         <div>
-                            <strong>{{ translate('Current Stock') }}:</strong>
+                            <strong>{{ translate('Current_Stock') }}:</strong>
                             <span id="modalCurrentStock">-</span>
                         </div>
                     </div>
@@ -263,7 +263,7 @@
                     <table class="table table-sm table-bordered text-start">
                         <thead class="thead-light sticky-top">
                             <tr>
-                                <th>{{ translate('Date') }}</th>
+                                <th>{{ translate('DATE') }}</th>
                                 <th>{{ translate('Type') }}</th>
                                 <th>{{ translate('Quantity') }}</th>
                                 <th>{{ translate('Reference') }}</th>

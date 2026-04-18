@@ -5,7 +5,7 @@
                 <div class="border-bottom">
                     <h4>{{ translate('Add_Product') }}</h4>
                     <p>
-                        {{ translate('search_product') }} & {{ translate('add_to_your_clearance_list') }}
+                        {{ translate('Search_Product') }} & {{ translate('add_to_your_clearance_list') }}
                     </p>
                 </div>
                 <form action="{{route('admin.deal.clearance-sale.add-product')}}" method="post" class="clearance-add-product">
@@ -32,7 +32,7 @@
                         <img src="{{ dynamicAsset('public/assets/back-end/img/empty-product.png') }}" width="64"
                              alt="">
                         <div class="mx-auto my-3 max-w-353px">
-                            {{ translate('search') }} & {{ translate('and_add_product_from_the_list') }}
+                            {{ translate('Search') }} & {{ translate('and_add_product_from_the_list') }}
                         </div>
                     </div>
                     <div class="btn--container justify-content-end mt-3">

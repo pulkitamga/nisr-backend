@@ -265,7 +265,7 @@
     <div class="report-header clearfix">
         <div class="header-content">
             <h2>{{ translate('expense_Transaction_Statement') }}</h2>
-            <p>{{ translate('duration') }}: {{ $dateRange }}</p>
+            <p>{{ translate('Duration') }}: {{ $dateRange }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->translatedFormat('d M Y, h:i A') }}</p>
         </div>
         @if ($logoSrc)
@@ -325,8 +325,8 @@
         <thead>
             <tr>
                 <th>{{ translate('SL') }}</th>
-                <th>{{ translate('details') }}</th>
-                <th>{{ translate('amount') }}</th>
+                <th>{{ translate('Details') }}</th>
+                <th>{{ translate('Amount') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -371,13 +371,13 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>{{ translate('order_id') }}</th>
+                    <th>{{ translate('Order_ID') }}</th>
                     <th>{{ translate('coupon_code') }}</th>
-                    <th>{{ translate('discount_type') }}</th>
-                    <th>{{ translate('discount_amount') }}</th>
+                    <th>{{ translate('Discount_Type') }}</th>
+                    <th>{{ translate('Discount_Amount') }}</th>
                     <th>{{ translate('free_delivery_bearer') }}</th>
                     <th>{{ translate('coupon_discount_bearer') }}</th>
-                    <th>{{ translate('date') }}</th>
+                    <th>{{ translate('DATE') }}</th>
                 </tr>
             </thead>
             <tbody>

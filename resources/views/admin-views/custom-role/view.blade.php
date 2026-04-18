@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Session;
                             </div>
                             <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_role')}}"
                                 value="{{ request('searchValue') }}">
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -53,12 +53,12 @@ use Illuminate\Support\Facades\Session;
                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('role_name')}}</th>
-                            <th>{{translate('modules')}}</th>
+                            <th>{{translate('role_Name')}}</th>
+                            <th>{{translate('Modules')}}</th>
                             <th>{{translate('permissions')}}</th>
-                            <th>{{translate('created_at')}}</th>
-                            <th>{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th>{{translate('Created_At')}}</th>
+                            <th>{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,14 +124,14 @@ use Illuminate\Support\Facades\Session;
                                     @if($canManageRoles)
                                         <a href="{{route('admin.custom-role.update',[$role['id']])}}"
                                            class="btn btn-outline--primary btn-sm square-btn"
-                                           title="{{translate('edit') }}">
+                                           title="{{translate('Edit') }}">
                                             <i class="tio-edit"></i>
                                         </a>
                                         @unless($isProtectedRole ?? false)
                                             <a href="javascript:"
                                                class="btn btn-outline-danger btn-sm delete-data-without-form"
                                                data-action="{{route('admin.custom-role.delete')}}"
-                                               title="{{translate('delete') }}" data-id="{{$role['id']}}">
+                                               title="{{translate('Delete') }}" data-id="{{$role['id']}}">
                                                 <i class="tio-delete"></i>
                                             </a>
                                         @endunless

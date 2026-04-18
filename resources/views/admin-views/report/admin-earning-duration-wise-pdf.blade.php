@@ -261,7 +261,7 @@
             <tr>
                 <th class="content-position-y text-start">
                     <h2>{{translate('admin_Earning_Report')}}</h2>
-                    <p class="fz-14">{{translate('date')}} : <span
+                    <p class="fz-14">{{translate('DATE')}} : <span
                                 style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
                 </th>
                 <th class="content-position-y text-end">
@@ -278,7 +278,7 @@
                         <table>
                             <tr>
                                 <td>
-                                    <p class="fz-14"><b>{{translate('duration')}}</b> : {{ $earning_data['duration'] }}
+                                    <p class="fz-14"><b>{{translate('Duration')}}</b> : {{ $earning_data['duration'] }}
                                     </p>
                                 </td>
                             </tr>
@@ -299,13 +299,13 @@
                 <tbody>
                 <tr>
                     <td style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('SL')}}</td>
-                    <td style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('details')}}</td>
+                    <td style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('Details')}}</td>
                     <td class="text-end"
-                        style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('amount')}}</td>
+                        style="background-color: #0177CD important; color: white; font-weight: bold">{{translate('Amount')}}</td>
                 </tr>
                 <tr>
                     <td>1</td>
-                    <td>{{translate('in_House_earning')}}</td>
+                    <td>{{translate('in-House_Earning')}}</td>
                     <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['inhouse_earning'])) }}</td>
                 </tr>
                 <tr>
@@ -320,7 +320,7 @@
                 </tr>
                 <tr>
                     <td>4</td>
-                    <td>{{translate('deliveryman_incentive')}}</td>
+                    <td>{{translate('delivery_man_incentive')}}</td>
                     <td class="text-end">{{ \App\Utils\BackEndHelper::set_symbol(\App\Utils\BackEndHelper::usd_to_currency($earning_data['deliveryman_incentive'])) }}</td>
                 </tr>
                 <tr>
@@ -360,12 +360,12 @@
                         <div class="d-flex justify-content-center gap-2">
                             <div class="mb-2">
                                 <i class="fa fa-phone"></i>
-                                {{translate('phone')}}
+                                {{translate('Phone')}}
                                 : {{ $company_phone }}
                             </div>
                             <div class="mb-2">
                                 <i class="fa fa-envelope" aria-hidden="true"></i>
-                                {{translate('email')}}
+                                {{translate('Email')}}
                                 : {{ $company_email }}
                             </div>
                         </div>

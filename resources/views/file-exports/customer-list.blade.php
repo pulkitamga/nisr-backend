@@ -2,24 +2,24 @@
 <table>
     <thead>
     <tr>
-        <th style="font-size:18px">{{translate('customer_List')}}</th>
+        <th style="font-size:18px">{{translate('Customer_List')}}</th>
     </tr>
     <tr>
         <th>{{ translate('customer_Analytics').' '.'-' }}</th>
         <th></th>
         <th>
-            {{translate('total_Customer').' '.'-'.' '.count($data['customers'])}}
+            {{translate('Total_Customer').' '.'-'.' '.count($data['customers'])}}
         </th>
     </tr>
     <tr>
         <th>{{translate('Filter_Criteria')}}-</th>
         <th></th>
         <th>
-            {{ translate('status') . ' - ' . ($data['status'] === '1' ? 'Active' : ($data['status'] === '0' ? 'Inactive' : 'All')) }}
+            {{ translate('Status') . ' - ' . ($data['status'] === '1' ? 'Active' : ($data['status'] === '0' ? 'Inactive' : 'All')) }}
             <br>
-            {{ translate('sort_by') . ' - ' . (!empty($data['sortBy']) ? ($data['sortBy'] === 'order_amount' ? translate('Sort_By_Order_Amount') : ($data['sortBy']  === 'asc' ? translate('Sort_By_Oldest') : translate('Sort_By_Newest'))) : 'N/A') }}
+            {{ translate('Sort_By') . ' - ' . (!empty($data['sortBy']) ? ($data['sortBy'] === 'order_amount' ? translate('Sort_By_Order_Amount') : ($data['sortBy']  === 'asc' ? translate('Sort_By_Oldest') : translate('Sort_By_Newest'))) : 'N/A') }}
             <br>
-            {{ translate('choose_first'). ' - ' . (!empty($data['chooseFirst']) ? $data['chooseFirst'] : 'N/A')}}
+            {{ translate('Choose_First'). ' - ' . (!empty($data['chooseFirst']) ? $data['chooseFirst'] : 'N/A')}}
             <br>
             {{ translate('search_Bar_Content'). ' - ' . (!empty($data['searchValue']) ? $data['searchValue'] : 'N/A')}}
             <br>
@@ -37,11 +37,11 @@
         <td>{{ translate('SL') }}</td>
         <td>{{ translate('customer_Image') }}</td>
         <td>{{ translate('Name') }}</td>
-        <td>{{ translate('phone') }}</td>
-        <td>{{ translate('email') }}</td>
+        <td>{{ translate('Phone') }}</td>
+        <td>{{ translate('Email') }}</td>
         <td>{{ translate('date_of_Joining') }}</td>
         <td>{{ translate('total_Order') }}</td>
-        <td>{{ translate('status') }}</td>
+        <td>{{ translate('Status') }}</td>
     </tr>
     @foreach ($data['customers'] as $key=>$item)
         <tr>

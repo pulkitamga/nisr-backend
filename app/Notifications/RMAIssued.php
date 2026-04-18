@@ -20,7 +20,7 @@ class RMAIssued extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(translate('RMA Issued'))
+            ->subject(translate('rma_issued'))
             ->line(translate('Your RMA') . $this->claim->rma_number)
             ->line($this->instructions)
             ->action(translate('View Claim'), route('warranty.track.page'));

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('privacy_policy'))
+@section('title', translate('Privacy_Policy'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -24,7 +24,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" width="20" alt="">
-            {{translate('pages')}}
+            {{translate('Pages')}}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -34,7 +34,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <form action="{{route('admin.business-settings.privacy-policy-update')}}" method="post">
                     @csrf
                 <div class="card-header">
-                    <h5 class="mb-0">{{translate('privacy_policy')}}</h5>
+                    <h5 class="mb-0">{{translate('Privacy_Policy')}}</h5>
                     <label class="switcher show-status-text justify-content-end" for="privacy-policy-status">
                         <input type="checkbox" class="switcher_input toggle-switch-message" value="1" name="status"
                                id="privacy-policy-status" {{ ($privacyPolicyPage->status ?? 0) == 1 ? 'checked' : '' }}
@@ -42,11 +42,11 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                data-toggle-id="privacy-policy-status"
                                data-on-image=""
                                data-off-image=""
-                               data-on-title="{{ translate('want_to_Turn_ON').' '.translate('privacy_policy').' '.translate('status') }}"
-                               data-off-title="{{ translate('want_to_Turn_OFF').' '.translate('privacy_policy').' '.translate('status') }}"
+                               data-on-title="{{ translate('Want_to_Turn_ON').' '.translate('Privacy_Policy').' '.translate('Status') }}"
+                               data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate('Privacy_Policy').' '.translate('Status') }}"
                                data-on-message="<p>{{ translate('if_you_enable_this_option_privacy_policy_page_will_be_shown_in_the_user_app_and_website') }}</p>"
                                data-off-message="<p>{{ translate('if_you_disable_this_option_privacy_policy_page_will_not_be_shown_in_the_user_app_and_website') }}</p>">
-                            <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                            <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                     </label>
                 </div>
 
@@ -86,7 +86,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             @endforeach
                         </div>
                         <div class="form-group">
-                            <input class="form-control btn--primary" type="submit" value="{{translate('submit')}}" name="btn">
+                            <input class="form-control btn--primary" type="submit" value="{{translate('Submit')}}" name="btn">
                         </div>
                     </div>
 

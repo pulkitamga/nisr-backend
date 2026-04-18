@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('edit').' - '.translate('all_Pages_Banner'))
+@section('title', translate('Edit').' - '.translate('All_Pages_Banner'))
 
 @section('content')
 
@@ -9,7 +9,7 @@
         <div class="pb-2 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-                {{translate('all_Pages_Banner')}}
+                {{translate('All_Pages_Banner')}}
             </h2>
         </div>
 
@@ -56,14 +56,14 @@
                                     </div>
                                     <div class="form-group mb-0">
                                         <label for="name"
-                                            class="title-color text-capitalize">{{ translate('image')}}</label>
+                                            class="title-color text-capitalize">{{ translate('Image')}}</label>
                                         <span class="text-info">( {{ translate('ratio')}} 6:1 )</span>
                                         <div class="custom-file text-start">
                                             <input type="file" name="image" id="banner-image" data-preview="#banner-image-view"
                                                 class="custom-file-input image-preview-before-upload"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                             <label class="custom-file-label title-color"
-                                                for="banner-image">{{ translate('choose')}} {{ translate('file')}}</label>
+                                                for="banner-image">{{ translate('choose')}} {{ translate('File')}}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -78,8 +78,8 @@
                                     </div>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end flex-wrap gap-10">
-                                    <button class="btn btn-secondary px-4" type="reset">{{ translate('reset')}}</button>
-                                    <button id="update" type="submit" class="btn btn--primary text-white">{{ translate('update')}}</button>
+                                    <button class="btn btn-secondary px-4" type="reset">{{ translate('Reset')}}</button>
+                                    <button id="update" type="submit" class="btn btn--primary text-white">{{ translate('Update')}}</button>
                                 </div>
                             </div>
                         </form>

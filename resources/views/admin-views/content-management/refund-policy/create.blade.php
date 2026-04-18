@@ -12,17 +12,17 @@
         @csrf
 
         <div class="form-group">
-            <label>{{ translate('heading') }}</label>
+            <label>{{ translate('Heading') }}</label>
             <input type="text" name="heading" class="form-control" required>
         </div>
 
         <div class="form-group">
-            <label>{{ translate('description') }}</label>
+            <label>{{ translate('Description') }}</label>
             <textarea name="description" rows="5" class="form-control" required></textarea>
         </div>
 
         <div class="form-group">
-            <label>{{ translate('image') }}</label>
+            <label>{{ translate('Image') }}</label>
             <input type="file" name="image" class="form-control" required>
         </div>
 
@@ -36,7 +36,7 @@
         </div>
 
         <div class="form-group">
-            <label>{{ translate('category') }}</label>
+            <label>{{ translate('Category') }}</label>
             <select name="category" class="form-control" required>
                 @foreach($categories as $category)
                 <option value="{{ $category }}">{{ $category }}</option>
@@ -45,7 +45,7 @@
         </div>
 
         <div class="form-group mt-3">
-            <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+            <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
         </div>
     </form>
 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('banner'))
+@section('title', translate('Banner'))
 
 @section('content')
     <div class="content container-fluid">
@@ -14,7 +14,7 @@
             </div>
             <div>
                 <a class="btn btn--primary text-white" href="{{ route('admin.banner.list') }}">
-                    <i class="tio-chevron-left"></i> {{ translate('back') }}</a>
+                    <i class="tio-chevron-left"></i> {{ translate('Back') }}</a>
             </div>
         </div>
 
@@ -42,21 +42,21 @@
 
                                     <div class="form-group mb-3">
                                         <label for="name" class="title-color text-capitalize">{{ translate('banner_URL') }}</label>
-                                        <input type="url" name="url" class="form-control" id="url" required placeholder="{{ translate('enter_url') }}" value="{{$banner['url']}}">
+                                        <input type="url" name="url" class="form-control" id="url" required placeholder="{{ translate('Enter_URL') }}" value="{{$banner['url']}}">
                                     </div>
 
                                     <div class="form-group">
                                         <label for="resource_id" class="title-color text-capitalize">{{ translate('resource_type') }}</label>
                                         <select class="js-example-responsive form-control w-100 action-display-data" name="resource_type" required>
-                                            <option value="product" {{$banner['resource_type']=='product'?'selected':''}}>{{ translate('product') }}</option>
-                                            <option value="category" {{$banner['resource_type']=='category'?'selected':''}}>{{ translate('category') }}</option>
+                                            <option value="product" {{$banner['resource_type']=='product'?'selected':''}}>{{ translate('Product') }}</option>
+                                            <option value="category" {{$banner['resource_type']=='category'?'selected':''}}>{{ translate('Category') }}</option>
                                             <option value="shop" {{$banner['resource_type']=='shop'?'selected':''}}>{{ translate('shop') }}</option>
-                                            <option value="brand" {{$banner['resource_type']=='brand'?'selected':''}}>{{ translate('brand') }}</option>
+                                            <option value="brand" {{$banner['resource_type']=='brand'?'selected':''}}>{{ translate('Brand') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group mb-0 {{$banner['resource_type']=='product'?'d--block':'d--none'}}" id="resource-product">
-                                        <label for="product_id" class="title-color text-capitalize">{{ translate('product') }}</label>
+                                        <label for="product_id" class="title-color text-capitalize">{{ translate('Product') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="product_id">
                                             @foreach($products as $product)
@@ -66,7 +66,7 @@
                                     </div>
 
                                     <div class="form-group mb-0 {{ $banner['resource_type']=='category'?'d--block':'d--none' }}" id="resource-category">
-                                        <label for="name" class="title-color text-capitalize">{{ translate('category') }}</label>
+                                        <label for="name" class="title-color text-capitalize">{{ translate('Category') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="category_id">
                                             @foreach($categories as $category)
@@ -86,7 +86,7 @@
                                     </div>
 
                                     <div class="form-group mb-0 {{$banner['resource_type']=='brand'?'d--block':'d--none'}}" id="resource-brand">
-                                        <label for="brand_id" class="title-color text-capitalize">{{ translate('brand') }}</label>
+                                        <label for="brand_id" class="title-color text-capitalize">{{ translate('Brand') }}</label>
                                         <select class="js-example-responsive form-control w-100"
                                                 name="brand_id">
                                             @foreach($brands as $brand)
@@ -142,13 +142,13 @@
                                             </div>
                                         </div>
                                         <label for="name" class="title-color text-capitalize">
-                                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="" data-original-title="{{ translate('banner_image_ratio_is_not_same_for_all_sections_in_website').' '.translate('Please_review_the_ratio_before_upload') }}">
+                                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="" data-original-title="{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website').' '.translate('Please_review_the_ratio_before_upload') }}">
                                                 <img alt="" width="16" src={{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }} alt="" class="m-1">
                                             </span>
                                             {{ translate('banner_image') }}
                                         </label>
                                         <span class="text-info" id="theme_ratio">( {{ translate('ratio') }} {{ "4:1" }} )</span>
-                                        <p>{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website') }}. {{ translate('please_review_the_ratio_before_upload') }}</p>
+                                        <p>{{ translate('banner_Image_ratio_is_not_same_for_all_sections_in_website') }}. {{ translate('Please_review_the_ratio_before_upload') }}</p>
 
                                          @if(theme_root_path() == 'theme_fashion')
                                          @foreach($language as $lang)
@@ -174,7 +174,7 @@
                                 </div>
 
                                 <div class="col-md-12 d-flex justify-content-end gap-3">
-                                    <button type="submit" class="btn btn--primary px-4">{{ translate('update') }}</button>
+                                    <button type="submit" class="btn btn--primary px-4">{{ translate('Update') }}</button>
                                 </div>
                             </div>
                         </form>

@@ -2,7 +2,7 @@
     <table>
         <thead>
             <tr>
-                <th style="font-size: 18px">{{translate('vendor_List')}}</th>
+                <th style="font-size: 18px">{{translate('Vendor_List')}}</th>
             </tr>
             <tr>
 
@@ -24,14 +24,14 @@
             <tr>
                 <td> {{translate('SL')}}</td>
                 <td> {{translate('store_Logo')}}</td>
-                <td> {{translate('store_Name')}}</td>
+                <td> {{translate('Store_Name')}}</td>
                 <td> {{translate('vendor_Name')}}</td>
-                <td> {{translate('phone')}}	</td>
-                <td> {{translate('email')}}	</td>
+                <td> {{translate('Phone')}}	</td>
+                <td> {{translate('Email')}}	</td>
                 <td> {{translate('joined_At')}}	</td>
                 <td> {{translate('total_Products')}}	</td>
                 <td> {{translate('total_Order')}} </td>
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['vendors'] as $key=>$item)
                 <tr>

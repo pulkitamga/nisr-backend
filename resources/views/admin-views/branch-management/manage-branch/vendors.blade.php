@@ -22,7 +22,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_vendor_info'),
             'aria_label' => translate('search_by_vendor_info'),
@@ -32,7 +32,7 @@
 
     $toolbarSummary = [];
     if (request()->filled('searchValue')) {
-        $toolbarSummary[] = ['label' => translate('search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
+        $toolbarSummary[] = ['label' => translate('Search'), 'value' => Str::limit(request('searchValue'), 28), 'muted' => true];
     }
     if (request()->filled('choose_first')) {
         $toolbarSummary[] = ['label' => translate('Rows_to_show'), 'value' => request('choose_first'), 'muted' => true];
@@ -78,7 +78,7 @@
                     <tr>
                         <th>#</th>
                         <th>{{ translate('Vendor') }}</th>
-                        <th>{{ translate('email') }}</th>
+                        <th>{{ translate('Email') }}</th>
                         <th>{{ translate('Phone') }}</th>
                         <th>{{ translate('Status') }}</th>
                         <th class="text-center">{{ translate('Action') }}</th>

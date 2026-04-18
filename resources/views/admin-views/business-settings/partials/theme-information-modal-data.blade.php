@@ -9,7 +9,7 @@
     <h3>
         {{ translate('you_have_switched_theme_successfully') }}
         <br>
-        {{ translate('from').' '.ucwords(str_replace('_',' ', $currentTheme)).' '.translate('to').' '.ucwords(str_replace('_',' ', $themeInfo['name'])) }}
+        {{ translate('From').' '.ucwords(str_replace('_',' ', $currentTheme)).' '.translate('To').' '.ucwords(str_replace('_',' ', $themeInfo['name'])) }}
     </h3>
     <p>
         {{ translate('please_be_reminded_that_you_have_to_setup_data_for_these_section_for').' '. ucwords(str_replace('_',' ', $themeInfo['name'])).' '. translate('other_wise_these_section_data_would_not_function_properly_in_website_and_user_apps') }}
@@ -42,7 +42,7 @@
             @endif
         @endforeach
     </div>
-    <p class="mb-5 px-5"><span class="text-danger">{{ translate('note').':' }} </span>
+    <p class="mb-5 px-5"><span class="text-danger">{{ translate('Note').':' }} </span>
         {{ translate('please_do_not_forget_to_notify_your_vendors_about_these_changes').'.'.translate('so_that_they_can_also_update_their_store_banners_according_to_the_new_theme_ratio') }}
     </p>
     <div class="d-flex flex-column gap-2 justify-content-center align-items-center notify-all-the-sellers-area" >

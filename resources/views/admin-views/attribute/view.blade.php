@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('attribute'))
+@section('title', translate('Attribute'))
 
 @section('content')
     <div class="content container-fluid">
@@ -49,8 +49,8 @@
 
 
                             <div class="d-flex flex-wrap gap-2 justify-content-end">
-                                <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-                                <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                                <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                             </div>
                         </form>
                     </div>
@@ -78,8 +78,8 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{ translate('search_by_Attribute_Name') }}"
-                                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}" required>
-                                        <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                               aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}" required>
+                                        <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -93,7 +93,7 @@
                                 <tr>
                                     <th>{{ translate('SL') }}</th>
                                     <th class="text-center">{{ translate('attribute_Name') }} </th>
-                                    <th class="text-center">{{ translate('action') }}</th>
+                                    <th class="text-center">{{ translate('Action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -104,12 +104,12 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a class="btn btn-outline-info btn-sm square-btn"
-                                                   title="{{ translate('edit') }}"
+                                                   title="{{ translate('Edit') }}"
                                                    href="{{route('admin.attribute.update',[$attribute['id']])}}">
                                                     <i class="tio-edit"></i>
                                                 </a>
                                                 <a class="btn btn-outline-danger btn-sm attribute-delete-button square-btn"
-                                                   title="{{ translate('delete') }}"
+                                                   title="{{ translate('Delete') }}"
                                                    id="{{ $attribute['id'] }}">
                                                     <i class="tio-delete"></i>
                                                 </a>

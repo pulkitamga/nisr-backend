@@ -98,7 +98,7 @@
                         <div class="col-sm-6 col-md-3">
                             <select class="js-select2-custom form-control text-ellipsis" name="seller_id">
                                 <option value="inhouse" {{ $seller_id == 'inhouse' ? 'selected' : '' }}>
-                                    {{ translate('in-House') }}</option>
+                                    {{ translate('in_House') }}</option>
                                 @foreach ($sellers as $seller)
                                     <option value="{{ $seller['id'] }}"
                                         {{ $seller_id == $seller['id'] ? 'selected' : '' }}>{{ $seller['name'] }}</option>
@@ -123,19 +123,19 @@
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{ $from }}" id="from_date"
                                     class="form-control">
-                                <label>{{ ucwords(translate('start_date')) }}</label>
+                                <label>{{ ucwords(translate('Start_Date')) }}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{ $to }}" name="to" id="to_date"
                                     class="form-control">
-                                <label>{{ ucwords(translate('end_date')) }}</label>
+                                <label>{{ ucwords(translate('End_Date')) }}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3 filter-btn">
                             <button type="submit" class="btn btn--primary px-4 px-md-5">
-                                {{ translate('filter') }}
+                                {{ translate('Filter') }}
                             </button>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
             <div class="left-content">
                 <div class="left-content-card">
                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/cart.svg') }}"
-                        alt="{{ translate('image') }}">
+                        alt="{{ translate('Image') }}">
                     <div class="info">
                         <h4 class="subtitle">{{ $order_count['total_order'] }}</h4>
                         <h6 class="subtext">{{ translate('total_Orders') }}</h6>
@@ -161,7 +161,7 @@
                             <div class="d-flex">
                                 <span>{{ translate('canceled') }}</span>
                                 <span class="ms-2" data-toggle="tooltip" data-placement="top"
-                                    title="{{ translate('this_count_is_the_summation_of') }} {{ translate('failed_to_deliver') }}, {{ translate('canceled') }}, {{ translate('and') }} {{ translate('returned_orders') }}">
+                                    title="{{ translate('this_count_is_the_summation_of') }} {{ translate('Failed_to_Deliver') }}, {{ translate('canceled') }}, {{ translate('_and') }} {{ translate('returned_orders') }}">
                                     <img class="info-img"
                                         src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
                                         alt="img">
@@ -174,7 +174,7 @@
                             <div class="d-flex">
                                 <span>{{ translate('ongoing') }}</span>
                                 <span class="ms-2" data-toggle="tooltip" data-placement="top"
-                                    title="{{ translate('this_count_is_the_summation_of') }} {{ translate('pending') }}, {{ translate('confirmed') }}, {{ translate('packaging') }}, {{ translate('out_for_delivery_orders') }}">
+                                    title="{{ translate('this_count_is_the_summation_of') }} {{ translate('Pending') }}, {{ translate('confirmed') }}, {{ translate('Packaging') }}, {{ translate('out_for_delivery_orders') }}">
                                     <img class="info-img"
                                         src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
                                         alt="img">
@@ -198,7 +198,7 @@
                 </div>
                 <div class="left-content-card">
                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/products.svg') }}"
-                        alt="{{ translate('image') }}">
+                        alt="{{ translate('Image') }}">
                     <div class="info">
                         <h4 class="subtitle">
                             {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $due_amount + $settled_amount), currencyCode: getCurrencyCode()) }}
@@ -215,7 +215,7 @@
                                 <span class="trx-y-2 ms-2" data-toggle="tooltip" data-placement="top"
                                     title="{{ translate('the_ongoing_order_amount_will_be_shown_here') }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
-                                        alt="{{ translate('image') }}">
+                                        alt="{{ translate('Image') }}">
                                 </span>
                             </div>
                         </div>
@@ -228,7 +228,7 @@
                                 <span class="trx-y-2 ms-2" data-toggle="tooltip" data-placement="top"
                                     title="{{ translate('after_the_order_is_delivered_total_order_amount_will_be_shown_here') }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}"
-                                        alt="{{ translate('image') }}">
+                                        alt="{{ translate('Image') }}">
                                 </span>
                             </div>
                         </div>
@@ -319,9 +319,9 @@
                             <input type="hidden" name="from" value="{{ $from }}">
                             <input type="hidden" name="to" value="{{ $to }}">
                             <input id="datatableSearch_" value="{{ $search }}" type="search" name="search"
-                                class="form-control" placeholder="{{ translate('search_by_order_id') }}"
-                                aria-label="{{ translate('Search orders') }}" required>
-                            <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                class="form-control" placeholder="{{ translate('search_by_Order_ID') }}"
+                                aria-label="{{ translate('search_orders') }}" required>
+                            <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                         </div>
                     </form>
 
@@ -370,15 +370,15 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('order_ID') }}</th>
-                            <th>{{ translate('total_Amount') }}</th>
+                            <th>{{ translate('Order_ID') }}</th>
+                            <th>{{ translate('Total_Amount') }}</th>
                             <th>{{ translate('product_Discount') }}</th>
-                            <th>{{ translate('coupon_Discount') }}</th>
+                            <th>{{ translate('Coupon_Discount') }}</th>
                             <th>{{ translate('shipping_Charge') }}</th>
                             <th>{{ translate('VAT/TAX') }}</th>
                             <th>{{ translate('commission') }}</th>
-                            <th>{{ translate('deliveryman_incentive') }}</th>
-                            <th class="text-center">{{ translate('status') }}</th>
+                            <th>{{ translate('delivery_man_incentive') }}</th>
+                            <th class="text-center">{{ translate('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -410,13 +410,13 @@
                                                 class="badge badge-soft-info fz-12">{{ translate($order['order_status']) }}</span>
                                         @elseif($order['order_status'] == 'processing' || $order['order_status'] == 'out_for_delivery')
                                             <span
-                                                class="badge badge-soft-warning fz-12">{{ str_replace('_', ' ', $order['order_status'] == 'processing' ? translate('packaging') : translate($order['order_status'])) }}</span>
+                                                class="badge badge-soft-warning fz-12">{{ str_replace('_', ' ', $order['order_status'] == 'processing' ? translate('Packaging') : translate($order['order_status'])) }}</span>
                                         @elseif($order['order_status'] == 'confirmed')
                                             <span
                                                 class="badge badge-soft-success fz-12">{{ translate($order['order_status']) }}</span>
                                         @elseif($order['order_status'] == 'failed')
                                             <span
-                                                class="badge badge-soft-danger fz-12">{{ translate('failed_to_deliver') }}</span>
+                                                class="badge badge-soft-danger fz-12">{{ translate('Failed_to_Deliver') }}</span>
                                         @elseif($order['order_status'] == 'delivered')
                                             <span
                                                 class="badge badge-soft-success fz-12">{{ translate($order['order_status']) }}</span>

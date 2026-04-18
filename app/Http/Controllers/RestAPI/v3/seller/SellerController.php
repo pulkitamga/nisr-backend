@@ -325,7 +325,7 @@ class SellerController extends Controller
             $wallet->total_earning -= BackEndHelper::currency_to_usd($request['amount']);
             $wallet->pending_withdraw += BackEndHelper::currency_to_usd($request['amount']);
             $wallet->save();
-            return response()->json(translate('Withdraw request sent successfully!'), 200);
+            return response()->json(translate('Withdraw_request_sent_successfully!'), 200);
         }
         return response()->json(['message' => translate('Invalid withdraw request')], 400);
     }
@@ -442,7 +442,7 @@ class SellerController extends Controller
             'cm_firebase_token' => $request['cm_firebase_token'],
         ]);
 
-        return response()->json(['message' => translate('successfully updated!')], 200);
+        return response()->json(['message' => translate('successfully_updated!')], 200);
     }
 
     public function account_delete(Request $request)

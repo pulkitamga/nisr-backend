@@ -5,12 +5,12 @@
     use Illuminate\Support\Str;
 
     $statusOptions = [
-        'all' => translate('all'),
-        'new' => translate('new'),
+        'all' => translate('All'),
+        'new' => translate('New'),
         'triage_pending' => translate('triage_pending'),
-        'approved' => translate('approved'),
+        'approved' => translate('Approved'),
         'rma_issued' => translate('rma_issued'),
-        'received' => translate('received'),
+        'received' => translate('Received'),
         'repair_pending' => translate('repair_pending'),
         'replacement_pending' => translate('replacement_pending'),
         'diagnosis_pending' => translate('diagnosis_pending'),
@@ -18,7 +18,7 @@
         'shipped_ready' => translate('shipped_ready'),
         'dispatched' => translate('dispatched'),
         'resolved' => translate('resolved'),
-        'closed' => translate('closed'),
+        'closed' => translate('Closed'),
         'rejected' => translate('rejected'),
         'waiting_customer' => translate('waiting_customer'),
         'waiting_parts' => translate('waiting_parts'),
@@ -45,7 +45,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_claim_or_serial'),
             'aria_label' => translate('search_by_claim_or_serial'),
@@ -56,7 +56,7 @@
     $toolbarSummary = [
         [
             'label' => translate('Status'),
-            'value' => $statusOptions[(string) request('status', 'all')] ?? translate('all'),
+            'value' => $statusOptions[(string) request('status', 'all')] ?? translate('All'),
         ],
         [
             'label' => translate('Rows_to_show'),
@@ -67,7 +67,7 @@
 
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -156,11 +156,11 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('claim_number')}}</th>
-                            <th>{{translate('status')}}</th>
-                            <th>{{translate('customer')}}</th>
+                            <th>{{translate('Status')}}</th>
+                            <th>{{translate('Customer')}}</th>
                             <th>{{translate('serial')}}</th>
                             <th>{{translate('submitted_at')}}</th>
-                            <th>{{translate('action')}}</th>
+                            <th>{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -171,7 +171,7 @@
                             <td>{{$claim->warranty->user->name ?? $claim->warranty->activated_by_name}}</td>
                             <td>{{$claim->serial_number}}</td>
                             <td><span class="bidi-ltr d-inline-block">{{$claim->submitted_at->format('Y-m-d')}}</span></td>
-                            <td><a href="{{route('admin.warranty.claim.view', $claim->id)}}" class="btn btn-sm btn-outline-primary">{{translate('view')}}</a></td>
+                            <td><a href="{{route('admin.warranty.claim.view', $claim->id)}}" class="btn btn-sm btn-outline-primary">{{translate('View')}}</a></td>
                         </tr>
                         @endforeach
                     </tbody>

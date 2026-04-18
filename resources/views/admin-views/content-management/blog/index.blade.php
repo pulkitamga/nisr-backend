@@ -32,7 +32,7 @@
                                     <input type="search" name="search" class="form-control"
                                         placeholder="{{ translate('search_by_heading') }}"
                                         value="{{ request('search') }}" required>
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -42,7 +42,7 @@
                                     <div>
                                         <select class="form-control text-ellipsis min-w-200" name="category">
                                             <option value="all" {{ request('category')=='all' ? 'selected' : '' }}>{{
-                                                translate('all') }}</option>
+                                                translate('All') }}</option>
                                             @foreach($categories as $category)
                                             <option value="{{ $category }}" {{ request('category')==$category
                                                 ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                                     </div>
                                     <div>
                                         <button type="submit" class="btn btn--primary px-4 w-100 text-nowrap">
-                                            {{ translate('filter') }}
+                                            {{ translate('Filter') }}
                                         </button>
                                     </div>
                                 </div>
@@ -63,7 +63,7 @@
                             <a href="{{ route('admin.content-management.blog.create') }}"
                                 class="btn btn--primary text-nowrap">
                                 <i class="tio-add"></i>
-                                <span class="text">{{ translate('add_new') }}</span>
+                                <span class="text">{{ translate('add_New') }}</span>
                             </a>
                         </div>
                     </div>
@@ -76,12 +76,12 @@
                     <thead class="thead-light text-capitalize">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('image') }}</th> {{-- 👈 Added Image Header --}}
-                            <th>{{ translate('heading') }}</th>
-                            <th>{{ translate('description') }}</th>
-                            <th>{{ translate('category') }}</th>
-                            <th>{{ translate('status') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th>{{ translate('Image') }}</th> {{-- 👈 Added Image Header --}}
+                            <th>{{ translate('Heading') }}</th>
+                            <th>{{ translate('Description') }}</th>
+                            <th>{{ translate('Category') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

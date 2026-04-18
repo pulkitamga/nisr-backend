@@ -15,10 +15,10 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('customer') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Customer') }}</th>
                             <th>{{ translate('flagged_reason') }}</th>
-                            <th>{{ translate('action') }}</th>
+                            <th>{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

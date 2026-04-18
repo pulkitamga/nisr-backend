@@ -443,7 +443,7 @@ class OrderController extends BaseController
             OrderStatusEvent::dispatch('order_edit_message', 'delivery_man', $order);
         }
 
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return back();
     }
 
@@ -473,7 +473,7 @@ class OrderController extends BaseController
         ];
         $this->orderRepo->update(id: $request['order_id'], data: $updateData);
 
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 

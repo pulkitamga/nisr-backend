@@ -1,22 +1,22 @@
 <div class="d-flex justify-content-center gap-2">
     <ul class="email-list-inline gap-3 mx-auto" id="selected-pages">
         @if(!empty($template['pages']) && in_array('privacy_policy',$template['pages']))
-            <li class="privacy-policy"><a href="{{route('privacy-policy') }}" class="text-dark">{{translate('privacy_Policy')}}</a></li>
+            <li class="privacy-policy"><a href="{{route('privacy-policy') }}" class="text-dark">{{translate('Privacy_Policy')}}</a></li>
         @endif
         @if(!empty($template['pages']) && in_array('refund_policy',$template['pages']))
-            <li class="refund-policy"><a href="{{route('refund-policy')}}" class="text-dark">{{translate('refund_Policy')}}</a></li>
+            <li class="refund-policy"><a href="{{route('refund-policy')}}" class="text-dark">{{translate('Refund_Policy')}}</a></li>
         @endif
         @if(!empty($template['pages']) && in_array('cancellation_policy',$template['pages']))
-            <li class="cancellation-policy"><a href="{{route('cancellation-policy')}}" class="text-dark">{{translate('cancellation_Policy')}}</a></li>
+            <li class="cancellation-policy"><a href="{{route('cancellation-policy')}}" class="text-dark">{{translate('Cancellation_Policy')}}</a></li>
         @endif
         @if(!empty($template['pages']) && in_array('contact_us',$template['pages']))
-            <li class="contact-us"><a href="{{route('contacts') }}" class="text-dark">{{translate('contact_Us')}}</a></li>
+            <li class="contact-us"><a href="{{route('contacts') }}" class="text-dark">{{translate('Contact_Us')}}</a></li>
         @endif
         @if(empty($template['pages']))
-            <li class="privacy-policy"><a href="{{route('privacy-policy') }}" class="text-dark">{{translate('privacy_Policy')}}</a></li>
-            <li class="refund-policy"><a href="{{route('refund-policy') }}" class="text-dark">{{translate('refund_Policy')}}</a></li>
-            <li class="cancellation-policy"><a href="{{route('cancellation-policy')}}" class="text-dark">{{translate('cancellation_Policy')}}</a></li>
-            <li class="contact-us"><a href="{{route('contacts') }}" class="text-dark">{{translate('contact_Us')}}</a></li>
+            <li class="privacy-policy"><a href="{{route('privacy-policy') }}" class="text-dark">{{translate('Privacy_Policy')}}</a></li>
+            <li class="refund-policy"><a href="{{route('refund-policy') }}" class="text-dark">{{translate('Refund_Policy')}}</a></li>
+            <li class="cancellation-policy"><a href="{{route('cancellation-policy')}}" class="text-dark">{{translate('Cancellation_Policy')}}</a></li>
+            <li class="contact-us"><a href="{{route('contacts') }}" class="text-dark">{{translate('Contact_Us')}}</a></li>
         @endif
 
     </ul>

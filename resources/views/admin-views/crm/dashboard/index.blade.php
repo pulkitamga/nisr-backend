@@ -24,12 +24,12 @@
                 <div class="col-sm-6">
                     <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                         <img src="{{ asset('public/assets/back-end/img/business_analytics.png') }}" alt="">
-                        {{ translate('Business Analytics') }}
+                        {{ translate('business_analytics') }}
                     </h4>
                 </div>
                 <div class="col-sm-6 d-flex justify-content-sm-end">
                     <select class="custom-select w-auto" name="statistics_type" id="statistics_type_for_crm">
-                        <option value="overall" {{ $statisticsType == 'overall' ? 'selected' : '' }}>{{ translate('Overall Statistics') }}</option>
+                        <option value="overall" {{ $statisticsType == 'overall' ? 'selected' : '' }}>{{ translate('overall_Statistics') }}</option>
                         <option value="today" {{ $statisticsType == 'today' ? 'selected' : '' }}>{{ translate("Today's Statistics") }}</option>
                         <option value="this_month" {{ $statisticsType == 'this_month' ? 'selected' : '' }}>{{ translate("This Month's Statistics") }}</option>
                     </select>

@@ -19,7 +19,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
           <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <h2 class="h1 mb-0 d-flex gap-2">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
-            {{ translate('Edit Quotation') }}
+            {{ translate('Edit_Quotation') }}
         </h2>
     </div>
     <form action="{{ route('admin.wholesale.business.invoice.update', $order->id) }}" method="POST" id="quotation-form"
@@ -29,7 +29,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     <div class="flex space-x-6 mb-4">
     <!-- Purchase Order No -->
     <div class="flex-1">
-        <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase Order No') }}:</label>
+        <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Purchase_Order_No') }}:</label>
         <input type="text" name="order_no" id="order_no_input" oninput="checkOrderNo(this.value)"
             class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="{{ translate('Enter Order No') }}"
             value="{{ old('order_no', $order->purchase_order_no) }}" readonly>
@@ -37,7 +37,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
     <!-- Quotation No -->
     <div class="flex-1">
-        <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation No') }}:</label>
+        <label for="order_no" class="block text-md font-bold text-gray-700 mb-1">{{ translate('Quotation_No') }}:</label>
         <input type="text" name="order_no" id="order_no_input" oninput="checkOrderNo(this.value)"
             class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm" placeholder="{{ translate('Enter Order No') }}"
             value="{{ old('order_no', $order->quotation_no) }}" readonly>
@@ -76,7 +76,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                         <div id="product_dropdown_wrapper" class="mt-2 hidden">
                             <select id="product_select" class="js-example-matcher w-64"
                                 data-placeholder="{{ translate('Search and select a product') }}">
-                                <option value="" disabled selected>{{ translate('Select Product') }}</option>
+                                <option value="" disabled selected>{{ translate('select_Product') }}</option>
                                 @foreach ($wholesaleProducts as $wholesale)
 
                                <option value="{{ $wholesale->product_id }}|{{ $wholesale->variation_type ?? '' }}" 
@@ -85,7 +85,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         data-name="{{ $wholesale->product->getTranslatedField('name') }}"
                                         data-price="{{ optional($wholesale->price_list->first())->price_per_piece ?? 0 }}"
                                         data-tax="{{ $wholesale->tax ?? 0 }}">
-                                    {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('No Variation') }})
+                                    {{ $wholesale->product->getTranslatedField('name') }} ({{ $wholesale->variation_type ?? translate('no_variation') }})
                                 </option>
                                 @endforeach
                             </select>
@@ -99,11 +99,11 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <table class="table table-hover table-borderless table-thead-bordered min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
-                            <th class= "text-start">{{ translate('Product Name') }}</th>
-                                <th class="">{{ translate('Requested Qty') }}</th>
+                            <th class= "text-start">{{ translate('Product_name') }}</th>
+                                <th class="">{{ translate('requested_qty') }}</th>
                                 <th class="">{{ translate('Base Price') }}</th>
                                 <th class="">{{ translate('Tax') }}</th>
-                                <th class="">{{ translate('Final Price') }}</th>
+                                <th class="">{{ translate('Final_price') }}</th>
                                 <th class="">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
@@ -117,7 +117,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         @endphp
         <tr data-product-id="{{ $item->product_id }}" data-variation-type="{{ $item->product_variation_type }}">
             <td class="px-4 py-2">
-                {{ $item->product->getTranslatedField('name') ?? __('N/A') }} ({{ $item->product_variation_type ?? translate('No Variation') }})
+                {{ $item->product->getTranslatedField('name') ?? __('N/A') }} ({{ $item->product_variation_type ?? translate('no_variation') }})
             </td>
 
             <td class="px-4 py-2">
@@ -207,7 +207,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <button type="button" onclick="addDiscount()" class="text-indigo-600 hover:underline text-sm">{{ translate('Add Discount') }}</button>
             </div>
             <div class="mt-2">
-                <label class="text-md font-bold text-gray-800 mb-2">{{ translate('Wholesaler Discount') }}</label>
+                <label class="text-md font-bold text-gray-800 mb-2">{{ translate('wholesaler_discount') }}</label>
                 <input type="text" id="wholesaler_discount" name="wholesaler_discount"
                     value="{{ $order->wholeseller->wholesaler_discount ?? 0 }}%" readonly
                     class="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-gray-100">
@@ -248,7 +248,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <input type="hidden" name="lang[]" value="{{ $lang }}"> <label for="terms_and_conditions" class="block text-sm font-medium text-gray-700 ">
-                        {{ translate('Terms and Conditions') }}({{ strtoupper($lang) }})
+                        {{ translate('Terms_and_Conditions') }}({{ strtoupper($lang) }})
                     </label>
                     <textarea name="terms_and_conditions[]" id="terms_and_conditions"
                         class="form-control summernote w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm">
@@ -441,7 +441,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     }
 
     const row = document.createElement('tr');
-    const displayVariation = variationType || @json(__('No Variation'));
+    const displayVariation = variationType || @json(__('no_variation'));
 
     row.setAttribute('data-product-id', productId);
     row.setAttribute('data-variation-type', variationType);

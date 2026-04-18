@@ -251,7 +251,7 @@ class BranchController extends BaseController
                 new FormattedTableExport(
                     rows: $historyRows,
                     headings: [
-                        translate('Date'),
+                        translate('DATE'),
                         translate('Type'),
                         translate('Quantity'),
                         translate('Reference'),
@@ -265,10 +265,10 @@ class BranchController extends BaseController
                         ['label' => translate('Branch'), 'value' => $stock->branch?->getTranslatedField('branch_name') ?? translate('not_available')],
                         ['label' => translate('Product'), 'value' => $stock->product?->getTranslatedField('name') ?? translate('not_available')],
                         ['label' => translate('Variation'), 'value' => $this->formatVariationLabel($stock->variation_type, $stock->variation_key)],
-                        ['label' => translate('Current Stock'), 'value' => (string) ((int) $stock->total_stock)],
+                        ['label' => translate('Current_Stock'), 'value' => (string) ((int) $stock->total_stock)],
                         ['label' => translate('count'), 'value' => (string) count($historyRows)],
                     ],
-                    filterSummary: translate('product') . ': ' . ($stock->product?->getTranslatedField('name') ?? translate('not_available')),
+                    filterSummary: translate('Product') . ': ' . ($stock->product?->getTranslatedField('name') ?? translate('not_available')),
                     columnWidths: ['A' => 20, 'B' => 18, 'C' => 14, 'D' => 34, 'E' => 36, 'F' => 14],
                     centerColumns: ['A', 'B', 'C', 'F']
                 ),
@@ -697,7 +697,7 @@ class BranchController extends BaseController
 
         return [
             'date' => Carbon::parse($item['created_at'])->translatedFormat('d M Y, h:i A'),
-            'type_label' => $isStockIn ? translate('Stock In') : translate('Stock Out'),
+            'type_label' => $isStockIn ? translate('stock_in') : translate('stock_out'),
             'type_class' => $isStockIn ? 'text-success' : 'text-danger',
             'quantity_label' => ($isStockIn ? '+' : '-') . ' ' . (int) ($item['quantity'] ?? 0),
             'reference' => $item['reference'] ?? translate('not_available'),
@@ -819,10 +819,10 @@ class BranchController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('branch_name'),
-                    translate('product_name'),
-                    translate('variation'),
-                    translate('Current_stock'),
+                    translate('Branch_Name'),
+                    translate('Product_name'),
+                    translate('Variation'),
+                    translate('Current_Stock'),
                 ],
                 title: translate('branch_stock_list'),
                 locale: LocalizedExport::locale(),
@@ -832,9 +832,9 @@ class BranchController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('branch') . ': ' . ($request->input('branch_id') ?: translate('all')),
-                    translate('product') . ': ' . ($request->input('product_id') ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('Branch') . ': ' . ($request->input('branch_id') ?: translate('All')),
+                    translate('Product') . ': ' . ($request->input('product_id') ?: translate('All')),
                 ])),
                 columnWidths: ['A' => 24, 'B' => 30, 'C' => 26, 'D' => 14],
                 centerColumns: ['D'],

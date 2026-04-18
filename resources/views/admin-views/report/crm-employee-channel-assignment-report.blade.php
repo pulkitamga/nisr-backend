@@ -97,7 +97,7 @@
                 <form method="GET" action="{{ url()->current() }}">
                     <div class="row g-2 align-items-start">
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('department') }}</label>
+                            <label class="form-label mb-1">{{ translate('Department') }}</label>
                             <select class="js-select2-custom form-control" name="department_ids[]" multiple>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
@@ -109,7 +109,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('employee') }}</label>
+                            <label class="form-label mb-1">{{ translate('Employee') }}</label>
                             <select class="js-select2-custom form-control" name="employee_ids[]" multiple>
                                 @foreach ($employees as $employee)
                                     <option value="{{ $employee->id }}"
@@ -121,7 +121,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('channel') }}</label>
+                            <label class="form-label mb-1">{{ translate('Channel') }}</label>
                             <select class="js-select2-custom form-control" name="channels[]" multiple>
                                 @foreach ($channelOptions as $channel)
                                     <option value="{{ $channel->value }}"
@@ -137,13 +137,13 @@
                             <select class="form-control" name="date_type" id="crm_employee_date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}</option>
+                                    {{ translate('this_Year') }}</option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}</option>
+                                    {{ translate('this_Month') }}</option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}</option>
+                                    {{ translate('this_Week') }}</option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}</option>
                                 <option value="custom_date"
@@ -153,18 +153,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_employee_from_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] }}">
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_employee_to_div"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 align-items-end">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.report.crm-employee-channel-assignment-export-excel', request()->query()) }}"
                                 class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
@@ -254,13 +254,13 @@
                                     </th>
                                 @endforeach
                                 <th class="matrix-head-sub {{ !$loop->last ? 'agent-separator' : '' }}">
-                                    {{ translate('total') }}</th>
+                                    {{ translate('Total') }}</th>
                             @endforeach
                             @foreach ($displayChannels as $channel)
                                 <th class="matrix-head-sub {{ $loop->first ? 'totals-separator' : '' }}">
                                     {{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
                             @endforeach
-                            <th class="matrix-head-sub">{{ translate('total') }}</th>
+                            <th class="matrix-head-sub">{{ translate('Total') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -285,7 +285,7 @@
                             <tr>
                                 <td colspan="{{ count($employeesForMatrix) * (count($displayChannels) + 1) + count($displayChannels) + 2 }}"
                                     class="text-center py-4">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                         @endforelse
@@ -322,7 +322,7 @@
                 <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
                     <thead class="thead-light">
                         <tr>
-                            <th>{{ translate('employee') }}</th>
+                            <th>{{ translate('Employee') }}</th>
                             @foreach ($displayChannels as $channel)
                                 <th class="text-center">
                                     {{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
@@ -342,7 +342,7 @@
                         @empty
                             <tr>
                                 <td colspan="{{ count($displayChannels) + 2 }}" class="text-center py-3">
-                                    {{ translate('no_data_found') }}</td>
+                                    {{ translate('no_Data_found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -388,7 +388,7 @@
                     position: 'bottom'
                 },
                 noData: {
-                    text: @json(translate('no_data_found'))
+                    text: @json(translate('no_Data_found'))
                 }
             }).render();
 

@@ -30,7 +30,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <b class="bold black">{{translate('date')}}</b> : {{ date('F d, Y') }} <span
+                        <b class="bold black">{{translate('DATE')}}</b> : {{ date('F d, Y') }} <span
                                 class="block h-5"></span>
                     </td>
                 </tr>
@@ -45,7 +45,7 @@
             <table class="bs-0">
                 <tr>
                     <td class="p-0 text-start">
-                        <span class="bold black p-0 text-start">{{translate('duration')}}</span> :
+                        <span class="bold black p-0 text-start">{{translate('Duration')}}</span> :
                         <span class="p-0 p-3 text-capitalize">{{ $data['duration'] }}</span>
                         <br><br>
                         <span class="bold black p-0 text-start">{{translate('vendor_Info')}}</span> :
@@ -71,9 +71,9 @@
                 <tr>
                     <td class="ps-0 pe-0 text-center"
                         style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('SL')}}</td>
-                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('details')}}</td>
+                    <td style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Details')}}</td>
                     <td class="text-end"
-                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('amount')}}</td>
+                        style="background-color: #0177CD !important; color: white; font-weight: bold">{{translate('Amount')}}</td>
                 </tr>
                 <tr>
                     <td class="text-center">1</td>
@@ -117,12 +117,12 @@
             <div class="d-flex justify-content-center gap-2">
                 <div class="mb-2">
                     <i class="fa fa-phone"></i>
-                    {{translate('phone')}}
+                    {{translate('Phone')}}
                     : {{ $data['company_phone'] }}
                 </div>
                 <div class="mb-2">
                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                    {{translate('email')}}
+                    {{translate('Email')}}
                     : {{ $data['company_email'] }}
                 </div>
             </div>

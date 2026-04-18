@@ -32,9 +32,9 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                               placeholder="{{translate('search_Method_Name')}}" aria-label="{{ translate('Search orders') }}"
+                                               placeholder="{{translate('search_Method_Name')}}" aria-label="{{ translate('search_orders') }}"
                                                value="{{ request('searchValue') }}" required>
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -50,9 +50,9 @@
                                 <th>{{translate('SL')}}</th>
                                 <th>{{translate('method_name')}}</th>
                                 <th>{{ translate('method_fields') }}</th>
-                                <th class="text-center">{{translate('active_status')}}</th>
+                                <th class="text-center">{{translate('active_Status')}}</th>
                                 <th class="text-center">{{translate('default_method')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -63,10 +63,10 @@
                                     <td>
                                         @foreach($withdrawalMethod['method_fields'] as $methodField)
                                             <span class="badge badge-success opacity-75 fz-12 border border-white">
-                                                <b>{{translate('name').':'}}</b> {{translate($methodField['input_name'])}} |
-                                                <b>{{translate('type').':'}}</b> {{ $methodField['input_type'] }} |
-                                                <b>{{translate('placeholder').':'}}</b> {{ $methodField['placeholder'] }} |
-                                                <b>{{translate('is_Required').':'}}</b> {{ $methodField['is_required'] ? translate('yes') : translate('no') }}
+                                                <b>{{translate('Name').':'}}</b> {{translate($methodField['input_name'])}} |
+                                                <b>{{translate('Type').':'}}</b> {{ $methodField['input_type'] }} |
+                                                <b>{{translate('place_Holder').':'}}</b> {{ $methodField['placeholder'] }} |
+                                                <b>{{translate('is_Required').':'}}</b> {{ $methodField['is_required'] ? translate('Yes') : translate('No') }}
                                             </span><br/>
                                         @endforeach
                                     </td>
@@ -118,7 +118,7 @@
                                             </a>
                                             @if(!$withdrawalMethod->is_default)
                                                 <a class="btn btn-outline-danger btn-sm square-btn delete-data" href="javascript:"
-                                                   title="{{translate('delete')}}" data-id="delete-{{$withdrawalMethod->id}}">
+                                                   title="{{translate('Delete')}}" data-id="delete-{{$withdrawalMethod->id}}">
                                                     <i class="tio-delete"></i>
                                                 </a>
                                                 <form action="{{route('admin.vendors.withdraw-method.delete',[$withdrawalMethod->id])}}"

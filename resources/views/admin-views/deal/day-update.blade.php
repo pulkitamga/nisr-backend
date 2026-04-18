@@ -37,19 +37,19 @@
                                     <div class="row {{$lang != $defaultLanguage ? 'd-none':''}} lang-form"
                                          id="{{$lang}}-form">
                                         <div class="col-md-12">
-                                            <label for="name" class="title-color">{{ translate('title')}}
+                                            <label for="name" class="title-color">{{ translate('Title')}}
                                                 ({{strtoupper($lang)}})</label>
                                             <input type="text" name="title[]"
                                                    value="{{$lang==$defaultLanguage ? $deal->getRawOriginal('title') : $deal->getTranslatedField('title', $lang, '')}}"
                                                    class="form-control" id="title"
-                                                   placeholder="{{translate('ex')}} : {{translate('LUX')}}">
+                                                   placeholder="{{translate('Ex')}} : {{translate('LUX')}}">
                                         </div>
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{$lang}}" id="lang">
                                 @endforeach
                                 <div class="row">
                                     <div class="col-md-12 mt-3">
-                                        <label for="name" class="title-color">{{ translate('products')}}</label>
+                                        <label for="name" class="title-color">{{ translate('Products')}}</label>
                                         <input type="text" class="product_id" name="product_id"
                                                value="{{ $deal['product_id'] }}" hidden>
                                         <div class="dropdown select-product-search w-100">
@@ -63,7 +63,7 @@
                                                     </button>
                                                     <input type="text"
                                                            class="js-form-search form-control search-bar-input search-product"
-                                                           placeholder="{{translate('search menu').'...'}}">
+                                                           placeholder="{{translate('search_menu').'...'}}">
                                                 </div>
                                                 <div class="d-flex flex-column gap-3 max-h-200 overflow-y-auto overflow-x-hidden search-result-box">
                                                     @include('admin-views.partials._search-product',['products'=>$products])
@@ -76,8 +76,8 @@
 
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset"
-                                        class="btn btn-secondary reset-button">{{ translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary">{{ translate('update')}}</button>
+                                        class="btn btn-secondary reset-button">{{ translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary">{{ translate('Update')}}</button>
                             </div>
                         </form>
                     </div>

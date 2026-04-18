@@ -70,7 +70,7 @@
                                         <input type="radio" class="show" name="minimum_rating_point" id="top-vendor-minimum-rating-0" value="default"
                                         {{ isset($topVendorPriority?->minimum_rating_point) ? ($topVendorPriority?->minimum_rating_point == 'default' ? 'checked' : '') : 'checked' }}>
                                         <label class="mb-0" for="top-vendor-minimum-rating-0">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -94,7 +94,7 @@
                                         <input type="radio" class="show" name="sort_by" id="top-vendor-sort-by-ratings" value="default"
                                             {{isset($topVendorPriority?->sort_by) && $topVendorPriority?->sort_by == 'rating' ? 'checked' : ''}}>
                                         <label class="mb-0" for="top-vendor-sort-by-ratings">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -119,7 +119,7 @@
                                         <input type="radio" name="vacation_mode_sorting" value="default" data-parent-class="top-vendor" id="top-vendor-vacation-mode-default"
                                             {{isset($topVendorPriority?->vacation_mode_sorting) ?( $topVendorPriority?->vacation_mode_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="top-vendor-vacation-mode-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -144,7 +144,7 @@
                                         <input type="radio" name="temporary_close_sorting" value="default" data-parent-class="top-vendor" id="top-vendor-temporary-close-default"
                                             {{isset($topVendorPriority?->temporary_close_sorting) ?( $topVendorPriority?->temporary_close_sorting == 'default' ? 'checked' : '' ) : 'checked'}}>
                                         <label class="mb-0 cursor-pointer" for="top-vendor-temporary-close-default">
-                                            {{ translate('none') }}
+                                            {{ translate('None') }}
                                         </label>
                                     </div>
                                 </div>
@@ -152,7 +152,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5">{{ translate('save') }}</button>
+                        <button type="submit" class="btn btn-primary px-5">{{ translate('Save') }}</button>
                     </div>
                 </form>
             </div>

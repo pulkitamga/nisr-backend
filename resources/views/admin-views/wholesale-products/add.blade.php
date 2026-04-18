@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('add'))
+@section('title', translate('Add'))
 
 @section('content')
 
@@ -37,14 +37,14 @@
                         <div class="row">
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="name" class="title-color">{{ translate('category') }}</label>
+                                    <label for="name" class="title-color">{{ translate('Category') }}</label>
                                     <select
                                         class="js-select2-custom form-control action-get-request-onchange category-select-0"
                                         name="category_id"
                                         data-url-prefix="{{ url('/admin/products/get-sub-categories?parent_id=') }}"
                                         data-element-id="sub-category-select" data-element-type="select">
                                         <option value="{{ old('category_id') }}" selected disabled>{{
-                                            translate('select_category') }}</option>
+                                            translate('select_Category') }}</option>
                                         @foreach ($categories as $category)
                                         <option value="{{ $category['id'] }}" {{ request('category_id')==$category['id']
                                             ? 'selected' : '' }}>
@@ -56,7 +56,7 @@
                             </div>
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="name" class="title-color">{{ translate('sub_Category') }}</label>
+                                    <label for="name" class="title-color">{{ translate('Sub_Category') }}</label>
                                     <select class="js-select2-custom form-control action-get-onchange"
                                         name="sub_category_id" id="sub-category-select"
                                         data-url-prefix="{{ url('/admin/products/get-products?parent_id=') }}"
@@ -90,7 +90,7 @@
                             </div>
                             <div class="col-sm-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="tax" class="title-color">{{ translate('tax') }} (%)</label>
+                                    <label for="tax" class="title-color">{{ translate('Tax') }} (%)</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -100,7 +100,7 @@
                                         name="tax"
                                         id="tax"
                                         value="{{ old('tax', 0) }}"
-                                        placeholder="{{ translate('tax') }}"
+                                        placeholder="{{ translate('Tax') }}"
                                         required>
                                 </div>
                             </div>
@@ -152,7 +152,7 @@
                                                     name="discount[]" placeholder="{{ translate('Discount (%)') }}" data-row="{{ $index }}">
                                             </td>
                                             <td><input type="text" class="form-control final-price" name="final_price[]"
-                                                    placeholder="{{ translate('Final Price') }}" data-row="{{ $index }}"></td>
+                                                    placeholder="{{ translate('Final_price') }}" data-row="{{ $index }}"></td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -167,10 +167,10 @@
                                 </div>
                                 <div class="row justify-content-end gap-3 mt-3 mx-1">
                                     <input type="hidden" name="from_submit" value="admin">
-                                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
                                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-product-form"
                                         data-redirect-route="{{route('admin.wholesale.product.list')}}"
-                                        data-message="{{translate('want_to_add_this_product')}}">{{translate('submit')}}</button>
+                                        data-message="{{translate('want_to_add_this_product')}}">{{translate('Submit')}}</button>
                                 </div>
                             </div>
                         </div>
@@ -183,7 +183,7 @@
 </div>
 <span id="route-admin-products-search-category_wise"
     data-url="{{ route('admin.stock-request.search-product') }}"></span>
-<span id="message-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="message-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 
 <script>
     window.remainingTiers = @json($remainingTiers);
@@ -196,7 +196,7 @@
         maxQtyPlaceholder: @json(translate('Max_Quantity')),
         unitPrice: @json(translate('Unit_Price')),
         discountPercent: @json(translate('Discount (%)')),
-        finalPrice: @json(translate('Final Price')),
+        finalPrice: @json(translate('Final_price')),
         remove: @json(translate('Remove')),
         noTierAvailableInline: @json(translate('No Tier Available')),
     };

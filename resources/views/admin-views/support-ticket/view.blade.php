@@ -8,7 +8,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/support_ticket.png')}}" alt="">
-                {{translate('support_ticket')}}
+                {{translate('support_Ticket')}}
                 <span class="badge badge-soft-dark radius-50 fz-14">{{ $tickets->total() }}</span>
             </h2>
         </div>
@@ -28,9 +28,9 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_ticket_by_subject_or_status').'...'}}"
-                                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                                               aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit"
-                                                class="btn btn--primary">{{translate('search')}}</button>
+                                                class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -41,13 +41,13 @@
                                             data-value="priority">
                                         <option value="all">{{translate('all_Priority')}}</option>
                                         <option
-                                            value="low" {{$priority=='low'?'selected':''}}>{{translate('low')}}</option>
+                                            value="low" {{$priority=='low'?'selected':''}}>{{translate('Low')}}</option>
                                         <option
-                                            value="medium" {{$priority=='medium'?'selected':''}}>{{translate('medium')}}</option>
+                                            value="medium" {{$priority=='medium'?'selected':''}}>{{translate('Medium')}}</option>
                                         <option
-                                            value="high" {{$priority=='high'?'selected':''}}>{{translate('high')}}</option>
+                                            value="high" {{$priority=='high'?'selected':''}}>{{translate('High')}}</option>
                                         <option
-                                            value="urgent" {{$priority=='urgent'?'selected':''}}>{{translate('urgent')}}</option>
+                                            value="urgent" {{$priority=='urgent'?'selected':''}}>{{translate('Urgent')}}</option>
                                     </select>
 
                                     @php($statusId=request()->has('status')?request()->input('status'):'')
@@ -123,7 +123,7 @@
                                     <div class="text-nowrap">
                                         <a class="btn btn--primary"
                                            href="{{route('admin.support-ticket.singleTicket',$ticket['id'])}}">
-                                            <i class="tio-open-in-new"></i> {{translate('view')}}
+                                            <i class="tio-open-in-new"></i> {{translate('View')}}
                                         </a>
                                     </div>
                                 </div>

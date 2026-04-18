@@ -10,7 +10,7 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5>{{translate('details')}}</h5>
+            <h5>{{translate('Details')}}</h5>
             <div class="d-flex gap-2">
 
                 <form action="{{ url()->current() }}" method="GET">
@@ -21,7 +21,7 @@
                         <input type="search" name="searchValue" class="form-control"
                             placeholder="{{ translate('search_by_serial') }}"
                             value="{{ request('searchValue') }}">
-                        <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                     </div>
                 </form>
                 <a href="{{ route('admin.warranty.history-details.export', ['date' => $date, 'searchValue' => request('searchValue')]) }}"
@@ -37,10 +37,10 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('serial_number')}}</th>
-                            <th>{{translate('product')}}</th>
-                            <th>{{translate('status')}}</th>
-                            <th>{{translate('created_at')}}</th>
-                            <th>{{translate('action')}}</th>
+                            <th>{{translate('Product')}}</th>
+                            <th>{{translate('Status')}}</th>
+                            <th>{{translate('Created_At')}}</th>
+                            <th>{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>

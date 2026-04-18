@@ -47,14 +47,14 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('location') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Location') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="location[]" class="form-control"
                             placeholder="{{ translate('Enter Location') }}" {{ $lang==$defaultLanguage ? 'required' : ''
                             }}>
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="description[]" class="form-control" rows="4"
                             placeholder="{{ translate('Enter Description') }}" {{ $lang==$defaultLanguage ? 'required'
                             : '' }}></textarea>
@@ -66,7 +66,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 {{-- Image Upload --}}
                 <div class="form-group">
-                    <label>{{ translate('image') }}</label>
+                    <label>{{ translate('Image') }}</label>
                     <input type="file" name="image" class="form-control" accept="image/*"
                         onchange="previewImage(event)">
                 </div>
@@ -80,7 +80,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 </div>
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

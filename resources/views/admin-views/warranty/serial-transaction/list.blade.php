@@ -13,9 +13,9 @@
         [
             'type' => 'select',
             'name' => 'from_branch',
-            'label' => translate('from_branch'),
+            'label' => translate('From_branch'),
             'value' => request('from_branch', ''),
-            'options' => ['' => translate('all')] + $branches->all(),
+            'options' => ['' => translate('All')] + $branches->all(),
             'input_class' => 'form-control js-select2-custom',
         ],
         [
@@ -23,7 +23,7 @@
             'name' => 'to_branch',
             'label' => translate('to_branch'),
             'value' => request('to_branch', ''),
-            'options' => ['' => translate('all')] + $branches->all(),
+            'options' => ['' => translate('All')] + $branches->all(),
             'input_class' => 'form-control js-select2-custom',
         ],
         [
@@ -31,7 +31,7 @@
             'name' => 'transfer_type',
             'label' => translate('transfer_type'),
             'value' => request('transfer_type', ''),
-            'options' => ['' => translate('all')] + $types,
+            'options' => ['' => translate('All')] + $types,
             'input_class' => 'form-control js-select2-custom',
         ],
         [
@@ -45,13 +45,13 @@
         [
             'type' => 'date',
             'name' => 'from',
-            'label' => translate('start_date'),
+            'label' => translate('Start_Date'),
             'value' => request('from'),
         ],
         [
             'type' => 'date',
             'name' => 'to',
-            'label' => translate('end_date'),
+            'label' => translate('End_Date'),
             'value' => request('to'),
         ],
         [
@@ -65,7 +65,7 @@
         [
             'type' => 'search',
             'name' => 'search',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('search'),
             'placeholder' => translate('search_by_serial_no'),
             'aria_label' => translate('search_by_serial_no'),
@@ -77,7 +77,7 @@
 
     if (request()->filled('from_branch')) {
         $toolbarSummary[] = [
-            'label' => translate('from_branch'),
+            'label' => translate('From_branch'),
             'value' => $branches->get((int) request('from_branch')) ?? request('from_branch'),
         ];
     }
@@ -105,7 +105,7 @@
 
     if (request()->filled('from') || request()->filled('to')) {
         $toolbarSummary[] = [
-            'label' => translate('date'),
+            'label' => translate('DATE'),
             'value' => trim(implode(' - ', array_filter([request('from'), request('to')]))),
             'muted' => true,
         ];
@@ -113,7 +113,7 @@
 
     if (request()->filled('search')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('search'), 28),
             'muted' => true,
         ];
@@ -138,7 +138,7 @@
 @endphp
 
 @extends('layouts.back-end.app')
-@section('title', translate('serial_transaction_history'))
+@section('title', translate('Serial_Transaction_History'))
 
 @push('css_or_js')
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -176,11 +176,11 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('from') }}</th>
-                            <th>{{ translate('to') }}</th>
-                            <th>{{ translate('type') }}</th>
-                            <th>{{ translate('date') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th>{{ translate('From') }}</th>
+                            <th>{{ translate('To') }}</th>
+                            <th>{{ translate('Type') }}</th>
+                            <th>{{ translate('DATE') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

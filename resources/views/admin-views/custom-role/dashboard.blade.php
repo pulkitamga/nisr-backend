@@ -84,9 +84,9 @@ $moduleIcons = [
                 <div class="row mt-3">
                     <div class="col-lg-12">
                         <div class="form-group mb-4">
-                            <label for="name" class="title-color">{{translate('role_name')}}</label>
+                            <label for="name" class="title-color">{{translate('role_Name')}}</label>
                             <input type="text" name="name" class="form-control" id="name" value="{{ old('name') }}"
-                                   placeholder="{{translate('ex').':'.translate('store')}}" required>
+                                   placeholder="{{translate('Ex').':'.translate('store')}}" required>
                             @error('name')
                             <small class="text-danger">{{ $message }}</small>
                             @enderror

@@ -11,7 +11,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -62,11 +62,11 @@
                                            data-toggle-id = "{{$smsConfig['key_name']}}"
                                            data-on-image = "{{ $imgPath }}"
                                            data-off-image = "{{ $imgPath }}"
-                                           data-on-title = "{{translate('want_to_Turn_ON_').' '.ucwords(str_replace('_',' ',$smsConfig['key_name'])).' '.translate('_as_the_SMS_Gateway').'?'}}"
-                                           data-off-title = "{{translate('want_to_Turn_OFF_').' '.ucwords(str_replace('_',' ',$smsConfig['key_name'])).' '.translate('_as_the_SMS_Gateway').'?'}}"
+                                           data-on-title = "{{translate('Want_to_Turn_ON').' '.ucwords(str_replace('_',' ',$smsConfig['key_name'])).' '.translate('_as_the_SMS_Gateway').'?'}}"
+                                           data-off-title = "{{translate('Want_to_Turn_OFF').' '.ucwords(str_replace('_',' ',$smsConfig['key_name'])).' '.translate('_as_the_SMS_Gateway').'?'}}"
                                            data-on-message = "<p>{{translate('if_enabled_system_can_use_this_SMS_Gateway')}}</p>"
                                            data-off-message = "<p>{{translate('if_disabled_system_cannot_use_this_SMS_Gateway')}}</p>">
-                                    <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                                    <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                                 </label>
                             </div>
                             <div class="card-body">
@@ -88,7 +88,7 @@
                                     @endif
                                 @endforeach
                                 <div class="text-end mt-20px">
-                                    <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
+                                    <button type="submit" class="btn btn-primary px-5">{{translate('Save')}}</button>
                                 </div>
                             </div>
                         </form>

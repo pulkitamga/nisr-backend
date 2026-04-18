@@ -6,7 +6,7 @@
             </tr>
             <tr>
 
-                <th>{{ translate('filter_Criteria') }} -</th>
+                <th>{{ translate('Filter_Criteria') }} -</th>
                 <th></th>
                 <th>
 
@@ -14,7 +14,7 @@
                     <br>
                     {{translate('store')}} - {{ucwords($data['seller'] != 'all' && $data['seller'] !='inhouse' ? $data['seller']?->shop->name : translate($data['seller'] ?? 'all' ))}}
                     <br>
-                    {{translate('category')}} - {{ucwords($data['category'] != 'all' ? $data['category']['defaultName'] : translate($data['category'] ?? 'all' ))}}
+                    {{translate('Category')}} - {{ucwords($data['category'] != 'all' ? $data['category']['defaultName'] : translate($data['category'] ?? 'all' ))}}
                     <br>
                     {{translate('stock_Sort_By')}} - {{translate($data['sort'] == 'ASC' ? 'low_to_high' : 'high_to_low')}}
                     <br>
@@ -22,10 +22,10 @@
             </tr>
             <tr>
                 <td> {{translate('SL')}}</td>
-                <td> {{translate('product_Name')}}</td>
+                <td> {{translate('Product_name')}}</td>
                 <td> {{translate('last_Updated_Stock')}}	</td>
-                <td> {{translate('current_Stock')}}</td>
-                <td> {{translate('status')}}</td>
+                <td> {{translate('Current_Stock')}}</td>
+                <td> {{translate('Status')}}</td>
             </tr>
             @foreach ($data['products'] as $key=>$item)
                 <tr>
@@ -35,7 +35,7 @@
                     <td> {{$item['current_stock']}}</td>
                     <td>
                         @if($item['current_stock'] >= $data['stock_limit'])
-                             {{translate('in-Stock')}}
+                             {{translate('in_stock')}}
                         @elseif($item['current_stock']  <= 0)
                             {{translate('out_of_Stock')}}
                         @elseif($item['current_stock'] < $data['stock_limit'])

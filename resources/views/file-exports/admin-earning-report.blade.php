@@ -6,26 +6,26 @@
     </tr>
     <tr>
 
-        <th>{{ translate('filter_Criteria') .' '.'-'}}</th>
+        <th>{{ translate('Filter_Criteria') .' '.'-'}}</th>
         <th></th>
         <th>
             {{translate('date_type').' '.'-'.' '.translate($data['dateType'])}}
             <br>
             @if($data['from'] && $data['to'])
-                {{translate('from').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
+                {{translate('From').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
                 <br>
-                {{translate('to').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
+                {{translate('To').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
                 <br>
             @endif
         </th>
     </tr>
     <tr>
         <td> {{translate('SL')}}</td>
-        <td> {{translate('duration')}}    </td>
+        <td> {{translate('Duration')}}    </td>
         <td> {{translate('in-House_Earning')}}    </td>
         <td> {{translate('commission_Earning')}}</td>
         <td> {{translate('earn_From_Shipping')}}</td>
-        <td> {{translate('deliveryMan_Incentive')}}</td>
+        <td> {{translate('delivery_man_incentive')}}</td>
         <td> {{translate('discount_Given')}}</td>
         <td> {{translate('VAT/TAX')}}</td>
         <td> {{translate('refund_Given')}}</td>

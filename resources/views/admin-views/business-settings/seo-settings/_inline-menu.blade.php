@@ -18,7 +18,7 @@
         </li>
         <li class="{{ Request::is('admin/seo-settings/'.SiteMap::SITEMAP[URI]) ? 'active' : '' }}">
             <a href="{{ route('admin.seo-settings.sitemap') }}">
-                {{ translate('Sitemap') }}
+                {{ translate('Site_Map') }}
             </a>
         </li>
         <li class="{{ Request::is('admin/seo-settings/robots-meta-content*') ? 'active' : '' }}">

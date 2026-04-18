@@ -160,6 +160,17 @@ class FooterBusinessSettingsViewTest extends TestCase
         $this->assertStringNotContainsString('English stale text', $html);
     }
 
+    public function test_footer_hides_download_app_links_when_ios_and_android_configs_are_missing(): void
+    {
+        $html = $this->renderFooter([
+            'ios' => null,
+            'android' => null,
+        ]);
+
+        $this->assertStringNotContainsString('apple_app.png', $html);
+        $this->assertStringNotContainsString('google_app.png', $html);
+    }
+
     private function renderFooter(array $overrides = []): string
     {
         $webConfig = array_merge([

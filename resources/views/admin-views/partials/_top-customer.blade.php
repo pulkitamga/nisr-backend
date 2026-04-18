@@ -22,7 +22,7 @@
                             <h5 class="mb-0">{{$item->customer['f_name']??translate('not_exist')}}</h5>
 
                             <div class="orders-count d-flex gap-1">
-                                <div>{{translate('orders')}} : </div>
+                                <div>{{translate('Orders')}} : </div>
                                 <div>{{$item['count']}}</div>
                             </div>
                         </div>

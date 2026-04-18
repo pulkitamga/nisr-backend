@@ -364,16 +364,16 @@ class WholesaleDashboardController extends BaseController
                         return [
                             translate('collection'),
                             translate('revenue'),
-                            translate('orders'),
-                            translate('company'),
-                            translate('wholesaler'),
+                            translate('Orders'),
+                            translate('Company'),
+                            translate('Wholesaler'),
                         ];
                     }
 
                     return [
-                        translate('wholesaler'),
-                        translate('company'),
-                        translate('orders'),
+                        translate('Wholesaler'),
+                        translate('Company'),
+                        translate('Orders'),
                         translate('revenue'),
                         translate('collection'),
                     ];
@@ -665,14 +665,14 @@ class WholesaleDashboardController extends BaseController
                     if ($this->isRtl) {
                         return [
                             translate('revenue'),
-                            translate('orders'),
-                            translate('tier'),
+                            translate('Orders'),
+                            translate('Tier'),
                         ];
                     }
 
                     return [
-                        translate('tier'),
-                        translate('orders'),
+                        translate('Tier'),
+                        translate('Orders'),
                         translate('revenue'),
                     ];
                 }
@@ -989,7 +989,7 @@ class WholesaleDashboardController extends BaseController
 
         if (!empty($deliveryRows)) {
             $largestBucket = $deliveryRows[0];
-            $bucketStatus = ucfirst((string)data_get($largestBucket, 'delivery_status', translate('pending')));
+            $bucketStatus = ucfirst((string)data_get($largestBucket, 'delivery_status', translate('Pending')));
             $bucketTotal = (int)data_get($largestBucket, 'total', 0);
             $insights[] = strtr(translate('wholesale_revenue_insight_largest_delivery_bucket'), [
                 ':status' => $bucketStatus,
@@ -1041,7 +1041,7 @@ class WholesaleDashboardController extends BaseController
 
         if (!empty($topProducts)) {
             $topProduct = $topProducts[0];
-            $topProductName = data_get($topProduct, 'product_name') ?: (translate('product') . ' #' . data_get($topProduct, 'product_id', 'N/A'));
+            $topProductName = data_get($topProduct, 'product_name') ?: (translate('Product') . ' #' . data_get($topProduct, 'product_id', 'N/A'));
             $insights[] = strtr(translate('wholesale_pipeline_insight_top_product'), [
                 ':product_name' => $topProductName,
                 ':units' => number_format((float)data_get($topProduct, 'total_quantity', 0), 0),
@@ -1051,7 +1051,7 @@ class WholesaleDashboardController extends BaseController
         if (!empty($tierRevenue)) {
             $topTier = $tierRevenue[0];
             $insights[] = strtr(translate('wholesale_pipeline_insight_highest_tier'), [
-                ':tier_name' => (string)data_get($topTier, 'tier_name', translate('unassigned')),
+                ':tier_name' => (string)data_get($topTier, 'tier_name', translate('Unassigned')),
                 ':revenue' => $this->formatMoney((float)data_get($topTier, 'total_revenue', 0)),
             ]);
         }
@@ -1075,7 +1075,7 @@ class WholesaleDashboardController extends BaseController
             $count = $products?->sum('restock_product_customers_count') ?? 0;
             $restockProduct = [
                 'title' => $firstProduct?->product?->name ?? '',
-                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('restock_request') : translate('This_product_has') . ' 99+ ' . translate('restock_request'),
+                'body' => $count < 100 ? translate('This_product_has') . ' ' . $count . ' ' . translate('Restock_Request') : translate('This_product_has') . ' 99+ ' . translate('Restock_Request'),
                 'image' => getStorageImages(path: $firstProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
                 'route' => route('admin.products.request-restock-list')
             ];

@@ -47,7 +47,7 @@
                             </div>
                             <div class="d-flex justify-content-end gap-10 flex-wrap mt-3">
                                 <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                    class="btn btn--primary {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('clear')}}</button>
+                                    class="btn btn--primary {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Clear')}}</button>
                             </div>
                         </form>
                     </div>
@@ -63,14 +63,14 @@
     $('.form-submit').on('submit',function(e) {
         e.preventDefault();
         Swal.fire({
-            title: "{{translate('are_you_sure').'?'}}",
+            title: "{{translate('Are_you_sure').'?'}}",
             text: "{{translate('sensitive_data').'!'.translate('make_sure_before_changing').'.'}}",
             type: 'warning',
             showCancelButton: true,
             cancelButtonColor: 'default',
             confirmButtonColor: '{{$web_config['primary_color']}}',
-            cancelButtonText: '{{ translate("no") }}',
-            confirmButtonText: '{{ translate("yes") }}',
+            cancelButtonText: '{{ translate("No") }}',
+            confirmButtonText: '{{ translate("Yes") }}',
             reverseButtons: true
         }).then((result) => {
             if (result.value) {

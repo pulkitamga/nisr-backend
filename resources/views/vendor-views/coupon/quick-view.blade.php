@@ -6,7 +6,7 @@
     <div class="coupon__details-left">
         <div class="text-center">
             <h6 class="title" id="title">{{ $coupon->title }}</h6>
-            <h6 class="subtitle">{{translate('code')}} : <span id="coupon_code">{{ $coupon->code }}</span></h6>
+            <h6 class="subtitle">{{translate('Code')}} : <span id="coupon_code">{{ $coupon->code }}</span></h6>
             <div class="text-capitalize">
                 <span>{{translate(str_replace('_',' ',$coupon->coupon_type))}}</span>
             </div>
@@ -25,7 +25,7 @@
                 </div>
             @endif
             <div class="coupon-info-item">
-                <span>{{translate('start_date')}} : </span>
+                <span>{{translate('Start_Date')}} : </span>
                 <span id="start_date">{{ Carbon::parse($coupon->start_date)->format('dS M Y') }}</span>
             </div>
             <div class="coupon-info-item">
@@ -36,9 +36,9 @@
                 <span>{{translate('discount_bearer')}} : </span>
                 <span id="expire_date">
                     @if($coupon->coupon_bearer == 'inhouse')
-                        {{ translate('admin') }}
+                        {{ translate('Admin') }}
                     @elseif($coupon->coupon_bearer == 'seller')
-                        {{ translate('vendor') }}
+                        {{ translate('Vendor') }}
                     @endif
                 </span>
             </div>
@@ -48,7 +48,7 @@
         <div class="coupon">
             @if($coupon->coupon_type == 'free_delivery')
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/free-delivery.png') }}"
-                     alt="{{translate('free_delivery')}}" width="100">
+                     alt="{{translate('free_Delivery')}}" width="100">
             @else
                 <div class="d-flex">
                     <h4 id="discount">
@@ -56,7 +56,7 @@
                     </h4>
                 </div>
 
-                <span>{{translate('off')}}</span>
+                <span>{{translate('OFF')}}</span>
             @endif
         </div>
     </div>

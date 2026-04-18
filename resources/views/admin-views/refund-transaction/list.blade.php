@@ -1,13 +1,13 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
-@section('title',translate('refund_transactions'))
+@section('title',translate('refund_Transactions'))
 
 @section('content')
 <div class="content container-fluid ">
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/order_report.png')}}" alt="">
-            {{ translate('transaction_report')}}
+            {{ translate('transaction_Report')}}
         </h2>
     </div>
     @include('admin-views.report.transaction-report-inline-menu')
@@ -28,9 +28,9 @@
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                             placeholder="{{ translate('search_by_orders_id_or_refund_id')}}"
-                            aria-label="{{ translate('Search orders') }}"
+                            aria-label="{{ translate('search_orders') }}"
                             value="{{ $searchValue }}">
-                        <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
+                        <button type="submit" class="btn btn--primary">{{ translate('Search')}}</button>
                     </div>
                 </form>
                 <form action="#" id="form-data" method="GET">
@@ -38,9 +38,9 @@
                         <select class="form-control __form-control w-auto" name="payment_method"
                             id="payment_method">
                             <option
-                                value="all" {{ $paymentMethod=='all' ? 'selected': '' }}>{{translate('all')}}</option>
+                                value="all" {{ $paymentMethod=='all' ? 'selected': '' }}>{{translate('All')}}</option>
                             <option
-                                value="cash" {{ $paymentMethod=='cash' ? 'selected': '' }}>{{translate('cash')}}</option>
+                                value="cash" {{ $paymentMethod=='cash' ? 'selected': '' }}>{{translate('Cash')}}</option>
                             <option
                                 value="digitally_paid" {{ $paymentMethod=='digitally_paid' ? 'selected': '' }}>{{translate('digitally_paid')}}</option>
                             <option
@@ -48,7 +48,7 @@
                         </select>
                         <button type="submit" class="btn btn--primary px-4 min-w-120 __h-45px" id="formUrlChange"
                             data-action="{{ url()->current() }}">
-                            {{translate('filter')}}
+                            {{translate('Filter')}}
                         </button>
                         <div class="dropdown">
                             <!-- <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.report.transaction.refund-transaction-export', ['payment_method'=>$paymentMethod, 'searchValue'=>$searchValue]) }}">
@@ -69,15 +69,15 @@
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('product')}}</th>
-                        <th>{{translate('refund_id')}}</th>
-                        <th>{{translate('order_id')}}</th>
-                        <th>{{translate('shop_name')}}</th>
-                        <th>{{translate('payment_method') }}</th>
-                        <th>{{translate('payment_status')}}</th>
-                        <th>{{translate('paid_by')}}</th>
-                        <th>{{translate('amount')}}</th>
-                        <th class="text-center">{{translate('transaction_type')}}</th>
+                        <th>{{translate('Product')}}</th>
+                        <th>{{translate('refund_ID')}}</th>
+                        <th>{{translate('Order_ID')}}</th>
+                        <th>{{translate('Shop_Name')}}</th>
+                        <th>{{translate('Payment_Method') }}</th>
+                        <th>{{translate('Payment_Status')}}</th>
+                        <th>{{translate('paid_By')}}</th>
+                        <th>{{translate('Amount')}}</th>
+                        <th class="text-center">{{translate('transaction_Type')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -121,7 +121,7 @@
                             @if($refund_transaction->order->seller_is == 'seller' && $refund_transaction->order->seller)
                             {{ $refund_transaction->order->seller->shop->name }}
                             @else
-                            {{translate('inhouse')}}
+                            {{translate('in_House')}}
                             @endif
                         </td>
 

@@ -187,20 +187,20 @@ class DealController extends BaseController
             ];
         })->values()->all();
 
-        $title = $isRetail ? translate('retail_deals') : translate('wholesale_deals');
+        $title = $isRetail ? translate('retail_Deals') : translate('wholesale_Deals');
 
         return Excel::download(
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
                     translate('ID'),
-                    translate('Party Type'),
-                    translate('status'),
+                    translate('Party_Type'),
+                    translate('Status'),
                     translate('stage'),
                     translate('value'),
-                    translate('owner'),
-                    translate('employee'),
-                    translate('Created At'),
+                    translate('Owner'),
+                    translate('Employee'),
+                    translate('Created_At'),
                 ],
                 title: $title,
                 locale: LocalizedExport::locale(),
@@ -210,9 +210,9 @@ class DealController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('status') . ': ' . (($request->input('status') && $request->input('status') !== 'all') ? translate((string) $request->input('status')) : translate('all')),
-                    translate('date') . ': ' . ($request->input('filter_date') ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('Status') . ': ' . (($request->input('status') && $request->input('status') !== 'all') ? translate((string) $request->input('status')) : translate('All')),
+                    translate('DATE') . ': ' . ($request->input('filter_date') ?: translate('All')),
                 ])),
                 columnWidths: ['A' => 10, 'B' => 16, 'C' => 18, 'D' => 18, 'E' => 16, 'F' => 24, 'G' => 24, 'H' => 20],
                 centerColumns: ['A', 'B', 'C', 'D', 'E', 'H'],

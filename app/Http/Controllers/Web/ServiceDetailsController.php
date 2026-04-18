@@ -229,7 +229,7 @@ class ServiceDetailsController extends Controller
                 'service_id' => $request->input('service_id'),
                 'error' => $exception->getMessage(),
             ]);
-            Toastr::error(translate('something_went_wrong'));
+            Toastr::error(translate('Something_went_wrong'));
             return redirect()->back();
         }
 

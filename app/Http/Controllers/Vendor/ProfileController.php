@@ -114,7 +114,7 @@ class ProfileController extends BaseController
     {
         $vendor = $this->vendorRepo->getFirstWhere(['id' => $id]);
         $this->vendorRepo->update(id: $vendor['id'], data: $this->vendorService->getVendorBankInfoData(request: $request));
-        Toastr::success(translate('successfully_updated').'!!');
+        Toastr::success(translate('Successfully_Updated').'!!');
         return redirect()->route(Profile::INDEX[ROUTE]);
     }
 

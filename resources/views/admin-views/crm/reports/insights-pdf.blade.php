@@ -402,7 +402,7 @@
                     </div>
                 </td>
                 <td>
-                    <div class="kpi-label">{{ translate('leads') }}</div>
+                    <div class="kpi-label">{{ translate('Leads') }}</div>
                     <div class="kpi-value"><strong>{{ number_format((int) ($kpi['lead_count'] ?? 0)) }}</strong></div>
                 </td>
                 <td>
@@ -564,7 +564,7 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>{{ translate('owner') }}</th>
+                    <th>{{ translate('Owner') }}</th>
                     <th>{{ translate('deals') }}</th>
                     <th>{{ translate('total_value') }}</th>
                     <th>{{ translate('avg_value') }}</th>
@@ -580,7 +580,7 @@
                     @endphp
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td><strong>{{ $owner->owner_name ?? translate('unknown') }}</strong></td>
+                        <td><strong>{{ $owner->owner_name ?? translate('Unknown') }}</strong></td>
                         <td class="value-ltr">{{ number_format((int) ($owner->deals_count ?? 0)) }}</td>
                         <td class="value-ltr">{{ number_format((float) ($owner->total_value ?? 0), 2) }}</td>
                         <td class="value-ltr">{{ number_format($avg, 2) }}</td>

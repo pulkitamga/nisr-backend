@@ -139,7 +139,7 @@ class InhouseShopController extends BaseController
         }
 
         clearWebConfigCacheKeys();
-        Toastr::success(translate('Updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 
@@ -207,7 +207,7 @@ class InhouseShopController extends BaseController
         ];
         $this->businessSettingRepo->updateOrInsert(type: 'vacation_add', value: json_encode($data));
         clearWebConfigCacheKeys();
-        Toastr::success(translate('vacation_mode_updated_successfully'));
+        Toastr::success(translate('Vacation_mode_updated_successfully'));
         return redirect()->back();
     }
 

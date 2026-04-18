@@ -19,7 +19,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_ticket_by_subject_or_status'),
             'aria_label' => translate('search_ticket_by_subject_or_status'),
@@ -69,7 +69,7 @@
     }
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -113,7 +113,7 @@
                         <th>{{translate('Ticket_Type')}}</th>
                         <th>{{translate('Priority')}}</th>
                         <th>{{translate('Status')}}</th>
-                        <th>{{translate('Created At')}}</th>
+                        <th>{{translate('Created_At')}}</th>
                         <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
@@ -170,10 +170,10 @@
                             <div class="fz-12 text-muted">{{ $contactInfo }}</div>
                             @endif
                             @else
-                            {{ translate('Customer Not Found') }}
+                            {{ translate('customer_not_found') }}
                             @endif
                             @else
-                            {{ translate('Customer Not Found') }}
+                            {{ translate('customer_not_found') }}
                             @endif
                         </td>
 
@@ -309,15 +309,15 @@
 <span id="getEmployeeRoute" data-url="{{ route('admin.crm.getemployee') }}"></span>
 <span id="assignEmployeeRoute" data-url="{{ route('admin.complaints.update-ticket-department') }}"></span>
 <span id="route-get-department-employee" data-url="{{ route('admin.complaints.get-department-employee') }}"></span>
-<span id="complaint-select-employee" data-text="{{ translate('Select Employee') }}"></span>
+<span id="complaint-select-employee" data-text="{{ translate('Select_Employee') }}"></span>
 <span id="complaint-loading" data-text="{{ translate('Loading...') }}"></span>
 <span id="complaint-department-updated" data-text="{{ translate('department_updated_successfully') }}"></span>
 <span id="complaint-employee-updated" data-text="{{ translate('ticket_assigned_successfully') }}"></span>
-<span id="complaint-follow-up-updated" data-text="{{ translate('updated successfully!') }}"></span>
-<span id="complaint-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="complaint-follow-up-updated" data-text="{{ translate('Updated successfully!') }}"></span>
+<span id="complaint-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 <span id="support-ticket-escalate-warning" data-text="{{ translate('This will notify the department and owner.') }}"></span>
 <span id="support-ticket-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
-<span id="support-ticket-something-went-wrong" data-text="{{ translate('something_went_wrong') }}"></span>
+<span id="support-ticket-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 @endsection
 
 @push('script')

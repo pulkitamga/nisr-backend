@@ -1,14 +1,14 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('vendor_List'))
+@section('title', translate('Vendor_List'))
 
 @section('content')
     <div class="content container-fluid">
         <div class="mb-4">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_List')}}
+                {{translate('Vendor_List')}}
                 <span class="badge badge-soft-dark radius-50 fz-12">{{ $vendors->total() }}</span>
             </h2>
         </div>
@@ -26,8 +26,8 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                            placeholder="{{translate('search_by_shop_name_or_vendor_name_or_phone_or_email')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            placeholder="{{translate('search_by_shop_name_or_vendor_name_or_phone_or_email')}}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -52,13 +52,13 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('shop_name')}}</th>
-                                <th>{{translate('vendor_name')}}</th>
-                                <th>{{translate('contact_info')}}</th>
-                                <th>{{translate('status')}}</th>
-                                <th class="text-center">{{translate('total_products')}}</th>
-                                <th class="text-center">{{translate('total_orders')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Shop_Name')}}</th>
+                                <th>{{translate('vendor_Name')}}</th>
+                                <th>{{translate('_contact_info')}}</th>
+                                <th>{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('total_Products')}}</th>
+                                <th class="text-center">{{translate('total_Orders')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -84,7 +84,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <a title="{{translate('view')}}"
+                                        <a title="{{translate('View')}}"
                                            class="title-color"
                                            href="{{route('admin.vendors.view',$seller->id)}}">
                                             {{$seller->f_name}} {{$seller->l_name}}
@@ -97,7 +97,7 @@
                                         <a class="title-color hover-c1" href="tel:{{$seller->phone}}">{{$seller->phone}}</a>
                                     </td>
                                     <td>
-                                        {!! $seller->status=='approved'?'<label class="badge badge-success">'.translate('active').'</label>':'<label class="badge badge-danger">'.translate('inactive').'</label>' !!}
+                                        {!! $seller->status=='approved'?'<label class="badge badge-success">'.translate('Active').'</label>':'<label class="badge badge-danger">'.translate('Inactive').'</label>' !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.vendors.view', ['id'=>$seller['id'], 'tab'=>'product']) }}"
@@ -113,7 +113,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a title="{{translate('view')}}"
+                                            <a title="{{translate('View')}}"
                                                 class="btn btn-outline-info btn-sm square-btn"
                                                 href="{{route('admin.vendors.view',$seller->id)}}">
                                                 <i class="tio-invisible"></i>

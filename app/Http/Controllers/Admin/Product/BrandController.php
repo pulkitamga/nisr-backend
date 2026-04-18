@@ -76,7 +76,7 @@ class BrandController extends BaseController
           'status' => $request->get('status', 0),
         ];
         $this->brandRepo->update(id:$request['id'], data:$data);
-        return response()->json(['success' => 1, 'message' => translate('status_updated_successfully')], 200);
+        return response()->json(['success' => 1, 'message' => translate('Status_updated_successfully')], 200);
     }
 
     public function delete(Request $request, BrandService $brandService): RedirectResponse
@@ -122,7 +122,7 @@ class BrandController extends BaseController
                 (string) ($brand->defaultName ?? $brand->name ?? '-'),
                 (int) ($brand->brand_all_products_count ?? 0),
                 (int) ($brand->brandAllProducts?->sum('order_details_count') ?? 0),
-                $brand->status == 1 ? translate('active') : translate('inactive'),
+                $brand->status == 1 ? translate('Active') : translate('Inactive'),
             ];
         })->values()->all();
 
@@ -130,10 +130,10 @@ class BrandController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('name'),
+                    translate('Name'),
                     translate('total_Product'),
                     translate('total_Order'),
-                    translate('status'),
+                    translate('Status'),
                 ],
                 title: translate('brand_List'),
                 locale: LocalizedExport::locale(),
@@ -141,10 +141,10 @@ class BrandController extends BaseController
                 metaPairs: [
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
-                    ['label' => translate('active'), 'value' => (string) $active],
-                    ['label' => translate('inactive'), 'value' => (string) $inactive],
+                    ['label' => translate('Active'), 'value' => (string) $active],
+                    ['label' => translate('Inactive'), 'value' => (string) $inactive],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                 columnWidths: ['A' => 28, 'B' => 16, 'C' => 16, 'D' => 14],
                 centerColumns: ['B', 'C', 'D'],
                 sumColumns: ['B', 'C']

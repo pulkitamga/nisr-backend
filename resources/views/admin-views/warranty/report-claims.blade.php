@@ -127,15 +127,15 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}
+                                    {{ translate('this_Year') }}
                                 </option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}
+                                    {{ translate('this_Month') }}
                                 </option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}
+                                    {{ translate('this_Week') }}
                                 </option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}
@@ -148,35 +148,35 @@
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? '') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('status') }}</label>
+                            <label class="form-label mb-1">{{ translate('Status') }}</label>
                             <select class="form-control" name="status">
                                 @foreach ($claimStatuses as $status)
                                     <option value="{{ $status }}"
                                         {{ ($filters['status'] ?? 'all') === $status ? 'selected' : '' }}>
-                                        {{ $status === 'all' ? translate('all') : translate($status) }}
+                                        {{ $status === 'all' ? translate('All') : translate($status) }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('search') }}</label>
+                            <label class="form-label mb-1">{{ translate('Search') }}</label>
                             <input type="text" class="form-control" name="search"
                                 value="{{ $filters['search'] ?? '' }}"
                                 placeholder="{{ translate('search_by_claim_or_serial') }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.warranty.report.claims') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.warranty.report.claims', array_merge(request()->query(), ['download' => 'excel'])) }}"
                                 class="btn btn-outline-success"> <i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>
@@ -272,13 +272,13 @@
                             <th>#</th>
                             <th>{{ translate('claim_number') }}</th>
                             <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('product') }}</th>
-                            <th>{{ translate('customer') }}</th>
-                            <th>{{ translate('status') }}</th>
+                            <th>{{ translate('Product') }}</th>
+                            <th>{{ translate('Customer') }}</th>
+                            <th>{{ translate('Status') }}</th>
                             <th>{{ translate('submitted_at') }}</th>
                             <th>{{ translate('sla_due') }}</th>
-                            <th>{{ translate('branch') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th>{{ translate('Branch') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -316,13 +316,13 @@
                                 <td class="text-center">
                                     <a class="btn btn-sm btn-outline-info"
                                         href="{{ route('admin.warranty.claim.view', $claim->id) }}">
-                                        {{ translate('view') }}
+                                        {{ translate('View') }}
                                     </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4 text-muted">{{ translate('no_data_found') }}
+                                <td colspan="10" class="text-center py-4 text-muted">{{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                         @endforelse

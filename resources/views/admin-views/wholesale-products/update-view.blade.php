@@ -29,7 +29,7 @@
                             <!-- Category -->
                             <div class="col-sm-6 col-lg-4 col-xl-2">
                                 <div class="form-group">
-                                    <label class="title-color">{{ translate('category') }}</label>
+                                    <label class="title-color">{{ translate('Category') }}</label>
                                     <input type="text" class="form-control" value="{{ $ProductData->category->getTranslatedField('name') }}" readonly>
                                     <input type="hidden" name="category_id" value="{{ $ProductData->category_id }}">
                                 </div>
@@ -38,7 +38,7 @@
                             <!-- Sub Category -->
                             <div class="col-sm-6 col-lg-4 col-xl-2">
                                 <div class="form-group">
-                                    <label class="title-color">{{ translate('sub_Category') }}</label>
+                                    <label class="title-color">{{ translate('Sub_Category') }}</label>
                                     <input type="text" class="form-control" value="{{ $get_sub_category->getTranslatedField('name') ?? '-' }}" readonly>
                                     <input type="hidden" name="sub_category_id" value="{{ $ProductData->sub_category_id }}">
                                 </div>
@@ -81,7 +81,7 @@
                             </div>
                             <div class="col-sm-6 col-lg-4 col-xl-2">
                                 <div class="form-group">
-                                    <label class="title-color" for="tax">{{ translate('tax') }} (%)</label>
+                                    <label class="title-color" for="tax">{{ translate('Tax') }} (%)</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -184,9 +184,9 @@
 
                                 <div class="row justify-content-end gap-3 mt-3 mx-1">
                                     <input type="hidden" name="from_submit" value="admin">
-                                    <button type="reset" class="btn btn-secondary reset-button">{{ translate('reset') }}</button>
+                                    <button type="reset" class="btn btn-secondary reset-button">{{ translate('Reset') }}</button>
                                     <button type="submit" class="btn btn--primary btn-user">
-                                        {{ translate('submit') }}
+                                        {{ translate('Submit') }}
                                     </button>
                                 </div>
                             </div>

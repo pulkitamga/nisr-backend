@@ -157,7 +157,7 @@ class ClearanceSaleController extends BaseController
                 } else {
                     return response()->json([
                         'status' => false,
-                        'message' => translate('please_setup_the_configuration_first')
+                        'message' => translate('Please_setup_the_configuration_first')
                     ], 200);
                 }
             }

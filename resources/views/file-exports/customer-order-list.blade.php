@@ -9,7 +9,7 @@
             <th>{{ translate('Customer_Info').' '.'-' }}</th>
             <th></th>
             <th>
-                {{translate('customer_Name').' '.'-'.' '.ucwords($data['customer']->f_name.' '.$data['customer']->l_name)}}
+                {{translate('Customer_Name').' '.'-'.' '.ucwords($data['customer']->f_name.' '.$data['customer']->l_name)}}
                 <br>
                 {{translate('customer_Email').' '.'-'.' '.$data['customer']->email ?? translate('data_not_found')}}
                 <br>
@@ -42,7 +42,7 @@
                 <td> {{++$key}}	</td>
                 <td> {{$order->id}}	</td>
                 <td> {{date('d M, Y h:i A',strtotime($order->created_at))}}</td>
-                <td> {{ucwords($order?->seller_is == 'seller' ? ($order?->seller?->shop->name ?? translate('not_found')) : translate('inhouse'))}}	</td>
+                <td> {{ucwords($order?->seller_is == 'seller' ? ($order?->seller?->shop->name ?? translate('not_found')) : translate('in_House'))}}	</td>
                 <td> {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $order['order_amount'] ?? 0), currencyCode: getCurrencyCode())}}</td>
                 <td> {{translate($order->payment_status)}}</td>
                 <td> {{translate($order->order_status)}}</td>

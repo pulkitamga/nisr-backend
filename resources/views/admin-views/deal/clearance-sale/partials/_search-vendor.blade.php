@@ -17,7 +17,7 @@
                                 <div class="fz-12 title-color">
                                     <div class="border-between wrap">
                                          <span class="parent">
-                                             <span class="opacity--70">({{$vendor->review_count}} {{ translate('review') }})</span>
+                                             <span class="opacity--70">({{$vendor->review_count}} {{ translate('Review') }})</span>
                                          </span>
                                         <span class="parent">
                                              <span class="opacity--70"><i class="tio-star text-F5A200"></i>{{round($vendor->average_rating,1)}}</span>
@@ -39,7 +39,7 @@
 @else
     <div class="text-center p-4">
         <img class="mb-3 w-60px" src="{{dynamicAsset(path: 'public/assets/back-end/img/empty-vendor.png')}}"
-             alt="{{translate('image_description')}}">
+             alt="{{translate('image_Description')}}">
         <p class="mb-0">{{ translate('no_vendor_found')}}</p>
     </div>
 @endif

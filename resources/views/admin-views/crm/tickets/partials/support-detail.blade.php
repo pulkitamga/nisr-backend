@@ -85,7 +85,7 @@
             return $translateWithReplace('status_changed_from_to_reopened', [
                 'from' => $translateDynamic($m[1]),
                 'to' => $translateDynamic($m[2]),
-                'reopened' => $m[3] === 'Yes' ? translate('yes') : translate('no'),
+                'reopened' => $m[3] === 'Yes' ? translate('Yes') : translate('No'),
             ]);
         }
 
@@ -163,7 +163,7 @@
             <img width="20" src="{{ dynamicAsset('public/assets/back-end/img/support_ticket.png') }}" alt="">
             {{ translate('ticket_details') }} #{{ $ticket->id }}
         </h2>
-        <a href="javascript:history.back()" class="btn btn--primary">{{ translate('back') }}</a>
+        <a href="javascript:history.back()" class="btn btn--primary">{{ translate('Back') }}</a>
     </div>
 
     <div class="row">
@@ -175,11 +175,11 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('subject') }}</strong>
+                        <strong>{{ translate('Subject') }}</strong>
                         <span class="text-end" dir="auto">{{ $ticket->subject ?? translate('N/A') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('type') }}</strong>
+                        <strong>{{ translate('Type') }}</strong>
                         <span class="text-end" dir="auto">{{ $translateDynamic($ticket->type) }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -187,25 +187,25 @@
                         <span class="text-end" dir="auto">{{ $translateDynamic($ticket->sub_type ? Str::replace('_', ' ', $ticket->sub_type) : null) }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('priority') }}</strong>
+                        <strong>{{ translate('Priority') }}</strong>
                         <span class="badge badge-soft-{{ $ticket->priority == 'low' ? 'primary' : ($ticket->priority == 'medium' ? 'info' : ($ticket->priority == 'high' ? 'warning' : ($ticket->priority == 'critical' ? 'danger' : 'secondary'))) }}">
                             {{ $translateDynamic($ticket->priority) }}
                         </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('status') }}</strong>
+                        <strong>{{ translate('Status') }}</strong>
                         <span class="badge badge-soft-info">{{ \App\Utils\crm_status_label($ticket->status_details?->getTranslatedField('name') ?? $ticket->status_details?->name ?? $ticket->status, 'N/A') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('department') }}</strong>
-                        <span class="text-end" dir="auto">{{ $ticket->department?->getTranslatedField('name') ?? translate('unassigned') }}</span>
+                        <strong>{{ translate('Department') }}</strong>
+                        <span class="text-end" dir="auto">{{ $ticket->department?->getTranslatedField('name') ?? translate('Unassigned') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <strong>{{ translate('assigned_employee') }}</strong>
-                        <span class="text-end" dir="auto">{{ $ticket->employee->name ?? translate('unassigned') }}</span>
+                        <span class="text-end" dir="auto">{{ $ticket->employee->name ?? translate('Unassigned') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                        <strong>{{ translate('created_at') }}</strong>
+                        <strong>{{ translate('Created_At') }}</strong>
                         <span class="text-end bidi-ltr d-inline-block">{{ $ticket->created_at?->translatedFormat('d M, Y H:i') }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-start gap-2">
@@ -222,7 +222,7 @@
                 <div class="card-header">
                     <h5 class="mb-0">
                         @if($ticket->customer)
-                            {{ translate('customer_information') }}
+                            {{ translate('customer_Information') }}
                         @else
                             {{ translate('inbox_message_source') }}
                         @endif
@@ -231,15 +231,15 @@
                 <div class="card-body">
                     @if($ticket->customer)
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                            <strong>{{ translate('name') }}</strong>
+                            <strong>{{ translate('Name') }}</strong>
                             <span class="text-end" dir="auto">{{ $ticket->customer->f_name }} {{ $ticket->customer->l_name }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                            <strong>{{ translate('email') }}</strong>
+                            <strong>{{ translate('Email') }}</strong>
                             <span class="text-end" dir="ltr">{{ $ticket->customer->email }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-start gap-2">
-                            <strong>{{ translate('phone') }}</strong>
+                            <strong>{{ translate('Phone') }}</strong>
                             <span class="text-end" dir="ltr">{{ $ticket->customer->phone ?? translate('N/A') }}</span>
                         </div>
                     @elseif($ticket->relatedInboxMessages->isNotEmpty())
@@ -259,18 +259,18 @@
                             <span class="text-end" dir="ltr">{{ $msg->sender_phone ?? translate('N/A') }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                            <strong>{{ translate('subject') }}</strong>
+                            <strong>{{ translate('Subject') }}</strong>
                             <span class="text-end" dir="auto">{{ $msg->subject ?? translate('N/A') }}</span>
                         </div>
                         <div class="mb-2">
-                            <strong>{{ translate('message') }}</strong>
+                            <strong>{{ translate('Message') }}</strong>
                             <div class="pt-1" dir="auto">{!! nl2br(e($msg->message)) !!}</div>
                         </div>
 
                         @if($msg->attachment)
                             <div class="d-flex justify-content-between align-items-start gap-2">
-                                <strong>{{ translate('attachment') }}</strong>
-                                <a href="{{ $msg->attachment_full_url }}" target="_blank">{{ translate('view') }}</a>
+                                <strong>{{ translate('Attachment') }}</strong>
+                                <a href="{{ $msg->attachment_full_url }}" target="_blank">{{ translate('View') }}</a>
                             </div>
                         @endif
                     @else
@@ -294,9 +294,9 @@
                     <table class="table table-bordered table-striped" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
                         <thead class="thead-light">
                             <tr>
-                                <th>{{ translate('title') }}</th>
-                                <th>{{ translate('description') }}</th>
-                                <th>{{ translate('employee') }}</th>
+                                <th>{{ translate('Title') }}</th>
+                                <th>{{ translate('Description') }}</th>
+                                <th>{{ translate('Employee') }}</th>
                                 <th>{{ translate('noted_at') }}</th>
                             </tr>
                         </thead>

@@ -113,7 +113,7 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn--primary px-5 text-uppercase">
-                                    {{ translate('save') }}
+                                    {{ translate('Save') }}
                                 </button>
                             </div>
                         </div>

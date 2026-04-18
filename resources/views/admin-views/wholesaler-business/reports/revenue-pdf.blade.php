@@ -404,9 +404,9 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>{{ translate('wholesaler') }}</th>
-                    <th>{{ translate('company') }}</th>
-                    <th>{{ translate('orders') }}</th>
+                    <th>{{ translate('Wholesaler') }}</th>
+                    <th>{{ translate('Company') }}</th>
+                    <th>{{ translate('Orders') }}</th>
                     <th>{{ translate('revenue') }}</th>
                 </tr>
             </thead>

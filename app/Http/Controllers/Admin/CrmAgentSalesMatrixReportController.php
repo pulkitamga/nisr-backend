@@ -205,7 +205,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
         return collect($rows)->map(function ($row) {
             $row->report_date = (string)$row->report_date;
             $row->employee_id = (int)$row->employee_id;
-            $row->employee_name = (string)($row->employee_name ?: translate('unassigned'));
+            $row->employee_name = (string)($row->employee_name ?: translate('Unassigned'));
             $row->retail_batteries = (int)$row->retail_batteries;
             $row->retail_customers = (int)$row->retail_customers;
             $row->wholesale_batteries = (int)$row->wholesale_batteries;
@@ -229,7 +229,7 @@ class CrmAgentSalesMatrixReportController extends BaseController
                 ->values();
 
             if ($rows->contains(fn($row) => (int)$row->employee_id === 0)) {
-                $filtered->push((object)['id' => 0, 'name' => translate('unassigned')]);
+                $filtered->push((object)['id' => 0, 'name' => translate('Unassigned')]);
             }
 
             return $filtered->sortBy('name')->values();

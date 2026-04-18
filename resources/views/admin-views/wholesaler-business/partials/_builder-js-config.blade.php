@@ -14,7 +14,7 @@
             'chargeName' => translate('Charge Name'),
             'discountName' => translate('Discount Name'),
             'value' => translate('Value'),
-            'chargeValue' => translate('Charge Value'),
+            'chargeValue' => translate('charge_value'),
             'discountValue' => translate('Discount Value'),
             'quotationExists' => translate('Quotation No already exists'),
             'quotationAvailable' => translate('Quotation No is available'),

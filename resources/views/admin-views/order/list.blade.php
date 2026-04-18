@@ -1,7 +1,7 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
 
-@section('title', translate('order_List'))
+@section('title', translate('Order_List'))
 
 @push('css_or_js')
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/crm.css') }}">
@@ -16,15 +16,15 @@
         $selectedDateType = $dateType ?? '';
 
         $statusLabel = match ($status) {
-            'processing' => translate('packaging'),
-            'failed' => translate('failed_to_Deliver'),
-            'all' => translate('all'),
+            'processing' => translate('Packaging'),
+            'failed' => translate('Failed_to_Deliver'),
+            'all' => translate('All'),
             default => translate(str_replace('_', ' ', $status)),
         };
 
         $orderTypeOptions = [];
         if ($businessMode == 'multi') {
-            $orderTypeOptions['all'] = translate('all');
+            $orderTypeOptions['all'] = translate('All');
         }
         $orderTypeOptions['admin'] = translate('in_House_Order');
         if ($businessMode == 'multi') {
@@ -34,7 +34,7 @@
             }
         }
 
-        $sellerOptions = ['all' => translate('all_shop'), '0' => translate('inhouse')];
+        $sellerOptions = ['all' => translate('all_shop'), '0' => translate('in_House')];
         foreach ($sellers as $seller) {
             if (isset($seller->shop)) {
                 $sellerOptions[(string)$seller->id] = $seller->shop->name;
@@ -67,7 +67,7 @@
         $toolbarFields[] = [
             'type' => 'select',
             'name' => 'filter',
-            'label' => translate('order_type'),
+            'label' => translate('order_Type'),
             'value' => $selectedFilter,
             'options' => $orderTypeOptions,
             'input_class' => 'form-control',
@@ -113,7 +113,7 @@
         $toolbarFields[] = [
             'type' => 'date',
             'name' => 'from',
-            'label' => translate('start_date'),
+            'label' => translate('Start_Date'),
             'value' => $from,
             'input_class' => 'form-control',
             'attributes' => ['id' => 'from_date'],
@@ -124,7 +124,7 @@
         $toolbarFields[] = [
             'type' => 'date',
             'name' => 'to',
-            'label' => translate('end_date'),
+            'label' => translate('End_Date'),
             'value' => $to,
             'input_class' => 'form-control',
             'attributes' => ['id' => 'to_date'],
@@ -145,7 +145,7 @@
         $toolbarFields[] = [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => $searchValue,
             'placeholder' => translate('search_by_Order_ID'),
             'aria_label' => translate('search_by_Order_ID'),
@@ -153,13 +153,13 @@
         ];
 
         $toolbarSummary = [
-            ['label' => translate('order_status'), 'value' => $statusLabel],
+            ['label' => translate('Order_Status'), 'value' => $statusLabel],
         ];
 
         if ($selectedFilter !== 'all') {
             $toolbarSummary[] = [
-                'label' => translate('order_type'),
-                'value' => $orderTypeOptions[$selectedFilter] ?? translate('all'),
+                'label' => translate('order_Type'),
+                'value' => $orderTypeOptions[$selectedFilter] ?? translate('All'),
                 'muted' => true,
             ];
         }
@@ -172,7 +172,7 @@
         }
         if ($selectedCustomerId !== 'all' && $selectedCustomerId !== null) {
             $toolbarSummary[] = [
-                'label' => translate('customer'),
+                'label' => translate('Customer'),
                 'value' => Str::limit($selectedCustomerLabel, 28),
                 'muted' => true,
             ];
@@ -193,7 +193,7 @@
         }
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -222,7 +222,7 @@
                 <h2 class="h1 mb-0">
                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/all-orders.png') }}" class="mb-1 me-1" alt="">
                     <span class="page-header-title">{{ $statusLabel }}</span>
-                    {{ translate('orders') }}
+                    {{ translate('Orders') }}
                 </h2>
                 <span class="badge badge-soft-dark radius-50 fz-14">{{ $orders->total() }}</span>
             </div>
@@ -237,7 +237,7 @@
 
             <div class="card">
                 @include('admin-views.crm.partials._list-card-header', [
-                    'listHeaderTitle' => translate('order_list'),
+                    'listHeaderTitle' => translate('Order_List'),
                     'listHeaderTotal' => $orders->total(),
                     'listHeaderActions' => $headerActions,
                 ])
@@ -247,17 +247,17 @@
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL') }}</th>
-                                <th>{{ translate('order_ID') }}</th>
-                                <th class="text-capitalize">{{ translate('order_date') }}</th>
-                                <th class="text-capitalize">{{ translate('customer_info') }}</th>
+                                <th>{{ translate('Order_ID') }}</th>
+                                <th class="text-capitalize">{{ translate('Order_Date') }}</th>
+                                <th class="text-capitalize">{{ translate('Customer_Info') }}</th>
                                 <th>{{ translate('store') }}</th>
-                                <th class="text-capitalize">{{ translate('total_amount') }}</th>
+                                <th class="text-capitalize">{{ translate('Total_Amount') }}</th>
                                 @if($status == 'all')
-                                    <th class="text-center">{{ translate('order_status') }}</th>
+                                    <th class="text-center">{{ translate('Order_Status') }}</th>
                                 @else
-                                    <th class="text-capitalize">{{ translate('payment_method') }}</th>
+                                    <th class="text-capitalize">{{ translate('Payment_Method') }}</th>
                                 @endif
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
 
@@ -331,12 +331,12 @@
                                             <span class="crm-row-actions__chip">{{ translate($order['order_status']) }}</span>
                                         @elseif($order['order_status'] == 'processing' || $order['order_status'] == 'out_for_delivery')
                                             <span class="crm-row-actions__chip">
-                                                {{ str_replace('_', ' ', $order['order_status'] == 'processing' ? translate('packaging') : translate($order['order_status'])) }}
+                                                {{ str_replace('_', ' ', $order['order_status'] == 'processing' ? translate('Packaging') : translate($order['order_status'])) }}
                                             </span>
                                         @elseif($order['order_status'] == 'confirmed')
                                             <span class="crm-row-actions__chip">{{ translate($order['order_status']) }}</span>
                                         @elseif($order['order_status'] == 'failed')
-                                            <span class="crm-row-actions__chip text-danger">{{ translate('failed_to_deliver') }}</span>
+                                            <span class="crm-row-actions__chip text-danger">{{ translate('Failed_to_Deliver') }}</span>
                                         @elseif($order['order_status'] == 'delivered')
                                             <span class="crm-row-actions__chip">{{ translate($order['order_status']) }}</span>
                                         @else
@@ -349,7 +349,7 @@
                                 <td>
                                     <div class="crm-row-actions">
                                         <div class="crm-row-actions__primary">
-                                            <a class="btn btn-outline--primary square-btn btn-sm" title="{{ translate('view') }}"
+                                            <a class="btn btn-outline--primary square-btn btn-sm" title="{{ translate('View') }}"
                                                 href="{{ route('admin.orders.details', ['id' => $order['id']]) }}">
                                                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/eye.svg') }}" class="svg" alt="">
                                             </a>
@@ -363,9 +363,9 @@
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-right"
                                                 aria-labelledby="order-row-actions-{{ $order['id'] }}">
-                                                <a class="dropdown-item" title="{{ translate('invoice') }}" target="_blank"
+                                                <a class="dropdown-item" title="{{ translate('Invoice') }}" target="_blank"
                                                     href="{{ route('admin.orders.generate-invoice', [$order['id']]) }}">
-                                                    <i class="tio-download-to mr-2"></i>{{ translate('invoice') }}
+                                                    <i class="tio-download-to mr-2"></i>{{ translate('Invoice') }}
                                                 </a>
                                             </div>
                                         </div>
@@ -400,7 +400,7 @@
                 </span>
                 <ul class="nav nav-tabs page-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">{{ translate('order_list') }}</a>
+                        <a class="nav-link active" href="#">{{ translate('Order_List') }}</a>
                     </li>
                 </ul>
             </div>

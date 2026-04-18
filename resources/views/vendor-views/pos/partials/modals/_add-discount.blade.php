@@ -9,10 +9,10 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="title-color">{{ translate('type') }}</label>
+                    <label class="title-color">{{ translate('Type') }}</label>
                     <select name="type" id="type_ext_dis" class="form-control">
                         <option value="amount" {{ isset($discount_type) && $discount_type == 'amount' ? 'selected' : '' }}>
-                            {{ translate('amount') }}
+                            {{ translate('Amount') }}
                         </option>
                         <option
                             value="percent" {{ isset($discount_type) && $discount_type == 'percent' ? 'selected' : '' }}>
@@ -21,12 +21,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="title-color">{{ translate('discount') }}</label>
+                    <label class="title-color">{{ translate('Discount') }}</label>
                     <input type="number" id="dis_amount" class="form-control" name="discount" placeholder="Ex: 500">
                 </div>
                 <div class="form-group">
                     <button type="button" class="btn btn--primary action-extra-discount" data-error-message="{{translate('please_enter_discount_amount')}}">
-                        {{ translate('submit') }}
+                        {{ translate('Submit') }}
                     </button>
                 </div>
             </div>

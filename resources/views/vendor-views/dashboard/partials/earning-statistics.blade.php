@@ -35,5 +35,5 @@
     </div>
 </div>
 <span id="earn-statistics" data-action="{{ route('vendor.dashboard.earning-statistics') }}"></span>
-<span id="earn-statistics-data" data-vendor-text = "{{translate('income')}}" data-commission-text = "{{translate('commission_given')}}"  data-vendor-earn="{{json_encode($vendorEarning)}}" data-commission-earn ={{json_encode($commissionEarn)}} data-label="{{json_encode($label)}}"></span>
+<span id="earn-statistics-data" data-vendor-text = "{{translate('income')}}" data-commission-text = "{{translate('commission_Given')}}"  data-vendor-earn="{{json_encode($vendorEarning)}}" data-commission-earn ={{json_encode($commissionEarn)}} data-label="{{json_encode($label)}}"></span>
 <input name="earn_statistics_label_count" value="{{count($label)}}" hidden>

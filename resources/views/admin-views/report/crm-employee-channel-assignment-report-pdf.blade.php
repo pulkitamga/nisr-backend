@@ -397,14 +397,14 @@
                 <div class="matrix-page-title">{{ translate('crm_employee_channel_assignment_report') }}</div>
                 <table class="matrix-filter-table">
                     <tr>
-                        <td class="matrix-filter-label">{{ translate('department') }}</td>
-                        <td>{{ $selectedFilterLabels['department'] ?? translate('all') }}</td>
-                        <td class="matrix-filter-label">{{ translate('employee') }}</td>
-                        <td>{{ $selectedFilterLabels['employee'] ?? translate('all') }}</td>
+                        <td class="matrix-filter-label">{{ translate('Department') }}</td>
+                        <td>{{ $selectedFilterLabels['department'] ?? translate('All') }}</td>
+                        <td class="matrix-filter-label">{{ translate('Employee') }}</td>
+                        <td>{{ $selectedFilterLabels['employee'] ?? translate('All') }}</td>
                     </tr>
                     <tr>
-                        <td class="matrix-filter-label">{{ translate('channel') }}</td>
-                        <td>{{ $selectedFilterLabels['channel'] ?? translate('all') }}</td>
+                        <td class="matrix-filter-label">{{ translate('Channel') }}</td>
+                        <td>{{ $selectedFilterLabels['channel'] ?? translate('All') }}</td>
                         <td class="matrix-filter-label">{{ translate('date_range') }}</td>
                         <td>{{ $filters['from'] }} - {{ $filters['to'] }}</td>
                     </tr>
@@ -443,7 +443,7 @@
                                 @endforeach
                                 <th class="{{ !$loop->last ? 'group-separator' : '' }}"
                                     style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
-                                    {{ translate('total') }}
+                                    {{ translate('Total') }}
                                 </th>
                             @endforeach
                             @foreach ($displayChannels as $channel)
@@ -453,7 +453,7 @@
                                 </th>
                             @endforeach
                             <th style="width: {{ number_format($subColumnWidthMm, 2, '.', '') }}mm;">
-                                {{ translate('total') }}
+                                {{ translate('Total') }}
                             </th>
                         </tr>
                     </thead>
@@ -480,7 +480,7 @@
                         @empty
                             <tr>
                                 <td colspan="{{ $matrixColumnCount }}" style="text-align: center; padding: 20px;">
-                                    {{ translate('no_data_found') }}
+                                    {{ translate('no_Data_found') }}
                                 </td>
                             </tr>
                         @endforelse
@@ -521,7 +521,7 @@
         <table class="matrix-table">
             <thead>
                 <tr>
-                    <th class="left-align">{{ translate('employee') }}</th>
+                    <th class="left-align">{{ translate('Employee') }}</th>
                     @foreach ($displayChannels as $channel)
                         <th>{{ $channelLabels[$channel] ?? ucwords(str_replace(['-', '_'], ' ', $channel)) }}</th>
                     @endforeach
@@ -540,7 +540,7 @@
                 @empty
                     <tr>
                         <td colspan="{{ count($displayChannels) + 2 }}" style="text-align: center; padding: 15px;">
-                            {{ translate('no_data_found') }}
+                            {{ translate('no_Data_found') }}
                         </td>
                     </tr>
                 @endforelse

@@ -29,7 +29,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                 </div>
                             </div>
                             <input id="" type="search" name="searchValue" class="form-control" placeholder="{{translate('search_by_question_&_answer')}}" value="{{ request('searchValue') }}">
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <button type="button" class="btn btn--primary" data-toggle="modal" data-target="#faqAddModal">
@@ -46,11 +46,11 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                 <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th>{{translate('question')}}</th>
-                        <th>{{translate('answer')}}</th>
-                        <th class="text-center">{{translate('priority')}}</th>
-                        <th class="text-center">{{translate('status')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('Question')}}</th>
+                        <th>{{translate('Answer')}}</th>
+                        <th class="text-center">{{translate('Priority')}}</th>
+                        <th class="text-center">{{translate('Status')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,7 +102,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <td>
                             <div class="d-flex justify-content-center gap-10">
                                 <!-- <a class="btn btn-outline--primary btn-sm edit"
-                                    title="{{ translate('edit')}}"
+                                    title="{{ translate('Edit')}}"
                                     data-id="{{ route('admin.helpTopic.update', ['id'=>$help['id']]) }}">
                                     <i class="tio-edit"></i>
                                 </a> -->
@@ -113,7 +113,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                         class="tio-edit"></i>
                                 </button>
                                 <a class="btn btn-outline-danger btn-sm delete-data-without-form"
-                                    title="{{ translate('delete')}}"
+                                    title="{{ translate('Delete')}}"
                                     data-action="{{route('admin.helpTopic.delete')}}"
                                     data-id="{{$help['id']}}">
                                     <i class="tio-delete"></i>
@@ -166,11 +166,11 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <div class="form-group">
-                            <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Question')}} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="question[]" class="form-control" placeholder="{{translate('enter_question')}}">
                         </div>
                         <div class="form-group">
-                            <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Answer')}} ({{ strtoupper($lang) }})</label>
                             <textarea class="form-control" name="answer[]" rows="4" placeholder="{{translate('write_answer').'....'}}"></textarea>
                         </div>
                         <input type="hidden" name="lang[]" value="{{ $lang }}">
@@ -179,7 +179,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </div>
                     @endforeach
                     <div class="form-group">
-                        <label class="title-color">{{translate('priority')}}</label>
+                        <label class="title-color">{{translate('Priority')}}</label>
                         <select name="ranking" class="form-control">
                             @for($index = 1; $index <= 15; $index++)
                                 <option value="{{ $index }}">{{ $index }}</option>
@@ -190,7 +190,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                             <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
                             <div class="d-flex gap-2 align-items-center">
-                                <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                 <label class="switcher">
                                     <input type="checkbox" class="switcher_input" name="status" value="1">
                                     <span class="switcher_control"></span>
@@ -199,8 +199,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         </div>
                     </div>
                     <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                        <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                     </div>
                 </div>
             </form>
@@ -240,13 +240,13 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <div class="form-group">
-                            <label class="title-color">{{translate('question')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Question')}} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="question[]" id="edit-question" class="form-control lang-question"
                                 data-lang="{{ $lang }}" id="question-filed" placeholder="{{translate('enter_question')}}">
                         </div>
                         <div class="form-group">
 
-                            <label class="title-color">{{translate('answer')}} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{translate('Answer')}} ({{ strtoupper($lang) }})</label>
                             <textarea name="answer[]" class="form-control lang-answer" id="edit-answer"
                                 data-lang="{{ $lang }}"
                                 rows="3"></textarea>
@@ -256,7 +256,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </div>
                     @endforeach
                     <div class="form-group">
-                        <label class="title-color">{{translate('priority')}}</label>
+                        <label class="title-color">{{translate('Priority')}}</label>
                         <select name="ranking" class="form-control" id="edit-ranking">
                             @for($index = 1; $index <= 15; $index++)
                                 <option value="{{ $index }}">{{ $index }}</option>
@@ -267,7 +267,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                             <div class="text-dark">{{translate('turning_status_off_will_not_show_this_FAQ_in_the_list')}}</div>
                             <div class="d-flex gap-2 align-items-center">
-                                <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                 <label class="switcher">
                                     <input type="checkbox" class="switcher_input" id="edit-status" name="status" value="1" checked>
                                     <span class="switcher_control"></span>
@@ -276,8 +276,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         </div>
                     </div>
                     <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                        <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                     </div>
                 </div>
             </form>

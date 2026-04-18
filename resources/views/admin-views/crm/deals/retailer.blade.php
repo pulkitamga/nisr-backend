@@ -23,7 +23,7 @@
             'open' => translate('open'),
             'won' => translate('won'),
             'lost' => translate('lost'),
-            'closed' => translate('closed'),
+            'closed' => translate('Closed'),
         ];
         $activeFilterDate = request('filter_date', request('fhilter_date'));
         $toolbarFields = [
@@ -57,10 +57,10 @@
             [
                 'type' => 'search',
                 'name' => 'searchValue',
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => request('searchValue'),
-                'placeholder' => translate('search_by_Name_or_Email_or_Phone'),
-                'aria_label' => translate('search_by_Name_or_Email_or_Phone'),
+                'placeholder' => translate('Search_by_Name_or_Email_or_Phone'),
+                'aria_label' => translate('Search_by_Name_or_Email_or_Phone'),
                 'col_class' => 'col-xl-4 col-lg-12',
             ],
         ];
@@ -85,7 +85,7 @@
         }
         if (request()->filled('searchValue')) {
             $toolbarSummary[] = [
-                'label' => translate('search'),
+                'label' => translate('Search'),
                 'value' => Str::limit(request('searchValue'), 28),
                 'muted' => true,
             ];
@@ -140,9 +140,9 @@
                         <th>{{translate('Owner')}}</th>
                         <th>{{translate('Department')}}</th>
                         <th>{{translate('Employee')}}</th>
-                        <th>{{translate('Order Status')}}</th>
+                        <th>{{translate('Order_Status')}}</th>
                         <th>{{translate('Status')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -160,11 +160,11 @@
                         </td>
                         <td>
                             <a href="mailto:{{ $deal->relatedParty->email ?? '' }}">
-                                {{ $deal->relatedParty->email ?? translate('Not Available') }}
+                                {{ $deal->relatedParty->email ?? translate('not_available') }}
                             </a>
                             <br>
                             <a href="tel:{{ $deal->relatedParty->phone ?? '' }}">
-                                {{ $deal->relatedParty->phone ?? translate('Not Available') }}
+                                {{ $deal->relatedParty->phone ?? translate('not_available') }}
                             </a>
                         </td>
                         <td>{{ $deal->owner?->name ?? translate('No Owner') }}</td>
@@ -362,7 +362,7 @@
 <span id="crm-deal-success" data-text="{{ translate('Success') }}"></span>
 <span id="crm-deal-error" data-text="{{ translate('Error') }}"></span>
 <span id="crm-deal-updated-successfully" data-text="{{ translate('Updated successfully') }}"></span>
-<span id="crm-deal-something-went-wrong" data-text="{{ translate('Something went wrong') }}"></span>
+<span id="crm-deal-something-went-wrong" data-text="{{ translate('Something_went_wrong') }}"></span>
 <span id="crm-deal-disqualify-title" data-text="{{ translate('Disqualify Deal?') }}"></span>
 <span id="crm-deal-disqualify-body" data-text="{{ translate('This should be used before sending quotation.') }}"></span>
 <span id="crm-deal-mark-lost-title" data-text="{{ translate('Mark Deal Lost?') }}"></span>
@@ -373,8 +373,8 @@
 <span id="crm-deal-yes-escalate" data-text="{{ translate('Yes, Escalate') }}"></span>
 <span id="crm-deal-no-orders-found" data-text="{{ translate('No orders found for this customer.') }}"></span>
 <span id="crm-deal-action-label" data-text="{{ translate('Action') }}"></span>
-<span id="crm-deal-order-id-label" data-text="{{ translate('Order ID') }}"></span>
-<span id="crm-deal-date-label" data-text="{{ translate('Date') }}"></span>
+<span id="crm-deal-order-id-label" data-text="{{ translate('Order_ID') }}"></span>
+<span id="crm-deal-date-label" data-text="{{ translate('DATE') }}"></span>
 <span id="crm-deal-amount-label" data-text="{{ translate('Amount') }}"></span>
 <span id="crm-deal-status-label" data-text="{{ translate('Status') }}"></span>
 <span id="crm-deal-link-label" data-text="{{ translate('Link') }}"></span>

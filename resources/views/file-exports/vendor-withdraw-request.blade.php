@@ -10,7 +10,7 @@
         <th></th>
         <th>
             @if(isset($data['vendor']))
-                {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
                 <br>
             @endif
             {{translate('total_Withdraw_Request').' '.'-'.' '.count($data['withdraw_request'])}}
@@ -25,18 +25,18 @@
         </th>
     </tr>
     <tr>
-        <th>{{translate('filter_Criteria')}}-</th>
+        <th>{{translate('Filter_Criteria')}}-</th>
         <th></th>
         <th> {{translate($data['filter'])}}</th>
     </tr>
     <tr>
         <td> {{translate('SL')}}    </td>
-        <td> {{translate('amount')}}</td>
+        <td> {{translate('Amount')}}</td>
         @if(isset($data['data-from']) && $data['data-from'] == 'admin')
-        <td> {{translate('name')}}</td>
+        <td> {{translate('Name')}}</td>
         @endif
         <td> {{translate('request_Time')}}</td>
-        <td> {{translate('status')}}</td>
+        <td> {{translate('Status')}}</td>
     </tr>
     @foreach ($data['withdraw_request'] as $key=>$item)
         <tr>

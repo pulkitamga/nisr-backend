@@ -7,7 +7,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-                {{ translate('business_setup') }}
+                {{ translate('business_Setup') }}
             </h2>
             <div class="btn-group">
                 <div class="ripple-animation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -20,7 +20,7 @@
                 <div class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{ translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{ translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">
                         {{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}
@@ -55,7 +55,7 @@
                                 @php($commission=getWebConfig('sales_commission'))
                                 <input type="number" class="form-control" name="commission"
                                        value="{{$commission ?? 0}}"
-                                       placeholder="{{ translate('ex').':'.'70'}}" min="0" max="100">
+                                       placeholder="{{ translate('Ex').':'.'70'}}" min="0" max="100">
                             </div>
                         </div>
                         <div class="col-xl-4 col-md-6">
@@ -90,7 +90,7 @@
                         <div class="col-xl-4 col-md-6">
                             <div class="d-flex justify-content-between align-items-center gap-10 form-control form-group">
                                 <span class="title-color">
-                                    {{ translate('vendor_registration')}}
+                                    {{ translate('Vendor_Registration')}}
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           data-placement="right"
                                           title="{{ translate('if_enabled_vendors_can_send_registration_requests_to_admin')}}">
@@ -194,14 +194,14 @@
                                            name="vendor_forgot_password_method"
                                            id="verification_by_email" {{ getWebconfig(name: 'vendor_forgot_password_method') == 'email' ? 'checked':'' }}>
                                     <label class="custom-control-label"
-                                           for="verification_by_email">{{translate('email')}}</label>
+                                           for="verification_by_email">{{translate('Email')}}</label>
                                 </div>
                                 <div class="custom-control custom-radio flex-grow-1">
                                     <input type="radio" class="custom-control-input" value="phone"
                                            name="vendor_forgot_password_method"
                                            id="verification_by_phone" {{ getWebconfig(name: 'vendor_forgot_password_method') == 'phone' ? 'checked':'' }}>
                                     <label class="custom-control-label"
-                                           for="verification_by_phone">{{translate('phone').' '.'('.translate('OTP').')'}}</label>
+                                           for="verification_by_phone">{{translate('Phone').' '.'('.translate('OTP').')'}}</label>
                                 </div>
                             </div>
                         </div>
@@ -228,7 +228,7 @@
                             <input name="new_product_approval" type="checkbox" value="1"
                                    id="new_product_approval" {{$newProductApproval==1?'checked':''}}>
                             <label class="title-color mb-0" for="new_product_approval">
-                                {{ translate('new_product')}}
+                                {{ translate('new_Product')}}
                             </label>
                         </div>
                         <div class="d-flex align-items-center gap-2">
@@ -245,7 +245,7 @@
             </div>
 
             <div class="d-flex justify-content-end mt-3">
-                <button type="submit" class="btn btn--primary px-4">{{ translate('save')}}</button>
+                <button type="submit" class="btn btn--primary px-4">{{ translate('Save')}}</button>
             </div>
         </form>
     </div>

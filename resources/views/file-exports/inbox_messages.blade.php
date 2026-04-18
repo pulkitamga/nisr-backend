@@ -12,7 +12,7 @@
             <th>{{ translate('Department') }}</th>
             <th>{{ translate('Employee') }}</th>
             <th>{{ translate('Status') }}</th>
-            <th>{{ translate('Received At') }}</th>
+            <th>{{ translate('Received_At') }}</th>
 
         </tr>
     </thead>

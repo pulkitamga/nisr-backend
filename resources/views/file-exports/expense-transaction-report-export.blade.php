@@ -5,21 +5,21 @@
         <th>{{translate('expanse_Transaction_Report_List')}}</th>
     </tr>
     <tr>
-        <th>{{ translate('filter_Criteria') .' '.'-'}}</th>
+        <th>{{ translate('Filter_Criteria') .' '.'-'}}</th>
         <th></th>
         <th>
             {{translate('search_Bar_Content').' '.'-'.' '. ($data['search'] ?? 'N/A')}}
             @if(isset($data['vendor']))
             <br>
-                {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
+                {{translate('Store_Name')}} - {{$data['vendor']?->shop?->name}}
             @endif
             <br>
             {{translate('date_type').' '.'-'.' '.translate($data['dateType'])}}
             <br>
             @if($data['from'] && $data['to'])
-                {{translate('from').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
+                {{translate('From').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
                 <br>
-                {{translate('to').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
+                {{translate('To').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
                 <br>
             @endif
         </th>
@@ -28,7 +28,7 @@
         <td> {{translate('SL')}}</td>
         <th>{{translate('XID')}}</th>
         <th>{{translate('transaction_Date')}}</th>
-        <th>{{translate('order_ID')}}</th>
+        <th>{{translate('Order_ID')}}</th>
         <th>{{translate('expense_Amount')}}</th>
         <th>{{translate('expense_Type')}}</th>
     </tr>

@@ -94,7 +94,7 @@
                                     </div>
                                     @if($currencyModel=='multi_currency')
                                         <div class="col-md-6 mb-3">
-                                            <label class="title-color">{{translate('exchange_rate').':'}}</label>
+                                            <label class="title-color">{{translate('exchange_Rate').':'}}</label>
                                             <input type="number" min="0" max="1000000"
                                                    name="exchange_rate" step="0.00000001"
                                                    placeholder="{{translate('exchange_Rate')}}"
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-10 justify-content-end">
-                                <button type="submit" id="add" class="btn btn--primary">{{translate('update')}}
+                                <button type="submit" id="add" class="btn btn--primary">{{translate('Update')}}
                                 </button>
                             </div>
                         </form>

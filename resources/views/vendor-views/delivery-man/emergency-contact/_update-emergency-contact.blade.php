@@ -16,7 +16,7 @@
                     </div>
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                             <div class="input-group mb-3">
                                 <div>
                                     <select class="js-select2-custom form-control" name="country_code" required>
@@ -25,13 +25,13 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <input value="{{$emergencyContact['phone']}}" type="text" name="phone" class="form-control" placeholder="{{translate('ex').':'.'017********'}}" required>
+                                <input value="{{$emergencyContact['phone']}}" type="text" name="phone" class="form-control" placeholder="{{translate('Ex').':'.'017********'}}" required>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="d-flex gap-3 justify-content-end">
-                    <button type="submit" class="btn btn--primary px-4">{{translate('update')}}</button>
+                    <button type="submit" class="btn btn--primary px-4">{{translate('Update')}}</button>
                 </div>
             </form>
         </div>

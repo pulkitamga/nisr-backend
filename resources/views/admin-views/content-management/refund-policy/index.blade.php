@@ -1,11 +1,11 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('refund_policy'))
+@section('title', translate('Refund_Policy'))
 
 @section('content')
 <div class="content container-fluid">
     <div class="cms-admin-heading">
-        <h1 class="cms-admin-heading__title h3">{{ translate('refund_policy') }}</h1>
+        <h1 class="cms-admin-heading__title h3">{{ translate('Refund_Policy') }}</h1>
     </div>
 
     <div class="card">

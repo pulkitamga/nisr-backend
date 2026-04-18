@@ -680,7 +680,7 @@ class ServiceRequestController extends Controller
 
         return match ($normalizedStatus) {
             'new' => translate('New'),
-            'in_progress' => translate('In Progress'),
+            'in_progress' => translate('in_Progress'),
             'scheduled' => translate('Scheduled'),
             'closed' => translate('Closed'),
             default => $ticket->status_details?->name ?? 'Unknown',

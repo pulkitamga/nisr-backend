@@ -23,19 +23,19 @@
                         <div class="row">
                             <div class="col-md-4 mb-2 mb-md-0">
                                 <div class="flex-start flex-wrap">
-                                    <div><h5 class="text-capitalize">{{translate('amount').':'.' '}}</h5></div>
+                                    <div><h5 class="text-capitalize">{{translate('Amount').':'.' '}}</h5></div>
                                     <div class="mx-1"><h5>
                                             {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawRequest->amount), currencyCode: getCurrencyCode(type: 'default')) }}
                                         </h5></div>
                                 </div>
                                 <div class="flex-start flex-wrap">
-                                    <div><h5>{{translate('request_time').':'.' '}} </h5></div>
+                                    <div><h5>{{translate('request_Time').':'.' '}} </h5></div>
                                     <div class="mx-1">{{$withdrawRequest->created_at}}</div>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-2 mb-md-0">
                                 <div class="flex-start">
-                                    <div class="title-color">{{translate('note').':'.' '}}</div>
+                                    <div class="title-color">{{translate('Note').':'.' '}}</div>
                                     <div class="mx-1">{{$withdrawRequest->transaction_note}}</div>
                                 </div>
                             </div>
@@ -88,20 +88,20 @@
 
                             <div class="mt-2">
                                 <div class="flex-start">
-                                    <div><h4>{{translate('bank_name').' '.':'.' '}}</h4></div>
-                                    <div class="mx-1"><h4>{{$withdrawRequest?->seller->bank_name ?? translate('no_data_found')}}</h4></div>
+                                    <div><h4>{{translate('bank_Name').' '.':'.' '}}</h4></div>
+                                    <div class="mx-1"><h4>{{$withdrawRequest?->seller->bank_name ?? translate('no_Data_found')}}</h4></div>
                                 </div>
                                 <div class="flex-start">
-                                    <div><h6>{{translate('branch').' '.':'.' '}}</h6></div>
-                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->branch ?? translate('no_data_found')}}</h6></div>
+                                    <div><h6>{{translate('Branch').' '.':'.' '}}</h6></div>
+                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->branch ?? translate('no_Data_found')}}</h6></div>
                                 </div>
                                 <div class="flex-start">
-                                    <div><h6>{{translate('holder_name').' '.':'.' '}}</h6></div>
-                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->holder_name ?? translate('no_data_found')}}</h6></div>
+                                    <div><h6>{{translate('holder_Name').' '.':'.' '}}</h6></div>
+                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->holder_name ?? translate('no_Data_found')}}</h6></div>
                                 </div>
                                 <div class="flex-start">
-                                    <div><h6>{{translate('account_no').' '.':'.' '}} </h6></div>
-                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->account_no ?? translate('no_data_found')}}</h6></div>
+                                    <div><h6>{{translate('account_No').' '.':'.' '}} </h6></div>
+                                    <div class="mx-1"><h6>{{$withdrawRequest?->seller->account_no ?? translate('no_Data_found')}}</h6></div>
                                 </div>
                             </div>
                         </div>
@@ -119,15 +119,15 @@
                             </div>
 
                             <div class="flex-start">
-                                <div><h5>{{translate('vendor').' '.':'.' '}} </h5></div>
+                                <div><h5>{{translate('Vendor').' '.':'.' '}} </h5></div>
                                 <div class="mx-1"><h5>{{$withdrawRequest->seller->shop->name}}</h5></div>
                             </div>
                             <div class="flex-start">
-                                <div><h5>{{translate('phone').' '.':'.' '}}</h5></div>
+                                <div><h5>{{translate('Phone').' '.':'.' '}}</h5></div>
                                 <div class="mx-1"><h5>{{$withdrawRequest->seller->shop->contact}}</h5></div>
                             </div>
                             <div class="flex-start">
-                                <div><h5>{{translate('address').' '.':'.' '}}</h5></div>
+                                <div><h5>{{translate('Address').' '.':'.' '}}</h5></div>
                                 <div class="mx-1"><h5>{{$withdrawRequest->seller->shop->address}}</h5></div>
                             </div>
 
@@ -139,19 +139,19 @@
                 <div class="card h-100">
                     <div class="card-body text-start">
                         <div class="text-capitalize d-flex align-items-center justify-content-between gap-2 border-bottom pb-3 mb-4">
-                            <h3 class="h3 mb-0">{{translate('vendor_info')}} </h3>
+                            <h3 class="h3 mb-0">{{translate('vendor_Info')}} </h3>
                             <i class="tio tio-user-big-outlined"></i>
                         </div>
                         <div class="flex-start">
-                            <div><h5>{{translate('name').' '.':'}}</h5></div>
+                            <div><h5>{{translate('Name').' '.':'}}</h5></div>
                             <div class="mx-1"><h5>{{$withdrawRequest->seller->f_name.' '.$withdrawRequest->seller->l_name}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5>{{translate('email').' '.':'}}</h5></div>
+                            <div><h5>{{translate('Email').' '.':'}}</h5></div>
                             <div class="mx-1"><h5>{{$withdrawRequest->seller->email}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5>{{translate('phone').' '.':'}}</h5></div>
+                            <div><h5>{{translate('Phone').' '.':'}}</h5></div>
                             <div class="mx-1"><h5>{{$withdrawRequest->seller->phone}}</h5></div>
                         </div>
                     </div>
@@ -172,9 +172,9 @@
                             @csrf
                             <div class="modal-body">
                                 <div class="form-group">
-                                    <label for="recipient-name" class="col-form-label">{{translate('request')}}:</label>
+                                    <label for="recipient-name" class="col-form-label">{{translate('Request')}}:</label>
                                     <select name="approved" class="custom-select" id="inputGroupSelect02">
-                                        <option value="1">{{translate('approve')}}</option>
+                                        <option value="1">{{translate('Approve')}}</option>
                                         <option value="2">{{translate('deny')}}</option>
                                     </select>
                                 </div>
@@ -184,8 +184,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                                <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Submit')}}</button>
                             </div>
                         </form>
                     </div>

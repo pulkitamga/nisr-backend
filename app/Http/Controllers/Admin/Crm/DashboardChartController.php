@@ -578,7 +578,7 @@ class DashboardChartController extends Controller
                 public function headings(): array
                 {
                     return [
-                        translate('owner'),
+                        translate('Owner'),
                         translate('deals'),
                         translate('total_value'),
                         translate('avg_value'),

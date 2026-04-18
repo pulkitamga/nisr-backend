@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('order_Details'))
+@section('title', translate('Order_details'))
 
 @section('content')
 @php($isRtl = Session::get('direction') === 'rtl')
@@ -9,7 +9,7 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <h2 class="h1 mb-0">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/all-orders.png') }}" alt="">
-            {{ translate('order_Details') }}
+            {{ translate('Order_details') }}
         </h2>
     </div>
 
@@ -19,13 +19,13 @@
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-10 flex-md-nowrawp justify-content-between mb-4">
                         <div class="{{ $isRtl ? 'text-sm-right align-items-end' : 'text-sm-left align-items-start' }} d-flex flex-column gap-10">
-                            <h4 class="text-capitalize">{{ translate('order_ID') }} #{{$order['id']}}</h4>
+                            <h4 class="text-capitalize">{{ translate('Order_ID') }} #{{$order['id']}}</h4>
                             <div class="{{ $isRtl ? 'text-sm-right' : 'text-sm-left' }}">
                                 <i class="tio-date-range"></i> <span dir="ltr">{{ \Carbon\Carbon::parse($order['created_at'])->format('d M Y h:i A') }}</span>
                             </div>
                             <div class="d-flex flex-column gap-2 {{ $isRtl ? 'align-items-end text-sm-right' : 'align-items-start text-sm-left' }}">
                                 <div class="order-status d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10 text-capitalize">
-                                    <span class="title-color">{{ translate('status') }}: </span>
+                                    <span class="title-color">{{ translate('Status') }}: </span>
                                     @if($order['order_status']=='pending')
                                     <span
                                         class="badge badge-soft-info font-weight-bold radius-50 d-flex align-items-center py-1 px-2">
@@ -55,7 +55,7 @@
                                 </div>
 
                                 <div class="payment-method d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10 text-capitalize">
-                                    <span class="title-color">{{ translate('payment_Method') }} :</span>
+                                    <span class="title-color">{{ translate('Payment_Method') }} :</span>
                                     <strong> {{ translate(str_replace('_',' ',$order['payment_method'])) }}</strong>
                                 </div>
                                 @if(isset($order['transaction_ref']) && $order->payment_method != 'cash_on_delivery' && $order->payment_method != 'pay_by_wallet' && !isset($order->offline_payments))
@@ -66,7 +66,7 @@
                                 </div>
                                 @endif
                                 <div class="payment-status d-flex {{ $isRtl ? 'justify-content-sm-end text-sm-right' : 'justify-content-sm-start text-sm-left' }} gap-10">
-                                    <span class="title-color">{{ translate('payment_Status') }}:</span>
+                                    <span class="title-color">{{ translate('Payment_Status') }}:</span>
                                     @if($order['payment_status']=='paid')
                                     <span class="text-success font-weight-bold">
                                         {{ translate('paid') }}
@@ -100,7 +100,7 @@
                                     href="{{ route('admin.orders.generate-invoice',[$order['id']]) }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/uil_invoice.svg') }}"
                                         alt="" class="me-1">
-                                    {{ translate('print_Invoice') }}
+                                    {{ translate('print__Invoice') }}
                                 </a>
                             </div>
                         </div>
@@ -113,12 +113,12 @@
                                 <tr>
                                     <th>{{ translate('SL') }}</th>
                                     <th>{{ translate('item_details') }}</th>
-                                    <th>{{ translate('item_price') }}</th>
-                                    <th>{{ translate('tax') }}</th>
+                                    <th>{{ translate('Item_Price') }}</th>
+                                    <th>{{ translate('Tax') }}</th>
                                     <th>{{ translate('installation_charge') }}</th>
                                     <th>{{ translate('exchange_charge') }}</th>
-                                    <th>{{ translate('item_discount') }}</th>
-                                    <th>{{ translate('total_price') }}</th>
+                                    <th>{{ translate('Item_Discount') }}</th>
+                                    <th>{{ translate('total_Price') }}</th>
                                 </tr>
                             </thead>
 
@@ -145,24 +145,24 @@
                                         <div class="media align-items-center gap-10">
                                             <img class="avatar avatar-60 rounded img-fit"
                                                 src="{{ getStorageImages(path: $productDetails->thumbnail_full_url, type: 'backend-product') }}"
-                                                alt="{{translate('image_description')}}">
+                                                alt="{{translate('image_Description')}}">
                                             <div>
                                                 <h6 class="title-color">{{substr($productDetails->name, 0, 30) }}{{strlen($productDetails->name)>10?'...':''}}</h6>
-                                                <div><strong>{{ translate('qty') }}
+                                                <div><strong>{{ translate('QTY') }}
                                                         :</strong> {{$detail['qty']}}
                                                 </div>
                                                 <div>
-                                                    <strong>{{ translate('unit_price') }} :</strong>
+                                                    <strong>{{ translate('Unit_Price') }} :</strong>
                                                     {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['price'])) }}
                                                     @if ($detail->tax_model =='include')
                                                     ({{ translate('tax_incl.') }})
                                                     @else
-                                                    ({{ translate('tax').":".($productDetails->tax) }}{{$productDetails->tax_type ==="percent" ? '%' :''}})
+                                                    ({{ translate('Tax').":".($productDetails->tax) }}{{$productDetails->tax_type ==="percent" ? '%' :''}})
                                                     @endif
                                                 </div>
                                                 @if ($detail->variant)
                                                 <div>
-                                                    <strong>{{ translate('variation') }}:</strong> {{$detail['variant']}}
+                                                    <strong>{{ translate('Variation') }}:</strong> {{$detail['variant']}}
                                                 </div>
                                                 @endif
                                             </div>
@@ -171,7 +171,7 @@
                                         <button type="button" class="btn btn-sm btn--primary mt-2"
                                             title="{{ translate('file_upload') }}" data-toggle="modal"
                                             data-target="#fileUploadModal-{{ $detail->id }}">
-                                            <i class="tio-file-outlined"></i> {{ translate('file') }}
+                                            <i class="tio-file-outlined"></i> {{ translate('File') }}
                                         </button>
                                         @endif
 
@@ -214,9 +214,9 @@
                                                             {{ translate('uploaded_file') }} :
                                                             <span data-file-path="{{ $detail->digital_file_after_sell_full_url['path'] }}"
                                                                 class="btn btn-success btn-sm getDownloadFileUsingFileUrl"
-                                                                title="{{translate('download')}}"><i
+                                                                title="{{translate('Download')}}"><i
                                                                     class="tio-download"></i>
-                                                                {{translate('download')}}
+                                                                {{translate('Download')}}
                                                             </span>
                                                         </div>
                                                         @elseif($productDetails->digital_product_type == 'ready_after_sell' && $detail->digital_file_after_sell)
@@ -224,18 +224,18 @@
                                                             {{ translate('uploaded_file') }} :
                                                             <a href="{{ asset('storage/app/public/product/digital-product/'.$detail->digital_file_after_sell) }}"
                                                                 class="btn btn-success btn-sm"
-                                                                title="{{translate('download')}}"><i
+                                                                title="{{translate('Download')}}"><i
                                                                     class="tio-download"></i>
-                                                                {{translate('download')}}</a>
+                                                                {{translate('Download')}}</a>
                                                         </div>
                                                         @elseif($productDetails->digital_product_type == 'ready_product' && $productDetails->digital_file_ready)
                                                         <div class="mb-4">
                                                             {{ translate('uploaded_file').':' }}
                                                             <a href="{{ asset('storage/app/public/product/digital-product/'.$productDetails->digital_file_ready) }}"
                                                                 class="btn btn-success btn-sm"
-                                                                title="{{ translate('download') }}"><i
+                                                                title="{{ translate('Download') }}"><i
                                                                     class="tio-download"></i>
-                                                                {{ translate('download') }}</a>
+                                                                {{ translate('Download') }}</a>
                                                         </div>
                                                         @endif
 
@@ -244,7 +244,7 @@
                                                             name="digital_file_after_sell"
                                                             class="form-control">
                                                         <div
-                                                            class="mt-1 text-info">{{ translate('file_type').': jpg, jpeg, png, gif, zip, pdf' }}
+                                                            class="mt-1 text-info">{{ translate('File_Type').': jpg, jpeg, png, gif, zip, pdf' }}
                                                         </div>
                                                         <input type="hidden" value="{{ $detail->id }}"
                                                             name="order_id">
@@ -252,10 +252,10 @@
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">{{ translate('close') }}</button>
+                                                            data-dismiss="modal">{{ translate('Close') }}</button>
                                                         @if($productDetails->digital_product_type == 'ready_after_sell')
                                                         <button type="submit"
-                                                            class="btn btn--primary">{{ translate('upload') }}</button>
+                                                            class="btn btn--primary">{{ translate('Upload') }}</button>
                                                         @endif
                                                     </div>
                                                 </form>
@@ -278,16 +278,16 @@
                     <div class="row justify-content-md-end mb-3">
                         <div class="col-md-9 col-lg-8">
                             <dl class="row text-sm-right">
-                                <dt class="col-5">{{ translate('item_price') }}</dt>
+                                <dt class="col-5">{{ translate('Item_Price') }}</dt>
                                 <dd class="col-6 title-color">
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['itemPrice']), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
-                                <dt class="col-5 text-capitalize">{{ translate('item_discount') }}</dt>
+                                <dt class="col-5 text-capitalize">{{ translate('Item_Discount') }}</dt>
                                 <dd class="col-6 title-color">
                                     -
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
-                                <dt class="col-sm-5">{{ translate('extra_discount') }}</dt>
+                                <dt class="col-sm-5">{{ translate('extra_Discount') }}</dt>
                                 <dd class="col-sm-6 title-color">
                                     <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
@@ -304,24 +304,24 @@
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalInstallationPrice']), currencyCode: getCurrencyCode())}}</strong>
                                 </dd>
                                 @endif
-                                <dt class="col-sm-5">{{ translate('coupon_discount') }}</dt>
+                                <dt class="col-sm-5">{{ translate('Coupon_Discount') }}</dt>
                                 <dd class="col-sm-6 title-color">
                                     <strong>- {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
-                                <dt class="col-5 text-uppercase">{{ translate('vat') }}/{{ translate('tax') }}</dt>
+                                <dt class="col-5 text-uppercase">{{ translate('VAT') }}/{{ translate('Tax') }}</dt>
                                 <dd class="col-6 title-color">
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
-                                <dt class="col-sm-5">{{ translate('total') }}</dt>
+                                <dt class="col-sm-5">{{ translate('Total') }}</dt>
                                 <dd class="col-sm-6 title-color">
                                     <strong>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
                                 @if ($order->order_type == 'pos' || $order->order_type == 'POS')
-                                <dt class="col-5"><strong>{{translate('paid_amount')}}</strong></dt>
+                                <dt class="col-5"><strong>{{translate('Paid_Amount')}}</strong></dt>
                                 <dd class="col-6 title-color">
                                     <strong> {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['paidAmount']), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
-                                <dt class="col-5"><strong>{{translate('change_amount')}}</strong></dt>
+                                <dt class="col-5"><strong>{{translate('Change_Amount')}}</strong></dt>
                                 <dd class="col-6 title-color">
                                     <strong>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['changeAmount']), currencyCode: getCurrencyCode()) }}</strong>
                                 </dd>
@@ -340,14 +340,14 @@
                 <div class="card-body">
                     <h4 class="mb-4 d-flex align-items-center gap-2">
                         <img src="{{ asset('public/assets/back-end/img/vendor-information.png') }}" alt="">
-                        {{ translate('customer_information') }}
+                        {{ translate('customer_Information') }}
                     </h4>
 
                     <div class="media flex-wrap gap-3 align-items-center">
                         <div class="">
                             <img class="avatar rounded-circle avatar-70"
                                 src="{{getStorageImages(path: $order->customer->image_full_url,type:'backend-profile')}}"
-                                alt="{{translate('image')}}">
+                                alt="{{translate('Image')}}">
                         </div>
                         <div class="media-body d-flex flex-column gap-1">
                             <span
@@ -378,7 +378,7 @@
             <div class="modal-header">
                 <h4 class="modal-title"
                     id="locationModalLabel">{{ translate('location_Data') }}</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}"><span
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}"><span
                         aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">

@@ -7,15 +7,15 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-payment-method-menu')
         <nav>
             <div class="nav nav-tabs mb-3 border-0" role="tablist">
-              <a class="nav-link {{ !request()->has('status') ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}">{{ translate('all') }}</a>
-              <a class="nav-link {{ request('status') == 'active' ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}?status=active">{{ translate('active') }}</a>
-              <a class="nav-link {{ request('status') == 'inactive' ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}?status=inactive">{{ translate('inactive') }}</a>
+              <a class="nav-link {{ !request()->has('status') ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}">{{ translate('All') }}</a>
+              <a class="nav-link {{ request('status') == 'active' ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}?status=active">{{ translate('Active') }}</a>
+              <a class="nav-link {{ request('status') == 'inactive' ? 'active':'' }}" href="{{route('admin.business-settings.offline-payment-method.index')}}?status=inactive">{{ translate('Inactive') }}</a>
             </div>
         </nav>
 
@@ -33,7 +33,7 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_payment_method_name') }}" value="{{ request('searchValue') }}" required="">
-                                        <button type="submit" class="btn btn--primary input-group-text">{{ translate('search') }}</button>
+                                        <button type="submit" class="btn btn--primary input-group-text">{{ translate('Search') }}</button>
                                     </div>
                                 </form>
                             </div>
@@ -51,8 +51,8 @@
                                         <th>{{ translate('payment_Method_Name') }}</th>
                                         <th>{{ translate('payment_Info') }}</th>
                                         <th>{{ translate('required_Info_From_Customer') }}</th>
-                                        <th class="text-center">{{ translate('status') }}</th>
-                                        <th class="text-center">{{ translate('action') }}</th>
+                                        <th class="text-center">{{ translate('Status') }}</th>
+                                        <th class="text-center">{{ translate('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,7 +100,7 @@
                                                     <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('Edit') }}" href="{{route('admin.business-settings.offline-payment-method.update', ['id'=>$method->id])}}">
                                                         <i class="tio-edit"></i>
                                                     </a>
-                                                    <button class="btn btn-outline-danger btn-sm delete square-btn delete-data" title="{{translate('delete')}}" data-id="delete-method-name-{{ $method->id }}">
+                                                    <button class="btn btn-outline-danger btn-sm delete square-btn delete-data" title="{{translate('Delete')}}" data-id="delete-method-name-{{ $method->id }}">
                                                         <i class="tio-delete"></i>
                                                     </button>
 

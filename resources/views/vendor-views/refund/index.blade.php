@@ -33,7 +33,7 @@
                                 <input id="datatableSearch_" type="search" name="search" class="form-control"
                                        placeholder="{{translate('search_by_order_id_or_refund_id')}}"
                                        aria-label="Search orders" value="{{ request('search') }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                             </div>
                         </form>
                     </div>
@@ -55,12 +55,12 @@
                     <thead class="thead-light thead-50 text-capitalize">
                     <tr>
                         <th>{{translate('SL')}}</th>
-                        <th class="text-center">{{translate('refund_id')}}</th>
-                        <th>{{translate('order_ID')}} </th>
+                        <th class="text-center">{{translate('refund_ID')}}</th>
+                        <th>{{translate('Order_ID')}} </th>
                         <th>{{translate('product_Info')}}</th>
-                        <th>{{translate('customer_Info')}}</th>
-                        <th>{{translate('total_Amount')}}</th>
-                        <th class="text-center">{{translate('action')}}</th>
+                        <th>{{translate('Customer_Info')}}</th>
+                        <th>{{translate('Total_Amount')}}</th>
+                        <th class="text-center">{{translate('Action')}}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -92,7 +92,7 @@
                                                class="title-color font-weight-bold hover-c1">
                                                 {{Str::limit($refund->product->name,35)}}
                                             </a>
-                                            <span class="fz-12">{{ translate('qty') }} : {{ $refund->orderDetails->qty }}</span>
+                                            <span class="fz-12">{{ translate('QTY') }} : {{ $refund->orderDetails->qty }}</span>
                                         </div>
                                     </div>
                                 @else
@@ -124,7 +124,7 @@
                             <td>
                                 <div class="d-flex justify-content-center">
                                     <a class="btn btn-outline--primary btn-sm"
-                                       title="{{translate('view')}}"
+                                       title="{{translate('View')}}"
                                        href="{{route('vendor.refund.details',['id'=>$refund['id']])}}">
                                         <i class="tio-invisible"></i>
                                     </a>

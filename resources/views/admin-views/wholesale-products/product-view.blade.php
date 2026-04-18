@@ -23,7 +23,7 @@
                         <div class="col-sm-12 col-xxl-8">
                             <div class="pair-list">
                                 <div>
-                                    <span class="key text-nowrap">{{ translate('product_Name') }}</span>
+                                    <span class="key text-nowrap">{{ translate('Product_name') }}</span>
                                     <span>:</span>
                                     <span class="value">{{ $ProductData->product->getTranslatedField('name') ?? __('N/A') }}</span>
                                 </div>
@@ -40,7 +40,7 @@
 
                                 <!-- YEH PART REPLACE KAR DO – AB VARIATION KEY BHI DIKHEGA -->
                                 <div>
-                                    <span class="key">{{ translate('variation') }}</span>
+                                    <span class="key">{{ translate('Variation') }}</span>
                                     <span>:</span>
                                     <span class="value">
                                         @if($ProductData->variation_type && $ProductData->variation_key)
@@ -62,7 +62,7 @@
                                     <span class="value">{{ $ProductData->product->unit ? getUnitLabel($ProductData->product->unit) : __('N/A') }}</span>
                                 </div>
                                 <div>
-                                    <span class="key">{{ translate('Unit_price') }}</span>
+                                    <span class="key">{{ translate('Unit_Price') }}</span>
                                     <span>:</span>
                                     <span class="value">
                                         {{ setCurrencySymbol(

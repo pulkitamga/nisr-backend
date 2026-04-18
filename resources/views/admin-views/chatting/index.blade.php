@@ -26,7 +26,7 @@
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link bg-transparent p-2 {{ request('type') == 'customer' ? 'active' : '' }}"
                                    href="{{ route('admin.messages.index', ['type' => 'customer']) }}">
-                                    {{translate("customer")}}
+                                    {{translate("Customer")}}
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">

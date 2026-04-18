@@ -65,7 +65,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">{{ translate('Select Date') }}</label>
+                        <label class="form-label">{{ translate('Select_Date') }}</label>
                         <input type="date" class="form-control" name="date" required>
                     </div>
                     <div class="mb-3">
@@ -167,7 +167,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    Swal.fire('{{ translate('Error') }}!', '{{ translate('Something went wrong.') }}', 'error');
+                    Swal.fire('{{ translate('Error') }}!', '{{ translate('something_went_wrong.') }}', 'error');
                 });
         });
     });

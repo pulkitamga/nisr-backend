@@ -11,21 +11,21 @@
             <th>
                 {{translate('filter_By').' '.'-'.' '.ucwords($data['filter'])}}
                 <br>
-                {{translate('total_request').' '.'-'.' '.count($data['confirem'])}}
+                {{translate('total__Request').' '.'-'.' '.count($data['confirem'])}}
 
             </th>
         </tr>
 
         <tr>
             <td>{{translate('SL')}}</td>
-            <td>{{translate('Date')}}</td>
+            <td>{{translate('DATE')}}</td>
             <td>{{translate('Purchase_Order_No')}}</td>
             <td>{{translate('Quotation_No')}}</td>
             <td>{{translate('Confirmed_order_no')}}</td>
             <td>{{translate('Inovice_no')}}</td>
             <td>{{translate('Wholesaler')}}</td>
             <td>{{translate('Delivery_Status')}}</td>
-            <td>{{translate('Payment_status')}}</td>
+            <td>{{translate('Payment_Status')}}</td>
             <td>{{translate('Final_price')}}</td>
 
         </tr>

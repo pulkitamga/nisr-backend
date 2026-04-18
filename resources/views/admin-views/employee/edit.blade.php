@@ -22,7 +22,7 @@
                     <div class="card-body">
                         <h5 class="mb-0 page-header-title d-flex text-capitalize align-items-center gap-2 border-bottom pb-3 mb-3">
                             <i class="tio-user"></i>
-                            {{translate('general_information')}}
+                            {{translate('general_Information')}}
                         </h5>
                         <div class="row">
                             <div class="col-md-6">
@@ -30,11 +30,11 @@
                                     <label for="name"
                                         class="title-color">{{translate('full_Name')}}</label>
                                     <input type="text" name="name" class="form-control" id="name"
-                                        placeholder="{{translate('ex')}} : John Doe"
+                                        placeholder="{{translate('Ex')}} : John Doe"
                                         value="{{$employee['name']}}" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="phone" class="title-color">{{translate('phone')}}</label>
+                                    <label for="phone" class="title-color">{{translate('Phone')}}</label>
                                     <div class="mb-3">
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                                type="tel" id="exampleInputPhone" value="{{$employee['phone'] ?? old('phone')}}"
@@ -47,14 +47,14 @@
                                 <div class="form-group">
                                     <label for="role_id" class="title-color">{{translate('role')}}</label>
                                     <select class="form-control" name="role_id" id="role_id">
-                                        <option value="0" selected disabled>{{'---'.translate('select').'---'}}</option>
+                                        <option value="0" selected disabled>{{'---'.translate('Select').'---'}}</option>
                                         @foreach($adminRoles as $adminRole)
                                             <option value="{{$adminRole->id}}" {{$adminRole['id']==($selectedRoleId ?? null)?'selected':''}}>{{ ucfirst($adminRole->name) }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="branch-id" class="title-color">{{ translate('branch') }}</label>
+                                    <label for="branch-id" class="title-color">{{ translate('Branch') }}</label>
                                     <select name="branch_id[]" class="form-control js-select2-custom" multiple>
                                         @foreach ($branches as $branch)
                                             <option value="{{ $branch->id }}"
@@ -66,9 +66,9 @@
                                     
                                 </div>
                                 <div class="form-group">
-                                    <label for="role_id" class="title-color">{{translate('department')}}</label>
+                                    <label for="role_id" class="title-color">{{translate('Department')}}</label>
                                     <select class="form-control" name="department_id" id="department_id">
-                                        <option value="0" {{ (int)$employee['department_id'] === 0 ? 'selected' : '' }}>{{'---'.translate('select').'---'}}</option>
+                                        <option value="0" {{ (int)$employee['department_id'] === 0 ? 'selected' : '' }}>{{'---'.translate('Select').'---'}}</option>
                                         @foreach($departments as $dept)
                                             <option value="{{$dept->id}}" {{$dept['id']==$employee['department_id']?'selected':''}}>{{ $dept->getTranslatedField('name') }}</option>
                                         @endforeach
@@ -104,7 +104,7 @@
                                 <div class="form-group">
                                     <label for="identify_number" class="title-color">{{translate('identify_number')}}</label>
                                     <input type="text" name="identify_number" value="{{$employee->identify_number}}" class="form-control"
-                                        placeholder="{{translate('ex').':'.'9876123123'}}" id="identify_number">
+                                        placeholder="{{translate('Ex').':'.'9876123123'}}" id="identify_number">
                                 </div>
                             </div>
                             <div class="col-lg-6">
@@ -120,7 +120,7 @@
                                         <div class="custom-file text-start">
                                             <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" data-image-id="viewer">
-                                            <label class="custom-file-label" for="custom-file-upload">{{translate('choose_file')}}</label>
+                                            <label class="custom-file-label" for="custom-file-upload">{{translate('choose_File')}}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -147,14 +147,14 @@
                     <div class="card-body">
                         <h5 class="mb-0 page-header-title d-flex align-items-center gap-2 border-bottom pb-3 mb-3">
                             <i class="tio-user"></i>
-                            {{translate('account_information')}}
+                            {{translate('account_Information')}}
                         </h5>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="email" class="title-color">{{translate('email')}}</label>
+                                    <label for="email" class="title-color">{{translate('Email')}}</label>
                                     <input type="email" name="email" value="{{$employee['email']}}" class="form-control"
-                                        id="email" placeholder="{{translate('ex').':'.'ex@gmail.com'}}" required>
+                                        id="email" placeholder="{{translate('Ex').':'.'ex@gmail.com'}}" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -179,7 +179,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="submit" class="btn btn--primary px-4">{{translate('update')}}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{translate('Update')}}</button>
                         </div>
                     </div>
                 </div>
@@ -217,7 +217,7 @@
                     identifyNumber.setAttribute('placeholder', 'Ex: A1234567');
                 } else {
                     identifyNumber.setAttribute('inputmode', 'numeric');
-                    identifyNumber.setAttribute('placeholder', "{{translate('ex').':'.'9876123123'}}");
+                    identifyNumber.setAttribute('placeholder', "{{translate('Ex').':'.'9876123123'}}");
                 }
             };
 

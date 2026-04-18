@@ -37,7 +37,7 @@
                                             <input type="search" name="searchValue" class="form-control"
                                                    placeholder="{{translate('search_by_name')}}"
                                                    value="{{ request('searchValue') }}">
-                                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -48,10 +48,10 @@
                                     </a>
                                 </div>
                                 <select name="delivery_withdraw_status_filter" class="custom-select min-w-120 max-w-200 status-filter">
-                                    <option value="all" >{{translate('all')}}</option>
-                                    <option value="approved" >{{translate('approved')}}</option>
-                                    <option value="denied" >{{translate('denied')}}</option>
-                                    <option value="pending" >{{translate('pending')}}</option>
+                                    <option value="all" >{{translate('All')}}</option>
+                                    <option value="approved" >{{translate('Approved')}}</option>
+                                    <option value="denied" >{{translate('Denied')}}</option>
+                                    <option value="pending" >{{translate('Pending')}}</option>
                                 </select>
 
                             </div>

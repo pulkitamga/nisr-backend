@@ -48,13 +48,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control"
-                            placeholder="{{ translate('Enter Title') }}">
+                            placeholder="{{ translate('enter_title') }}">
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="description[]" rows="5" class="form-control"
                             placeholder="{{ translate('Enter Description') }}"></textarea>
                     </div>
@@ -65,8 +65,8 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
                 {{-- Common Fields --}}
                 <div class="form-group">
-                    <label>{{ translate('year') }}</label>
-                    <input type="text" name="year" class="form-control" placeholder="{{ translate('Enter Year') }}"
+                    <label>{{ translate('Year') }}</label>
+                    <input type="text" name="year" class="form-control" placeholder="{{ translate('enter_year') }}"
                         required>
                 </div>
 
@@ -84,7 +84,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

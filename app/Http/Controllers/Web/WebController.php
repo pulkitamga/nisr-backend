@@ -233,7 +233,7 @@ class WebController extends Controller
         }
         $businessMode = getWebConfig(name: 'business_mode');
         if (isset($businessMode) && $businessMode == 'single') {
-            Toastr::warning(translate('access_denied') . ' !!');
+            Toastr::warning(translate('access_Denied') . ' !!');
             return back();
         }
 
@@ -1547,10 +1547,10 @@ class WebController extends Controller
                             $decodedResponse = json_decode($response);
 
                             if (!$decodedResponse || empty($decodedResponse->success)) {
-                                $fail(translate('ReCAPTCHA Failed'));
+                                $fail(translate('ReCAPTCHA_Failed'));
                             }
                         } catch (\Throwable $exception) {
-                            $fail(translate('Captcha Failed'));
+                            $fail(translate('captcha_failed'));
                         }
                     },
                 ],
@@ -1803,7 +1803,7 @@ class WebController extends Controller
                                 $response['errorType'] = 'empty-shipping';
                                 $response['redirect'] = route('shop-cart');
                                 $shopIdentity = $cart->seller_is == 'admin' ? getWebConfig(name: 'company_name') : $cart->seller->shop->name;
-                                $message[] = translate('select') . ' ' . $shopIdentity . ' ' . translate('shipping_method');
+                                $message[] = translate('Select') . ' ' . $shopIdentity . ' ' . translate('shipping_Method');
                             }
                         }
                     }
@@ -1871,7 +1871,7 @@ class WebController extends Controller
                     } else {
                         return response()->json([
                             'status' => 0,
-                            'message' => translate('file_not_found'),
+                            'message' => translate('File_not_found'),
                         ]);
                     }
                 } else {
@@ -1922,7 +1922,7 @@ class WebController extends Controller
             } else {
                 return response()->json([
                     'status' => 0,
-                    'message' => translate('file_not_found'),
+                    'message' => translate('File_not_found'),
                 ]);
             }
         } else {

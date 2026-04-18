@@ -130,13 +130,13 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                         <select class="form-control" name="date_type" id="dateTypeFilter">
                             <option value="this_year"
                                 {{ ($selectedDateType ?? 'this_year') === 'this_year' ? 'selected' : '' }}>
-                                {{ translate('this_year') }}
+                                {{ translate('this_Year') }}
                             </option>
                             <option value="this_month" {{ ($selectedDateType ?? '') === 'this_month' ? 'selected' : '' }}>
-                                {{ translate('this_month') }}
+                                {{ translate('this_Month') }}
                             </option>
                             <option value="this_week" {{ ($selectedDateType ?? '') === 'this_week' ? 'selected' : '' }}>
-                                {{ translate('this_week') }}
+                                {{ translate('this_Week') }}
                             </option>
                             <option value="today" {{ ($selectedDateType ?? '') === 'today' ? 'selected' : '' }}>
                                 {{ translate('today') }}
@@ -150,20 +150,20 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
 
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label">{{ translate('from') }}</label>
+                        <label class="form-label">{{ translate('From') }}</label>
                         <input type="date" class="form-control" name="from" id="fromDateFilter"
                             value="{{ $selectedFrom ?? $startDate->toDateString() }}">
                     </div>
 
                     <div class="col-md-2 custom-date-range"
                         style="{{ ($selectedDateType ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                        <label class="form-label">{{ translate('to') }}</label>
+                        <label class="form-label">{{ translate('To') }}</label>
                         <input type="date" class="form-control" name="to" id="toDateFilter"
                             value="{{ $selectedTo ?? $endDate->toDateString() }}">
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label">{{ translate('branch') }}</label>
+                        <label class="form-label">{{ translate('Branch') }}</label>
                         <select class="form-control" name="branch_id" id="branchFilter">
                             <option value="">{{ translate('all_branches') }}</option>
                             @foreach ($branches as $branch)
@@ -176,34 +176,34 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label">{{ translate('status') }}</label>
+                        <label class="form-label">{{ translate('Status') }}</label>
                         <select class="form-control" name="status" id="statusFilter">
                             <option value="all">{{ translate('all_statuses') }}</option>
                             <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>
-                                {{ translate('new') }}</option>
+                                {{ translate('New') }}</option>
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>
-                                {{ translate('approved') }}</option>
+                                {{ translate('Approved') }}</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
                                 {{ translate('rejected') }}</option>
                             <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>
                                 {{ translate('resolved') }}</option>
                             <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>
-                                {{ translate('closed') }}</option>
+                                {{ translate('Closed') }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="row g-3 mt-2">
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('search') }}</label>
+                        <label class="form-label">{{ translate('Search') }}</label>
                         <input type="text" name="search" id="searchInput" class="form-control"
                             placeholder="{{ translate('claim_or_serial') }}" value="{{ request('search') }}">
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">{{ translate('product') }}</label>
+                        <label class="form-label">{{ translate('Product') }}</label>
                         <select class="form-control" name="product_id" id="productFilter">
-                            <option value="">{{ translate('all_products') }}</option>
+                            <option value="">{{ translate('all_Products') }}</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}"
                                     {{ request('product_id') == $product->id ? 'selected' : '' }}>
@@ -217,11 +217,11 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                     <div class="col-12 d-flex flex-wrap gap-2 pt-2">
 
                         <button type="submit" class="btn btn--primary">
-                            <i class="tio-filter"></i> {{ translate('filter') }}
+                            <i class="tio-filter"></i> {{ translate('Filter') }}
                         </button>
 
                         <a href="{{ route('admin.warranty.claim.chart') }}" class="btn btn-outline-secondary">
-                            <i class="tio-refresh"></i> {{ translate('reset') }}
+                            <i class="tio-refresh"></i> {{ translate('Reset') }}
                         </a>
 
                         <a id="exportExcelBtn"
@@ -252,14 +252,14 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card">
                     <div class="stat-number" id="card-new">{{ $cards['new'] }}</div>
-                    <div class="stat-label">{{ translate('new') }}</div>
+                    <div class="stat-label">{{ translate('New') }}</div>
                 </div>
             </div>
 
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card">
                     <div class="stat-number" id="card-approved">{{ $cards['approved'] }}</div>
-                    <div class="stat-label">{{ translate('approved') }}</div>
+                    <div class="stat-label">{{ translate('Approved') }}</div>
                 </div>
             </div>
 
@@ -273,7 +273,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
             <div class="col-md-2 col-sm-4">
                 <div class="stat-card">
                     <div class="stat-number" id="card-pending">{{ $cards['pending'] }}</div>
-                    <div class="stat-label">{{ translate('pending') }}</div>
+                    <div class="stat-label">{{ translate('Pending') }}</div>
                 </div>
             </div>
 
@@ -315,16 +315,16 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                             <th>{{ translate('SL') }}</th>
                             <th>{{ translate('claim_number') }}</th>
                             <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('product') }}</th>
+                            <th>{{ translate('Product') }}</th>
                             <th>{{ translate('warranty_months') }}</th>
                             <th>{{ translate('warranty_end_date') }}</th>
-                            <th>{{ translate('remaining') }}</th>
-                            <th>{{ translate('status') }}</th>
-                            <th>{{ translate('customer') }}</th>
-                            <th>{{ translate('branch') }}</th>
+                            <th>{{ translate('Remaining') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th>{{ translate('Customer') }}</th>
+                            <th>{{ translate('Branch') }}</th>
                             <th>{{ translate('submitted_at') }}</th>
                             <th>{{ translate('sla_due') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="claimTableBody">
@@ -359,11 +359,11 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                                                 ' ' .
                                                 $days .
                                                 ' ' .
-                                                translate('days');
+                                                translate('Days');
                                         } elseif ($months > 0) {
                                             $remaining = $months . ' ' . translate('months');
                                         } else {
-                                            $remaining = $days . ' ' . translate('days');
+                                            $remaining = $days . ' ' . translate('Days');
                                         }
                                     }
                                 } else {
@@ -394,7 +394,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.warranty.claim.view', $claim->id) }}"
-                                        class="btn btn-sm btn-outline-info">{{ translate('view') }}</a>
+                                        class="btn btn-sm btn-outline-info">{{ translate('View') }}</a>
                                 </td>
                             </tr>
                         @endforeach
@@ -594,7 +594,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
             <td>${claim.resolution_due}</td>
             <td class="text-center">
                 <a href="${claim.view_url}" class="btn btn-sm btn-outline-info">
-                    {{ translate('view') }}
+                    {{ translate('View') }}
                 </a>
             </td>
         </tr>
@@ -614,7 +614,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
 
             html += `<li class="page-item ${data.prev_page_url ? '' : 'disabled'}">
                 <a class="page-link" href="#" data-page="${data.current_page - 1}">
-                {{ translate('previous') }}</a>
+                {{ translate('Previous') }}</a>
             </li>`;
 
             for (let i = 1; i <= data.last_page; i++) {
@@ -625,7 +625,7 @@ $isRtl = session('direction') === 'rtl' || (function_exists('getWebConfig') && g
 
             html += `<li class="page-item ${data.next_page_url ? '' : 'disabled'}">
                 <a class="page-link" href="#" data-page="${data.current_page + 1}">
-                {{ translate('next') }}</a>
+                {{ translate('Next') }}</a>
             </li>`;
 
             html += '</ul>';

@@ -11,7 +11,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             <form action="{{route('admin.business-settings.wholesaler-registration-reason.update',['id'=>$wholesalerRegistrationReason['id']])}}" method="post">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="reasonEditModalLabel">{{translate('why_sell_with_us')}}</h5>
+                    <h5 class="modal-title flex-grow-1 text-center text-capitalize" id="reasonEditModalLabel">{{translate('Why_Sell_With_Us')}}</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="{{ translate('Close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -46,7 +46,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form"
                         id="{{ $lang }}-form">
                         <div class="form-group">
-                            <label class="title-color">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                            <label class="title-color">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="title[]" class="form-control"
                                 value="{{ $lang === $defaultLanguage ? $wholesalerRegistrationReason['title'] : $title }}"
                                 placeholder="{{ translate('enter_title') }}">
@@ -61,7 +61,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
 
                     <div class="form-group">
-                        <label class="title-color">{{translate('priority')}}</label>
+                        <label class="title-color">{{translate('Priority')}}</label>
                         <select name="priority" class="form-control">
                             @for($index = 1; $index <= 15; $index++)
                                 <option value="{{ $index }}">{{ $index }}</option>
@@ -72,7 +72,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         <div class="border rounded p-3 d-flex justify-content-between gap-2 align-items-center">
                             <div class="text-dark">{{translate('turning_status_off_will_not_show_this_reason_in_the_list').'.'}}</div>
                             <div class="d-flex gap-2 align-items-center">
-                                <span class="fw-semibold text-dark">{{translate('status')}}</span>
+                                <span class="fw-semibold text-dark">{{translate('Status')}}</span>
                                 <label class="switcher mx-auto">
                                     <input type="checkbox" class="switcher_input" name="status" value="1" {{$wholesalerRegistrationReason['status'] == 1?'checked':'' }}>
                                     <span class="switcher_control"></span>
@@ -81,8 +81,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                         </div>
                     </div>
                     <div class="d-flex justify-content-end gap-3 mt-4">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{translate('close')}}</button>
-                        <button type="submit" class="btn btn--primary">{{translate('save')}}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{translate('Close')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('Save')}}</button>
                     </div>
                 </div>
             </form>

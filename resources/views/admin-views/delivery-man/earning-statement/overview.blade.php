@@ -6,7 +6,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('earning_statement')}}
+                {{translate('earning_Statement')}}
             </h2>
         </div>
         @include('admin-views.delivery-man.pages-inline-menu')
@@ -69,7 +69,7 @@
                                     <div class="d-flex gap-2 justify-content-between align-items-center">
                                         <div class="d-flex flex-column align-items-start">
                                             <h3 class="mb-1 fz-24">{{$deliveryMan->wallet ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $deliveryMan->wallet->pending_withdraw), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode())}}</h3>
-                                            <div class="text-capitalize mb-0">{{translate('pending_withdraw')}}</div>
+                                            <div class="text-capitalize mb-0">{{translate('pending_Withdraw')}}</div>
                                         </div>
                                         <div>
                                             <img width="40" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/pw.png')}}" alt="">
@@ -84,7 +84,7 @@
                                             <h3 class="mb-1 fz-24">
                                                 {{ $withdrawalableBalance <= 0 ? setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawalableBalance), currencyCode: getCurrencyCode()) }}
                                             </h3>
-                                            <div class="text-capitalize mb-0">{{translate('withdrawable_balance')}}</div>
+                                            <div class="text-capitalize mb-0">{{translate('withdrawable_Balance')}}</div>
                                         </div>
                                         <div>
                                             <img width="40" class="mb-2" src="{{dynamicAsset(path: 'public/assets/back-end/img/withdraw.png')}}" alt="">
@@ -106,21 +106,21 @@
                     </div>
                     <div class="card-body">
                         <div class="flex-start">
-                            <div><h4>{{translate('status')}} : </h4></div>
+                            <div><h4>{{translate('Status')}} : </h4></div>
                             <div class="mx-1">
-                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">'.__('Active').'</label>':'<label class="badge badge-danger">'.__('In-Active').'</label>' !!}</h4>
+                                <h4>{!! $deliveryMan->is_active == 1?'<label class="badge badge-success">'.__('Active').'</label>':'<label class="badge badge-danger">'.__('Inactive').'</label>' !!}</h4>
                             </div>
                         </div>
                         <div class="flex-start">
-                            <div><h5 class="text-nowrap">{{translate('name')}} : </h5></div>
+                            <div><h5 class="text-nowrap">{{translate('Name')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->f_name}} {{$deliveryMan->l_name}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5 class="text-nowrap">{{translate('email')}} : </h5></div>
+                            <div><h5 class="text-nowrap">{{translate('Email')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->email}}</h5></div>
                         </div>
                         <div class="flex-start">
-                            <div><h5 class="text-nowrap">{{translate('phone')}} : </h5></div>
+                            <div><h5 class="text-nowrap">{{translate('Phone')}} : </h5></div>
                             <div class="mx-1"><h5>{{$deliveryMan->phone}}</h5></div>
                         </div>
                     </div>
@@ -129,30 +129,30 @@
             <div class="col-md-6 mt-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0"> {{translate('bank_info')}}</h5>
+                        <h5 class="mb-0"> {{translate('bank_Info')}}</h5>
                     </div>
                     <div class="card-body">
                         <div class="mt-2">
                             <div class="flex-start">
-                                <div><h4 class="text-nowrap">{{translate('bank_name')}} : </h4></div>
+                                <div><h4 class="text-nowrap">{{translate('bank_Name')}} : </h4></div>
                                 <div class="mx-1">
                                     <h4>{{$deliveryMan->bank_name ?? translate('no_Data_found')}}</h4>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6 class="text-nowrap">{{translate('branch')}} : </h6></div>
+                                <div><h6 class="text-nowrap">{{translate('Branch')}} : </h6></div>
                                 <div class="mx-1">
                                     <h6>{{$deliveryMan->branch ?? translate('no_Data_found')}}</h6>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6 class="text-nowrap">{{translate('holder_name')}} : </h6></div>
+                                <div><h6 class="text-nowrap">{{translate('holder_Name')}} : </h6></div>
                                 <div class="mx-1">
                                     <h6>{{$deliveryMan->holder_name ?? translate('no_Data_found')}}</h6>
                                 </div>
                             </div>
                             <div class="flex-start">
-                                <div><h6 class="text-nowrap">{{translate('account_no')}} : </h6></div>
+                                <div><h6 class="text-nowrap">{{translate('account_No')}} : </h6></div>
                                 <div class="mx-1">
                                     <h6>{{$deliveryMan->account_no ?? translate('no_Data_found')}}</h6>
                                 </div>

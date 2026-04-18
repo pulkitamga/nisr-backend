@@ -33,25 +33,25 @@
             $purchaseRequestSummary = [];
             if (request()->filled('date_from') || request()->filled('date_to')) {
                 $purchaseRequestSummary[] = [
-                    'label' => translate('date'),
+                    'label' => translate('DATE'),
                     'value' => trim((request('date_from') ?: '...') . ' - ' . (request('date_to') ?: '...')),
                 ];
             }
             if (request('tier') && request('tier') !== 'all') {
                 $purchaseRequestSummary[] = [
-                    'label' => translate('tier'),
+                    'label' => translate('Tier'),
                     'value' => request('tier'),
                 ];
             }
             if (request('status') && request('status') !== 'all') {
                 $purchaseRequestSummary[] = [
-                    'label' => translate('status'),
+                    'label' => translate('Status'),
                     'value' => request('status'),
                 ];
             }
             if (request()->filled('searchValue')) {
                 $purchaseRequestSummary[] = [
-                    'label' => translate('search'),
+                    'label' => translate('Search'),
                     'value' => request('searchValue'),
                 ];
             }
@@ -84,7 +84,7 @@
                     'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                     'options' => collect($tiers ?? [])
                         ->pluck('name', 'name')
-                        ->prepend(translate('all'), 'all')
+                        ->prepend(translate('All'), 'all')
                         ->all(),
                 ],
                 [
@@ -94,8 +94,8 @@
                     'value' => request('status', 'all'),
                     'col_class' => 'col-xl-2 col-lg-4 col-md-6',
                     'options' => [
-                        'all' => translate('all'),
-                        'pending' => translate('pending'),
+                        'all' => translate('All'),
+                        'pending' => translate('Pending'),
                         'processed' => translate('processed'),
                         'Quotationsend' => translate('Quotationsend'),
                     ],
@@ -111,7 +111,7 @@
                 ],
                 [
                     'name' => 'searchValue',
-                    'label' => translate('search'),
+                    'label' => translate('Search'),
                     'type' => 'search',
                     'value' => request('searchValue'),
                     'placeholder' => translate('Search...'),
@@ -144,7 +144,7 @@
                             <tr>
                                 <th>{{ translate('SL') }}</th>
                                 <th>{{ translate('DATE') }}</th>
-                                <th>{{ translate('Purchase_order_no') }}</th>
+                                <th>{{ translate('Purchase_Order_No') }}</th>
                                 <th>{{ translate('Wholesaler') }}</th>
                                 <th>{{ translate('Tier') }}</th>
                                 <th>{{ translate('Status') }}</th>
@@ -195,7 +195,7 @@
                                                         ? route('admin.wholesale.business.purchase.order.view', $order->id)
                                                         : route('admin.wholesale.business.order.view', $order->id) }}"
                                                 >
-                                                    {{ translate('view') }}
+                                                    {{ translate('View') }}
                                                 </a>
                                                 @if ($status === 'pending')
                                                     <button type="button" class="btn btn-sm btn-warning wholesale-open-po-modal" data-order-id="{{ $order->id }}">
@@ -203,7 +203,7 @@
                                                     </button>
                                                 @elseif ($status === 'processed')
                                                     <a class="btn btn-sm btn-outline--primary" href="{{ route('admin.wholesale.business.order.view', $order->id) }}">
-                                                        {{ translate('edit') }}
+                                                        {{ translate('Edit') }}
                                                     </a>
                                                 @else
                                                     <a data-id="{{ $order->order_id }}"
@@ -275,7 +275,7 @@
 
                     </div>
                     <div class="modal-body">
-                        <label>{{ translate('Purchase Order No') }}</label>
+                        <label>{{ translate('Purchase_Order_No') }}</label>
                         <input type="text" name="purchase_order_no" id="purchase_order_no" class="form-control"
                             required>
                         <small id="availabilityMessage" class="text-sm mt-1"></small>

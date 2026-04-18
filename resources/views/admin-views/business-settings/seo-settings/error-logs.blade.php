@@ -14,7 +14,7 @@
         <div class="card shadow-none">
             <div class="card-header flex-wrap gap-2">
                 <div class="">
-                    <h4 class="title m-0">{{translate('404 Logs')}}</h4>
+                    <h4 class="title m-0">{{translate('404_Logs')}}</h4>
                     <p class="m-0">
 
                     </p>
@@ -44,7 +44,7 @@
                             <th class="w-45px text-center">{{translate('hits')}}</th>
                             <th class="w-200px text-center text-capitalize">{{translate('last_hit_date')}}</th>
                             <th class="w-200px text-center text-capitalize">{{translate('redirection_link')}}</th>
-                            <th class="text-center w-60px">{{translate('action')}}</th>
+                            <th class="text-center w-60px">{{translate('Action')}}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -151,7 +151,7 @@
                         </div>
                     </div>
                     <div class="modal-footer border-0 pt-0">
-                        <button type="{{ env('APP_MODE') == 'demo' ? 'button' : 'submit' }}" class="btn btn--primary submit-button {{env('APP_MODE')!='demo'? '' : 'call-demo'}}">{{translate('submit')}}</button>
+                        <button type="{{ env('APP_MODE') == 'demo' ? 'button' : 'submit' }}" class="btn btn--primary submit-button {{env('APP_MODE')!='demo'? '' : 'call-demo'}}">{{translate('Submit')}}</button>
                     </div>
                 </form>
             </div>

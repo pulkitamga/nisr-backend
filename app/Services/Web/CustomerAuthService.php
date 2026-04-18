@@ -58,7 +58,7 @@ class CustomerAuthService
                 event(new EmailVerificationEvent(email: $user['email'], data: $data));
                 return [
                     'status' => 'success',
-                    'message' => translate('check_your_email'),
+                    'message' => translate('Check_your_email'),
                 ];
             } catch (\Exception $exception) {
                 return [

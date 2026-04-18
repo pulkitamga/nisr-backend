@@ -18,7 +18,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0 text-capitalize">{{translate('business_process')}}</h5>
+                <h5 class="mb-0 text-capitalize">{{translate('business_Process')}}</h5>
                 <div class="form-group d-flex align-items-center gap-3">
                     <label class="switcher mx-auto">
                         <input type="checkbox" class="switcher_input status-toggle" data-type="wholesaler_process_main_section"
@@ -53,14 +53,14 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color">{{translate('Title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="title[][{{ $lang }}]" class="form-control"
                                             value="{{$lang == $defaultLanguage ? $businessProcess?->title  :  ($translations[$lang]['title']?? '')}}" placeholder="{{translate('enter_title')}}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('sub_title')}} ({{ strtoupper($lang) }})</label>
+                                        <label class="title-color">{{translate('Sub_Title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="sub_title[][{{ $lang }}]" class="form-control"
                                             value="{{$lang == $defaultLanguage ? $businessProcess?->sub_title :  ($translations[$lang]['sub_title']?? '')}}"
                                             placeholder="{{translate('enter_sub_title')}}">
@@ -77,7 +77,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{translate('title')}} ({{ strtoupper($lang) }})</label>
+                                        <label class="form-label">{{translate('Title')}} ({{ strtoupper($lang) }})</label>
                                         <input type="text" name="section_{{$index}}_title[{{ $lang }}]" class="form-control"
                                             value="{{ $lang == $defaultLanguage ? ($businessProcessStep[$index - 1]->title ?? '') : ($translations[$lang]['section_'.$index.'_title'] ?? '') }}"
                                             placeholder="{{translate('enter_title')}}">
@@ -97,8 +97,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
                                         <div class="mb-3 text-center">
                                             <label for="name"
-                                                class="title-color text-capitalize font-weight-bold mb-0">{{translate('image')}}</label>
-                                            <span class="badge badge-soft-info">{{'('.translate('size').': 1:1'.')'}}</span>
+                                                class="title-color text-capitalize font-weight-bold mb-0">{{translate('Image')}}</label>
+                                            <span class="badge badge-soft-info">{{'('.translate('Size').': 1:1'.')'}}</span>
                                         </div>
 
                                         <div class="custom_upload_input">
@@ -131,7 +131,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                         <p class="text-muted text-center fz-12 mt-2">
                                             {{ translate('image_format').' : Jpg, png, jpeg, webp,'}}
                                             <br>
-                                            {{ translate('image_size').' : '.translate('max'). '2MB' }}
+                                            {{ translate('image_size').' : '.translate('Max'). '2MB' }}
                                         </p>
                                         @endif
 
@@ -144,8 +144,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             </div>
             @endforeach
             <div class="row justify-content-end gap-3 mt-3 mx-1">
-                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
             </div>
         </div>
 </div>

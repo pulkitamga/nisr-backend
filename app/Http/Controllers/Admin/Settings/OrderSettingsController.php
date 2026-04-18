@@ -50,7 +50,7 @@ class OrderSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'stock_validation_refactor_mirror_mode', value: $request->get('stock_validation_refactor_mirror_mode', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'character_trigger_limit_for_autosearch', value: $request->get('character_trigger_limit_for_autosearch', 0));
         clearWebConfigCacheKeys();
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return back();
     }
 

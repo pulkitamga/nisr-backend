@@ -53,7 +53,7 @@
                     @if(isset($clearanceConfig) && $clearanceConfig->discount_type == 'product_wise')
                     <div class="">
                         <label
-                            class="form-label title-color font-weight-medium fz-12">{{ translate('Discount Amount') }}
+                            class="form-label title-color font-weight-medium fz-12">{{ translate('Discount_Amount') }}
                         </label>
                         <div class="custom-group-btn border max-width-200px">
                             <div class="flex-sm-grow-1">

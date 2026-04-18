@@ -79,7 +79,7 @@
 
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" min="0" pattern="[0-9]*"
-                               name="discount_amount" placeholder="{{ translate('ex') }} : {{ '10' }}"
+                               name="discount_amount" placeholder="{{ translate('Ex') }} : {{ '10' }}"
                                value="{{ $clearanceConfig?->discount_amount ?? 0 }}" {{ is_null($clearanceConfig) || $clearanceConfig?->discount_type == 'product_wise' ? 'd--none' : '' }}>
                         <div class="input-group-append">
                             <span class="input-group-text font-weight-bolder" id="basic-addon2">{{ '%' }}</span>

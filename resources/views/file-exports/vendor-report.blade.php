@@ -6,19 +6,19 @@
     </tr>
     <tr>
 
-        <th>{{ translate('filter_Criteria') .' '.'-'}}</th>
+        <th>{{ translate('Filter_Criteria') .' '.'-'}}</th>
         <th></th>
         <th>
             {{translate('search_Bar_Content').' '.'-'.' '. $data['search'] ?? 'N/A'}}
             <br>
-            {{translate('store').' '.'-'.' '.ucwords($data['vendor'] != 'all' ? $data['vendor']?->shop->name : translate('all') )}}
+            {{translate('store').' '.'-'.' '.ucwords($data['vendor'] != 'all' ? $data['vendor']?->shop->name : translate('All') )}}
             <br>
             {{translate('date_type').' '.'-'.' '.translate($data['dateType'])}}
             <br>
             @if($data['from'] && $data['to'])
-                {{translate('from').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
+                {{translate('From').' '.'-'.' '.date('d M, Y',strtotime($data['from']))}}
                 <br>
-                {{translate('to').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
+                {{translate('To').' '.'-'.' '.date('d M, Y',strtotime($data['to']))}}
                 <br>
             @endif
         </th>

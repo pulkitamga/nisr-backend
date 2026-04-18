@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('withdraw_request'))
+@section('title', translate('withdraw_Request'))
 
 @section('content')
     <div class="content container-fluid">
@@ -17,7 +17,7 @@
                         <div class="row gy-1 align-items-center justify-content-between">
                             <div class="col-auto">
                                 <h5 class="text-capitalize">
-                                {{ translate('withdraw_request_table')}}
+                                {{ translate('withdraw_Request_Table')}}
                                     <span class="badge badge-soft-dark radius-50 fz-12 ms-1">{{ $withdrawRequests->total() }}</span>
                                 </h5>
                             </div>
@@ -25,10 +25,10 @@
                                 <div class="d-flex gap-3">
                                     <select name="withdraw_status_filter" data-action="{{url()->current()}}"
                                             class="custom-select min-w-120 withdraw-status-filter">
-                                        <option value="all" {{request('approved') == 'all' ? 'selected' : ''}}>{{translate('all')}}</option>
-                                        <option value="approved" {{request('approved') == 'approved' ? 'selected' : ''}}>{{translate('approved')}}</option>
-                                        <option value="denied" {{request('approved') == 'denied' ? 'selected' : ''}}>{{translate('denied')}}</option>
-                                        <option value="pending" {{request('approved') == 'pending' ? 'selected' : ''}}>{{translate('pending')}}</option>
+                                        <option value="all" {{request('approved') == 'all' ? 'selected' : ''}}>{{translate('All')}}</option>
+                                        <option value="approved" {{request('approved') == 'approved' ? 'selected' : ''}}>{{translate('Approved')}}</option>
+                                        <option value="denied" {{request('approved') == 'denied' ? 'selected' : ''}}>{{translate('Denied')}}</option>
+                                        <option value="pending" {{request('approved') == 'pending' ? 'selected' : ''}}>{{translate('Pending')}}</option>
                                     </select>
                                     <div class="dropdown w-100">
                                         <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.vendors.withdraw-list-export-excel') }}?approved={{request('approved')}}">
@@ -47,11 +47,11 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('amount')}}</th>
-                                <th>{{ translate('name') }}</th>
-                                <th>{{translate('request_time')}}</th>
-                                <th class="text-center">{{translate('status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th>{{translate('Amount')}}</th>
+                                <th>{{ translate('Name') }}</th>
+                                <th>{{translate('request_Time')}}</th>
+                                <th class="text-center">{{translate('Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -72,11 +72,11 @@
                                     <td>{{$withdrawRequest->created_at}}</td>
                                     <td class="text-center">
                                         @if($withdrawRequest->approved == 0)
-                                            <label class="badge badge-soft-primary">{{translate('pending')}}</label>
+                                            <label class="badge badge-soft-primary">{{translate('Pending')}}</label>
                                         @elseif($withdrawRequest->approved == 1)
-                                            <label class="badge badge-soft-success">{{translate('approved')}}</label>
+                                            <label class="badge badge-soft-success">{{translate('Approved')}}</label>
                                         @elseif($withdrawRequest->approved == 2)
-                                            <label class="badge badge-soft-danger">{{translate('denied')}}</label>
+                                            <label class="badge badge-soft-danger">{{translate('Denied')}}</label>
                                         @endif
                                     </td>
                                     <td>
@@ -84,7 +84,7 @@
                                             @if (isset($withdrawRequest->seller))
                                             <a href="{{route('admin.vendors.withdraw_view', ['withdrawId'=>$withdrawRequest['id'], 'vendorId'=>$withdrawRequest->seller['id']])}}"
                                                 class="btn btn-outline-info btn-sm square-btn"
-                                                title="{{translate('view')}}">
+                                                title="{{translate('View')}}">
                                                 <i class="tio-invisible"></i>
                                                 </a>
                                             @else

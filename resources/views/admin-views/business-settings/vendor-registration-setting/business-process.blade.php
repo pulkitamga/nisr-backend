@@ -9,7 +9,7 @@
             @csrf
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0 text-capitalize">{{translate('business_process')}}</h5>
+                    <h5 class="mb-0 text-capitalize">{{translate('business_Process')}}</h5>
                 </div>
                 <div class="card-body">
                     <div class="card border shadow-none mb-3">
@@ -17,13 +17,13 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}}</label>
+                                        <label class="title-color">{{translate('Title')}}</label>
                                         <input type="text" name="title" class="form-control" value="{{$businessProcess?->title}}"  placeholder="{{translate('enter_title')}}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('sub_title')}}</label>
+                                        <label class="title-color">{{translate('Sub_Title')}}</label>
                                         <input type="text" name="sub_title" class="form-control" value="{{$businessProcess?->sub_title}}" placeholder="{{translate('enter_sub_title')}}">
                                     </div>
                                 </div>
@@ -37,7 +37,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}}</label>
+                                        <label class="title-color">{{translate('Title')}}</label>
                                         <input type="text" name="section_{{$index}}_title" class="form-control" value="{{isset($businessProcessStep[$index-1]) ? $businessProcessStep[$index-1]->title : null}}" placeholder="{{translate('enter_title')}}">
                                     </div>
 
@@ -49,8 +49,8 @@
                                 <div class="col-md-6">
                                     <div class="mx-auto max-w-150">
                                         <div class="mb-3 text-center">
-                                            <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('image')}}</label>
-                                            <span class="badge badge-soft-info">{{'('.translate('size').': 1:1'.')'}}</span>
+                                            <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('Image')}}</label>
+                                            <span class="badge badge-soft-info">{{'('.translate('Size').': 1:1'.')'}}</span>
                                         </div>
                                         <div class="custom_upload_input">
                                             <input type="file" name="section_{{$index}}_image"
@@ -78,7 +78,7 @@
                                         <p class="text-muted text-center fz-12 mt-2">
                                             {{ translate('image_format').' : Jpg, png, jpeg, webp,'}}
                                             <br>
-                                            {{ translate('image_size').' : '.translate('max'). '2MB' }}</p>
+                                            {{ translate('image_size').' : '.translate('Max'). '2MB' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -86,8 +86,8 @@
                     </div>
                     @endfor
                     <div class="row justify-content-end gap-3 mt-3 mx-1">
-                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                        <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                        <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                     </div>
                 </div>
             </div>

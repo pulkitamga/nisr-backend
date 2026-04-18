@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png') }}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -72,7 +72,7 @@
                                            data-on-title="{{translate('want_To_Turn_ON_3rd_Party_Storage').'?'}}"
                                            data-off-title="{{translate('want_To_Turn_OFF_3rd_Party_Storage').'?'}}"
                                            data-on-message="<p>{{translate('system_will_store_all_files_and_images_to_3rd_party_storage')}}</p>"
-                                           data-off-message="<p>{{translate('system_will_store_all_files_and_images_to_local_storage')}}</p>">
+                                           data-off-message="<p>{{translate('system_will _store_all_files_and_images_to_local_storage')}}</p>">
                                     <span class="switcher_control"></span>
                                 </label>
                             </form>
@@ -198,8 +198,8 @@
                         </div>
                         <div class="col-12">
                             <div class="d-flex flex-wrap justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="button" class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? 'form-submit' : 'call-demo'}}" data-form-id="get-storage-connection-route">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="button" class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? 'form-submit' : 'call-demo'}}" data-form-id="get-storage-connection-route">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>

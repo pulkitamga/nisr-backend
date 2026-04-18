@@ -28,7 +28,7 @@ class BannerUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'url.required' => translate('the_url_field_is_required'),
+            'url.required' => translate('The_url_field_is_required'),
         ];
     }
 

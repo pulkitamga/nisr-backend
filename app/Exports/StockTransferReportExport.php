@@ -25,7 +25,7 @@ class StockTransferReportExport implements WithMultipleSheets
         $summaryRows = [
             [translate('total_transfers'), (int)($statistics['total_transfers'] ?? 0)],
             [translate('transferred'), (int)($statistics['transferred_transfers'] ?? 0)],
-            [translate('approved'), (int)($statistics['approved_transfers'] ?? 0)],
+            [translate('Approved'), (int)($statistics['approved_transfers'] ?? 0)],
             [translate('rejected'), (int)($statistics['rejected_transfers'] ?? 0)],
             [translate('total_quantity'), (int)($statistics['total_quantity'] ?? 0)],
             [translate('top_from_branch'), $topFromBranch],
@@ -33,11 +33,11 @@ class StockTransferReportExport implements WithMultipleSheets
         ];
 
         $detailsHeadings = [
-            translate('date'),
-            translate('from_branch'),
+            translate('DATE'),
+            translate('From_branch'),
             translate('to_branch'),
             translate('items'),
-            translate('status'),
+            translate('Status'),
         ];
 
         $detailsRows = $transfers->map(function ($transfer) {
@@ -83,7 +83,7 @@ class StockTransferReportExport implements WithMultipleSheets
                 isRtl: $isRtl
             ),
             new InhouseProductSaleSheetExport(
-                title: translate('details'),
+                title: translate('Details'),
                 headings: $detailsHeadings,
                 rows: $detailsRows,
                 isRtl: $isRtl

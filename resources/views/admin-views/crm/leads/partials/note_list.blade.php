@@ -6,7 +6,7 @@
                 <thead class="thead-light thead-50 text-capitalize">
                 <tr>
                     <th>{{ translate('Content') }}</th>
-                    <th>{{ translate('Noted At') }}</th>
+                    <th>{{ translate('noted_at') }}</th>
                     <th>{{ translate('Employee') }}</th>
                 </tr>
             </thead>

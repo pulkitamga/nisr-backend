@@ -24,28 +24,28 @@
                     <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" id="transfer-date-type" name="date_type">
-                            <option value="this_year">{{ translate('this_year') }}</option>
-                            <option value="this_month">{{ translate('this_month') }}</option>
-                            <option value="this_week">{{ translate('this_week') }}</option>
+                            <option value="this_year">{{ translate('this_Year') }}</option>
+                            <option value="this_month">{{ translate('this_Month') }}</option>
+                            <option value="this_week">{{ translate('this_Week') }}</option>
                             <option value="today">{{ translate('today') }}</option>
                             <option value="custom_date">{{ translate('custom_range') }}</option>
                         </select>
                     </div>
 
                     <div class="col-md-3 custom-date-range" id="transfer-from-wrapper" style="display:none;">
-                        <label class="form-label mb-1">{{ translate('from') }}</label>
+                        <label class="form-label mb-1">{{ translate('From') }}</label>
                         <input type="date" class="form-control" id="transfer-from" name="from">
                     </div>
 
                     <div class="col-md-3 custom-date-range" id="transfer-to-wrapper" style="display:none;">
-                        <label class="form-label mb-1">{{ translate('to') }}</label>
+                        <label class="form-label mb-1">{{ translate('To') }}</label>
                         <input type="date" class="form-control" id="transfer-to" name="to">
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label mb-1">{{ translate('from_branch') }}</label>
+                        <label class="form-label mb-1">{{ translate('From_branch') }}</label>
                         <select class="form-control" id="from-branch-id" name="from_branch_id">
-                            <option value="">{{ translate('all') }}</option>
+                            <option value="">{{ translate('All') }}</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}
                                 </option>
@@ -56,7 +56,7 @@
                     <div class="col-md-3">
                         <label class="form-label mb-1">{{ translate('to_branch') }}</label>
                         <select class="form-control" id="to-branch-id" name="to_branch_id">
-                            <option value="">{{ translate('all') }}</option>
+                            <option value="">{{ translate('All') }}</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->id }}">{{ $branch->getTranslatedField('branch_name') }}
                                 </option>
@@ -65,22 +65,22 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label mb-1">{{ translate('status') }}</label>
+                        <label class="form-label mb-1">{{ translate('Status') }}</label>
                         <select class="form-control" id="transfer-status" name="status">
-                            <option value="">{{ translate('all') }}</option>
-                            <option value="pending">{{ translate('pending') }}</option>
+                            <option value="">{{ translate('All') }}</option>
+                            <option value="pending">{{ translate('Pending') }}</option>
                             <option value="transferred">{{ translate('transferred') }}</option>
-                            <option value="approved">{{ translate('approved') }}</option>
+                            <option value="approved">{{ translate('Approved') }}</option>
                             <option value="rejected">{{ translate('rejected') }}</option>
                         </select>
                     </div>
 
                     <div class="col-12 d-flex flex-wrap gap-2 mt-3">
                         <button type="submit" id="transfer-load-btn"
-                            class="btn btn--primary">{{ translate('filter') }}</button>
+                            class="btn btn--primary">{{ translate('Filter') }}</button>
 
                         <button type="button" id="transfer-reset-btn"
-                            class="btn btn-outline-secondary">{{ translate('reset') }}</button>
+                            class="btn btn-outline-secondary">{{ translate('Reset') }}</button>
 
                         <button type="button" id="transfer-export-excel" class="btn btn-outline-success">
                             <i class="tio-download-to me-1"></i>{{ translate('excel') }}
@@ -114,7 +114,7 @@
             <div class="col-md-2">
                 <div class="card h-100">
                     <div class="card-body">
-                        <small class="text-muted d-block">{{ translate('approved') }}</small>
+                        <small class="text-muted d-block">{{ translate('Approved') }}</small>
                         <h4 class="mb-0" id="stat-approved">0</h4>
                     </div>
                 </div>
@@ -174,11 +174,11 @@
                     <thead class="thead-light">
                         <tr>
                             <th>{{ translate('SL') }}</th>
-                            <th>{{ translate('date') }}</th>
-                            <th>{{ translate('from_branch') }}</th>
+                            <th>{{ translate('DATE') }}</th>
+                            <th>{{ translate('From_branch') }}</th>
                             <th>{{ translate('to_branch') }}</th>
                             <th class="text-end">{{ translate('items') }}</th>
-                            <th>{{ translate('status') }}</th>
+                            <th>{{ translate('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody id="transfer-table-body">

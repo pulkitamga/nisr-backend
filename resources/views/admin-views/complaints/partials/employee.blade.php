@@ -17,7 +17,7 @@
                         <div class="col-md-12 col-lg-12 col-xl-12">
                             <div class="form-group">
                                 <select class="js-select2-custom form-control" name="employee_id" id="ticket-employee-id">
-                                    <option value="0" selected disabled>{{ translate('select_employee') }}</option>
+                                    <option value="0" selected disabled>{{ translate('Select_Employee') }}</option>
                                 </select>
                             </div>
                         </div>

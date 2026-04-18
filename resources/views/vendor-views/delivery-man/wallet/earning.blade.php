@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app-seller')
 
-@section('title',translate('earning_statement'))
+@section('title',translate('earning_Statement'))
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -21,7 +21,7 @@
                 <div class="row justify-content-between align-items-center g-2 mb-3">
                     <div class="col-sm-6">
                         <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
-                            {{ translate('earning_statement') }}
+                            {{ translate('earning_Statement') }}
                         </h4>
                     </div>
                 </div>
@@ -29,7 +29,7 @@
                 <div class="row g-2">
                     <div class="col-sm-6 col-lg-4">
                         <div class="business-analytics">
-                            <h5 class="business-analytics__subtitle">{{ translate('total_earning') }}</h5>
+                            <h5 class="business-analytics__subtitle">{{ translate('total_Earning') }}</h5>
                             <h2 class="business-analytics__title">
                                 {{ $totalEarn ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $totalEarn), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) }}
                             </h2>
@@ -38,7 +38,7 @@
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <div class="business-analytics">
-                            <h5 class="business-analytics__subtitle">{{ translate('withdrawable_balance') }}</h5>
+                            <h5 class="business-analytics__subtitle">{{ translate('withdrawable_Balance') }}</h5>
                             <h2 class="business-analytics__title">{{ $withdrawableBalance? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawableBalance)) : setCurrencySymbol(amount: 0) }}</h2>
                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/pw.png') }}" width="40" class="business-analytics__img" alt="">
                         </div>
@@ -91,9 +91,9 @@
                                     <thead class="thead-light thead-50 text-capitalize table-nowrap">
                                     <tr>
                                         <th>{{ translate('SL') }}</th>
-                                        <th>{{ translate('order_no') }}</th>
+                                        <th>{{ translate('Order_No') }}</th>
                                         <th>{{ translate('earning') }}</th>
-                                        <th class="text-center">{{ translate('status') }}</th>
+                                        <th class="text-center">{{ translate('Status') }}</th>
                                     </tr>
                                     </thead>
 

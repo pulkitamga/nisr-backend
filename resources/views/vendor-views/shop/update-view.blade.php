@@ -17,7 +17,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0 text-capitalize">{{translate('edit_shop_info')}}</h5>
-                    <a href="{{route('vendor.shop.index')}}" class="btn btn--primary __inline-70 px-4 text-white">{{ translate('back') }}</a>
+                    <a href="{{route('vendor.shop.index')}}" class="btn btn--primary __inline-70 px-4 text-white">{{ translate('Back') }}</a>
                 </div>
                 <div class="card-body">
                     <form action="{{route('vendor.shop.update',[$shop->id])}}" method="post" class="text-start"
@@ -26,12 +26,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="name" class="title-color text-capitalize">{{translate('shop_name')}} <span class="text-danger">*</span></label>
+                                    <label for="name" class="title-color text-capitalize">{{translate('Shop_Name')}} <span class="text-danger">*</span></label>
                                     <input type="text" name="name" value="{{$shop->name}}" class="form-control" id="name"
                                             required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="name" class="title-color">{{translate('contact')}}</label>
+                                    <label for="name" class="title-color">{{translate('Contact')}}</label>
                                     <div class="mb-3">
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                                type="tel" id="exampleInputPhone" value="{{$shop->contact ?? old('phone')}}"
@@ -42,30 +42,30 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="address" class="title-color">{{translate('address')}} <span class="text-danger">*</span></label>
+                                    <label for="address" class="title-color">{{translate('Address')}} <span class="text-danger">*</span></label>
                                     <textarea type="text" rows="4" name="address" class="form-control" id="address"
                                             required>{{$shop->address}}</textarea>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="name" class="title-color text-capitalize">{{translate('upload_image')}}</label>
+                                    <label for="name" class="title-color text-capitalize">{{translate('Upload_Image')}}</label>
                                     <div class="custom-file text-start">
                                         <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                                data-image-id="viewer"
                                             accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                        <label class="custom-file-label text-capitalize" for="custom-file-upload">{{translate('choose_file')}}</label>
+                                        <label class="custom-file-label text-capitalize" for="custom-file-upload">{{translate('choose_File')}}</label>
                                     </div>
                                 </div>
                                 <div class="text-center">
                                     <img class="upload-img-view" id="viewer"
-                                    src="{{getStorageImages(path: $shop->image_full_url,type: 'backend-basic')}}" alt="{{translate('image')}}"/>
+                                    src="{{getStorageImages(path: $shop->image_full_url,type: 'backend-basic')}}" alt="{{translate('Image')}}"/>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-4 mt-2">
                                 <div class="form-group">
                                     <div class="flex-start">
-                                        <label for="name" class="title-color text-capitalize">{{translate('upload_banner')}} </label>
+                                        <label for="name" class="title-color text-capitalize">{{translate('upload_Banner')}} </label>
                                         <div class="mx-1">
                                             <span class="text-info">{{ THEME_RATIO[theme_root_path()]['Store cover Image'] }}</span>
                                         </div>
@@ -74,7 +74,7 @@
                                         <input type="file" name="banner" id="banner-upload" class="custom-file-input image-input"
                                                data-image-id="viewer-banner"
                                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                        <label class="custom-file-label text-capitalize" for="banner-upload">{{translate('choose_file')}}</label>
+                                        <label class="custom-file-label text-capitalize" for="banner-upload">{{translate('choose_File')}}</label>
                                     </div>
                                 </div>
                                 <div class="text-center">
@@ -88,7 +88,7 @@
                             <div class="col-md-6 mb-4 mt-2">
                                 <div class="form-group">
                                     <div class="flex-start">
-                                        <label for="name" class="title-color text-capitalize">{{translate('upload_secondary_banner')}}</label>
+                                        <label for="name" class="title-color text-capitalize">{{translate('upload_secondary_Banner')}}</label>
                                         <div class="mx-1">
                                             <span class="text-info">{{translate('ratio').' '.'( 6:1 )'}}</span>
                                         </div>
@@ -97,7 +97,7 @@
                                         <input type="file" name="bottom_banner" id="bottom-banner-upload" class="custom-file-input image-input"
                                                data-image-id="viewer-bottom-banner"
                                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                        <label class="custom-file-label" for="bottom-banner-upload">{{translate('choose_file')}}</label>
+                                        <label class="custom-file-label" for="bottom-banner-upload">{{translate('choose_File')}}</label>
                                     </div>
                                 </div>
                                 <div class="text-center">
@@ -111,7 +111,7 @@
                                 <div class="col-md-6 mb-4 mt-2">
                                     <div class="form-group">
                                         <div class="flex-start">
-                                            <label for="name" class="title-color text-capitalize">{{translate('upload_offer_banner')}}</label>
+                                            <label for="name" class="title-color text-capitalize">{{translate('Upload_Offer_Banner')}}</label>
                                             <div class="mx-1">
                                                 <span class="text-info">{{translate('ratio').' '.'( 7:1 )'}}</span>
                                             </div>
@@ -120,7 +120,7 @@
                                             <input type="file" name="offer_banner" id="offer-banner-upload" class="custom-file-input image-input"
                                                 data-image-id="viewer-offer-banner"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                            <label class="custom-file-label text-capitalize" for="offer-banner-upload">{{translate('choose_file')}}</label>
+                                            <label class="custom-file-label text-capitalize" for="offer-banner-upload">{{translate('choose_File')}}</label>
                                         </div>
                                     </div>
                                     <div class="text-center">
@@ -133,8 +133,8 @@
                             @endif
                         </div>
                         <div class="d-flex justify-content-end gap-2">
-                            <a class="btn btn-danger" href="{{route('vendor.shop.index')}}">{{translate('cancel')}}</a>
-                            <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
+                            <a class="btn btn-danger" href="{{route('vendor.shop.index')}}">{{translate('Cancel')}}</a>
+                            <button type="submit" class="btn btn--primary">{{translate('Update')}}</button>
                         </div>
                     </form>
                 </div>

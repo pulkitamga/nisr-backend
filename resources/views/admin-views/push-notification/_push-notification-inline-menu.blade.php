@@ -3,7 +3,7 @@
         <li class="{{ Request::is('admin/push-notification/index') ?'active':'' }}">
             <a href="{{route('admin.push-notification.index')}}" class="text-capitalize">
                 <i class="tio-notifications-on-outlined"></i>
-                {{translate('push_notification')}}
+                {{translate('push_Notification')}}
             </a>
         </li>
         <li class="{{ Request::is('admin/push-notification/firebase-configuration') ?'active':'' }}">

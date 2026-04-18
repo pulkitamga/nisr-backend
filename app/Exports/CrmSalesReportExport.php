@@ -21,7 +21,7 @@ class CrmSalesReportExport implements WithMultipleSheets
             [translate('total_sales'), (float)($statistics['total_sales'] ?? 0)],
             [translate('retail_sales'), (float)($statistics['retail_sales'] ?? 0)],
             [translate('wholesale_sales'), (float)($statistics['wholesale_sales'] ?? 0)],
-            [translate('total_orders'), (int)($statistics['total_orders'] ?? 0)],
+            [translate('total_Orders'), (int)($statistics['total_orders'] ?? 0)],
             [translate('total_quantity'), (int)($statistics['total_quantity'] ?? 0)],
             [translate('top_agent'), (string)($statistics['top_agent'] ?? '-')],
         ];
@@ -32,8 +32,8 @@ class CrmSalesReportExport implements WithMultipleSheets
             translate('wholesale_sales'),
             translate('total_sales'),
             translate('retail_orders'),
-            translate('wholesale_orders'),
-            translate('total_orders'),
+            translate('wholesale_Orders'),
+            translate('total_Orders'),
             translate('total_quantity'),
         ];
 

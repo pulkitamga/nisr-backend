@@ -5,7 +5,7 @@
 @section('content')
     <nav aria-label="{{ translate('breadcrumb') }}">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('dashboard')}}</a></li>
+            <li class="breadcrumb-item"><a href="{{route('admin.dashboard.index')}}">{{translate('Dashboard')}}</a></li>
             <li class="breadcrumb-item" aria-current="page">{{translate('my_profile')}}</li>
         </ol>
     </nav>
@@ -20,10 +20,10 @@
                           class="rounded-circle border"
                          height="200" width="200" alt="">
                     <div class="p-4">
-                    <h4>{{translate('name')}} : {{$admin->name}}</h4>
-                    <h6>{{translate('phone')}} : {{$admin->phone}}</h6>
-                    <h6>{{translate('email')}} : {{$admin->email}}</h6>
-                    <a class="btn btn-success" href="{{route('admin.profile.update',[$admin->id])}}">{{translate('edit')}}</a>
+                    <h4>{{translate('Name')}} : {{$admin->name}}</h4>
+                    <h6>{{translate('Phone')}} : {{$admin->phone}}</h6>
+                    <h6>{{translate('Email')}} : {{$admin->email}}</h6>
+                    <a class="btn btn-success" href="{{route('admin.profile.update',[$admin->id])}}">{{translate('Edit')}}</a>
                 </div>
 
                 </div>

@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
 
@@ -44,7 +44,7 @@
                                            data-off-title="Want to turn OFF {{ ucwords(str_replace('_',' ',$provider['key_name'])) }} as the shipping provider?"
                                            data-on-message="<p>{{ __('If enabled, system can use this shipping provider.') }}</p>"
                                            data-off-message="<p>{{ __('If disabled, system cannot use this shipping provider.') }}</p>">
-                                    <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                                    <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                                 </label>
                             </div>
 
@@ -63,7 +63,7 @@
                                 @endforeach
 
                                 <div class="text-end mt-20px">
-                                    <button type="submit" class="btn btn-primary px-5">{{translate('save')}}</button>
+                                    <button type="submit" class="btn btn-primary px-5">{{translate('Save')}}</button>
                                 </div>
                             </div>
                         </form>

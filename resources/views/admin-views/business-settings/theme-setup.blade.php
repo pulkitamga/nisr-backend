@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('theme_setup'))
+@section('title', translate('theme_Setup'))
 
 @push('css_or_js')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -13,7 +13,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/system-setting.png')}}" alt="">
-                {{translate('system_setup')}}
+                {{translate('system_Setup')}}
             </h2>
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder text-capitalize">
                 {{ translate('how_the_setting_works') }}
@@ -50,7 +50,7 @@
                                                         loading="lazy"
                                                         alt="" class="dark-support rounded mb-4">
                                                     <p>
-                                                        {{ translate('now_you_will_be_successfully_able_to_use_the_theme_for_your').' '.(getWebConfig('company_name') ??'').' '. translate('website') }}
+                                                        {{ translate('now_you_will_be_successfully_able_to_use_the_theme_for_your').' '.(getWebConfig('company_name') ??'').' '. translate('_website') }}
                                                     </p>
                                                     <p>
                                                         {{ translate('N:B you_can_upload_only').' '.(getWebConfig('company_name')??'').' '.translate('theme_templates') }}
@@ -109,7 +109,7 @@
                         @php($conditionTwo=str_replace('MB','',ini_get('post_max_size'))>=20 && str_replace('MB','',ini_get('post_max_size'))>=20)
                         <div class="col-sm-6 col-lg-5 col-xl-5 col-xxl-7">
                             <div class="ps-sm-5">
-                                <h5 class="mb-3 d-flex">{{ translate('instructions') }}</h5>
+                                <h5 class="mb-3 d-flex">{{ translate('Instructions') }}</h5>
                                 <ul class="ps-3 d-flex flex-column gap-2 instructions-list">
                                     <li>{{translate('maximum_file_size')}} 50 MB</li>
                                     <li>{{translate('have_to_upload_zip_file')}}</li>
@@ -122,7 +122,7 @@
                                     <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                             onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
                                             class="btn btn--primary px-5"
-                                            id="upload-theme">{{translate('upload')}}
+                                            id="upload-theme">{{translate('Upload')}}
                                     </button>
                                 </div>
                             </div>
@@ -144,7 +144,7 @@
                                     <button type="button"
                                             onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
                                             class="btn btn--primary px-5"
-                                            id="update-button-message">{{translate('upload')}}
+                                            id="update-button-message">{{translate('Upload')}}
                                     </button>
                                 </div>
                             </div>
@@ -274,11 +274,11 @@
                                                             <div class="d-flex justify-content-center gap-3 mb-3">
                                                                 <button type="button"
                                                                         class="fs-16 btn btn-secondary px-sm-5"
-                                                                        data-dismiss="modal">{{ translate('cancel') }}</button>
+                                                                        data-dismiss="modal">{{ translate('Cancel') }}</button>
                                                                 <button type="submit"
                                                                         class="fs-16 btn btn-danger px-sm-5 theme-delete"
                                                                         data-dismiss="modal"
-                                                                        data-key="{{ $key }}">{{ translate('delete') }}</button>
+                                                                        data-key="{{ $key }}">{{ translate('Delete') }}</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -326,12 +326,12 @@
                                                             <div class="d-flex justify-content-center gap-3 mb-3">
                                                                 <button type="button"
                                                                         class="fs-16 btn btn-secondary px-sm-5"
-                                                                        data-dismiss="modal">{{ translate('no') }}
+                                                                        data-dismiss="modal">{{ translate('No') }}
                                                                 </button>
                                                                 <button type="button"
                                                                         class="fs-16 btn btn--primary px-sm-5 theme-publish"
                                                                         data-dismiss="modal"
-                                                                        data-key="{{ $key }}">{{ translate('yes') }}
+                                                                        data-key="{{ $key }}">{{ translate('Yes') }}
                                                                 </button>
                                                             </div>
                                                         </div>

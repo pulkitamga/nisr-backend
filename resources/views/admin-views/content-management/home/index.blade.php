@@ -313,9 +313,9 @@
                     <h4 class="home-cms-card__title text-capitalize">{{ translate($currentType) }}</h4>
                     <div class="home-cms-card__meta">
                         <span class="badge {{ $sectionIsActive ? 'badge-soft-success' : 'badge-soft-danger' }} js-section-status-badge">
-                            {{ $sectionIsActive ? translate('active') : translate('inactive') }}
+                            {{ $sectionIsActive ? translate('Active') : translate('Inactive') }}
                         </span>
-                        <span>{{ translate('status') }}</span>
+                        <span>{{ translate('Status') }}</span>
                     </div>
                 </div>
 
@@ -430,8 +430,8 @@
 
 <script>
     $(document).ready(function () {
-        const activeStatusLabel = @json(translate('active'));
-        const inactiveStatusLabel = @json(translate('inactive'));
+        const activeStatusLabel = @json(translate('Active'));
+        const inactiveStatusLabel = @json(translate('Inactive'));
 
         const syncSectionStatusBadge = function (isActive) {
             const $badge = $('.js-section-status-badge');
@@ -476,7 +476,7 @@
                     status: status
                 },
                 success: function () {
-                    toastr.success(@json(__('Status updated successfully')));
+                    toastr.success(@json(__('Status_updated_successfully')));
                 },
                 error: function () {
                     $toggle.prop('checked', !isChecked);

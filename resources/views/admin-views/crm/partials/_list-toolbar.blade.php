@@ -7,7 +7,7 @@
     $toolbarCardClass = $toolbarCardClass ?? 'card mb-4';
     $toolbarBodyClass = $toolbarBodyClass ?? 'card-body';
     $toolbarApplyText = $toolbarApplyText ?? translate('apply_filters');
-    $toolbarResetText = $toolbarResetText ?? translate('reset');
+    $toolbarResetText = $toolbarResetText ?? translate('Reset');
 @endphp
 
 <div class="{{ $toolbarCardClass }}">

@@ -30,7 +30,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_serial'),
             'aria_label' => translate('search_by_serial'),
@@ -47,7 +47,7 @@
 
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -111,11 +111,11 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{ translate('serial') }}</th>
-                            <th>{{ translate('customer') }}</th>
+                            <th>{{ translate('Customer') }}</th>
                             <th>{{ translate('activation_method') }}</th>
                             <th>{{ translate('start_end_date') }}</th>
-                            <th>{{ translate('status') }}</th>
-                            <th>{{ translate('action') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th>{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -140,7 +140,7 @@
                                 <td>{{ $activationMethodLabel }}</td>
                                 <td>
                                     <span class="bidi-ltr d-inline-block">{{ $warranty->start_date }}</span>
-                                    {{ translate('to') }}
+                                    {{ translate('To') }}
                                     <span class="bidi-ltr d-inline-block">{{ $warranty->end_date }}</span>
                                 </td>
                                 <td>
@@ -149,7 +149,7 @@
                                 <td>
                                     <a href="{{ route('admin.warranty.activation.view', $warranty->id) }}"
                                         class="btn btn-sm btn-outline-info"
-                                        title="{{ translate('View Details') }}">
+                                        title="{{ translate('view_details') }}">
                                         <i class="tio-visible"></i>
                                     </a>
                                 </td>

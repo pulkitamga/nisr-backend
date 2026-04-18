@@ -137,7 +137,7 @@ class ShippingMethodController extends BaseController
     public function update(ShippingMethodRequest $request , string|int $id):RedirectResponse
     {
         $this->shippingMethodRepo->update(id: $id, data: $this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'seller'));
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return redirect()->route(ShippingMethod::INDEX[ROUTE]);
     }
 

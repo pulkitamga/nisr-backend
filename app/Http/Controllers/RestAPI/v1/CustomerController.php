@@ -917,7 +917,7 @@ class CustomerController extends Controller
 
         User::where(['id' => $request->user()->id])->update($userDetails);
 
-        return response()->json(['message' => translate('successfully updated!')], 200);
+        return response()->json(['message' => translate('successfully_updated!')], 200);
     }
 
     // public function update_cm_firebase_token(Request $request)
@@ -942,7 +942,7 @@ class CustomerController extends Controller
     //         ]);
     //     }
 
-    //     return response()->json(['message' => translate('successfully updated!')], 200);
+    //     return response()->json(['message' => translate('successfully_updated!')], 200);
     // }
 
     public function update_cm_firebase_token(Request $request)
@@ -976,7 +976,7 @@ class CustomerController extends Controller
             ]);
         }
 
-        return response()->json(['message' => translate('successfully updated!')], 200);
+        return response()->json(['message' => translate('successfully_updated!')], 200);
     }
 
     // only restrict get from this code

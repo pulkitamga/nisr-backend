@@ -94,9 +94,9 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label>{{ translate('channel') }}</label>
+                    <label>{{ translate('Channel') }}</label>
                     <select id="pipelineFilter" class="form-control">
-                        <option value="">{{ translate('all') }}</option>
+                        <option value="">{{ translate('All') }}</option>
                         <option value="email">Email</option>
                         <option value="chat">Chat</option>
                         <option value="form">Form</option>
@@ -108,7 +108,7 @@
                 <div class="col-md-2">
                     <label>{{ translate('message_type') }}</label>
                     <select id="messageType" class="form-control">
-                        <option value="">{{ translate('all') }}</option>
+                        <option value="">{{ translate('All') }}</option>
                         <option value="complaint">Complaint</option>
                         <option value="support">Support</option>
                         <option value="career">Career</option>
@@ -119,9 +119,9 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label>{{ translate('department') }}</label>
+                    <label>{{ translate('Department') }}</label>
                     <select id="departmentFilter" class="form-control">
-                        <option value="">{{ translate('all') }}</option>
+                        <option value="">{{ translate('All') }}</option>
                         @foreach($departments as $dept)
                             <option value="{{$dept->id}}">
                                 {{$dept->getTranslatedField('name')}}
@@ -131,9 +131,9 @@
                 </div>
 
                 <div class="col-md-1">
-                    <label>{{ translate('status') }}</label>
+                    <label>{{ translate('Status') }}</label>
                     <select id="statusFilter" class="form-control">
-                        <option value="">{{ translate('all') }}</option>
+                        <option value="">{{ translate('All') }}</option>
                         <option value="new">New</option>
                         <option value="processing">Processing</option>
                         <option value="converted">Converted</option>
@@ -144,11 +144,11 @@
                 <div class="col-12 mt-2 d-flex gap-2">
 
                     <button id="applyFilter" class="btn btn--primary">
-                        {{ translate('filter') }}
+                        {{ translate('Filter') }}
                     </button>
 
                     <button id="resetFilter" class="btn btn-outline-secondary">
-                        {{ translate('reset') }}
+                        {{ translate('Reset') }}
                     </button>
 
                     <button onclick="exportExcel()" class="btn btn-outline-success">
@@ -207,11 +207,11 @@
 
                 <thead class="thead-light">
                 <tr>
-                    <th>{{translate('date')}}</th>
-                    <th>{{translate('total')}}</th>
+                    <th>{{translate('DATE')}}</th>
+                    <th>{{translate('Total')}}</th>
                     <th>{{translate('assigned')}}</th>
-                    <th>{{translate('pending')}}</th>
-                    <th>{{translate('converted')}}</th>
+                    <th>{{translate('Pending')}}</th>
+                    <th>{{translate('Converted')}}</th>
                     <th>{{translate('ignored')}}</th>
                     <th>{{translate('spam')}}</th>
                     <th>{{ translate('assigned') }}%</th>
@@ -343,7 +343,7 @@ $('#summaryStats').html(`
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">{{translate('total')}}</div>
+<div class="crm-stat-title">{{translate('Total')}}</div>
 <div class="crm-stat-value">${summary.total||0}</div>
 </div>
 </div>
@@ -357,14 +357,14 @@ $('#summaryStats').html(`
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">{{translate('pending') }}</div>
+<div class="crm-stat-title">{{translate('Pending') }}</div>
 <div class="crm-stat-value">${summary.pending||0}</div>
 </div>
 </div>
 
 <div class="col-md-2">
 <div class="crm-stat-card">
-<div class="crm-stat-title">{{translate('converted')}}</div>
+<div class="crm-stat-title">{{translate('Converted')}}</div>
 <div class="crm-stat-value">${summary.converted||0}</div>
 </div>
 </div>

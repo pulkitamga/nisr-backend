@@ -22,7 +22,7 @@
                         <div class="form-group">
                             <div class="row ">
                                 <div class="col-md-12">
-                                    <label for="title" class="title-color">{{translate('title')}}</label>
+                                    <label for="title" class="title-color">{{translate('Title')}}</label>
                                     <input type="text" name="title" value="{{$shippingMethod['title']}}" class="form-control" placeholder="">
                                 </div>
                             </div>
@@ -30,8 +30,8 @@
                         <div class="form-group">
                             <div class="row ">
                                 <div class="col-md-12">
-                                    <label for="duration" class="title-color">{{translate('duration')}}</label>
-                                    <input type="text" name="duration" value="{{$shippingMethod['duration']}}" class="form-control" placeholder="{{translate('ex')}} : 4-6 {{translate('days')}}">
+                                    <label for="duration" class="title-color">{{translate('Duration')}}</label>
+                                    <input type="text" name="duration" value="{{$shippingMethod['duration']}}" class="form-control" placeholder="{{translate('Ex')}} : 4-6 {{translate('Days')}}">
                                 </div>
                             </div>
                         </div>
@@ -40,12 +40,12 @@
                             <div class="row ">
                                 <div class="col-md-12">
                                     <label for="cost" class="title-color">{{translate('cost')}}</label>
-                                    <input type="text" min="0" max="1000000" name="cost" value="{{currencyConverter($shippingMethod['cost'])}}" class="form-control" placeholder="{{translate('ex').':'.usdToDefaultCurrency("10")}}">
+                                    <input type="text" min="0" max="1000000" name="cost" value="{{currencyConverter($shippingMethod['cost'])}}" class="form-control" placeholder="{{translate('Ex').':'.usdToDefaultCurrency("10")}}">
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn--primary mt-2">{{translate('update')}}</button>
+                                <button type="submit" class="btn btn--primary mt-2">{{translate('Update')}}</button>
                             </div>
                         </div>
                     </form>

@@ -39,7 +39,7 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="state">{{translate('state')}}</label>
+                                            <label class="title-color d-flex" for="state">{{translate('State')}}</label>
                                             <select id="state" name="state" class="form-control js-select2-custom" data-state-id="{{ $method->state_id }}">
                                                 <option value="0" selected="" disabled="">---Select---</option>
                                                 @foreach($states as $state)
@@ -56,7 +56,7 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color d-flex" for="title">{{translate('city')}}</label>
+                                            <label class="title-color d-flex" for="title">{{translate('City')}}</label>
                                             <select id="city" name="city" class="form-control js-select2-custom" data-city-id="{{ $method->city_id }}">
                                                 <option value="0" selected="" disabled="">---Select---</option>
                                                 @foreach($cities as $city)
@@ -73,8 +73,8 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color" for="area">{{translate('area')}}</label>
-                                            <input type="text" name="area" value="{{$method['area']}}" class="form-control" placeholder="{{translate('area')}}">
+                                            <label class="title-color" for="area">{{translate('Area')}}</label>
+                                            <input type="text" name="area" value="{{$method['area']}}" class="form-control" placeholder="{{translate('Area')}}">
                                         </div>
                                     </div>
                                 </div>
@@ -83,10 +83,10 @@
                                 <div class="form-group">
                                     <div class="row justify-content-center">
                                         <div class="col-md-12">
-                                            <label class="title-color" for="duration">{{translate('duration')}}</label>
+                                            <label class="title-color" for="duration">{{translate('Duration')}}</label>
                                             <input type="text" name="duration" value="{{$method['duration']}}"
                                                    class="form-control"
-                                                   placeholder="{{translate('ex').' '.':'.' '.translate('4_to_6_days')}}">
+                                                   placeholder="{{translate('Ex').' '.':'.' '.translate('4_to_6_days')}}">
                                         </div>
                                     </div>
                                 </div>
@@ -99,7 +99,7 @@
                                             <input type="number" min="0" max="1000000" name="cost"
                                                 value="{{usdToDefaultCurrency(amount: $method['cost'])}}"
                                                 class="form-control"
-                                                placeholder="{{translate('ex').' '.':'.' '.setCurrencySymbol(amount: usdToDefaultCurrency(amount: 10), currencyCode: getCurrencyCode())}}">
+                                                placeholder="{{translate('Ex').' '.':'.' '.setCurrencySymbol(amount: usdToDefaultCurrency(amount: 10), currencyCode: getCurrencyCode())}}">
                                         </div>
                                     </div>
                                 </div>
@@ -114,7 +114,7 @@
                         <div id="map" style="width: 100%; height: 400px;"></div>
                         <input id="searchInput" type="text" placeholder="Search here" style="margin-top: 10px; width: 100%; padding: 10px;">
                         <div class="d-flex gap-10 mt-10 flex-wrap justify-content-end">
-                            <button type="submit" class="btn btn--primary px-4">{{translate('update')}}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{translate('Update')}}</button>
                         </div>
                     </form>
                 </div>

@@ -63,7 +63,7 @@ class PaymentMethodController extends Controller
             'updated_at' => now()
         ]);
         clearWebConfigCacheKeys();
-        Toastr::success(translate('successfully_updated'));
+        Toastr::success(translate('Successfully_Updated'));
         return back();
     }
 

@@ -9,7 +9,7 @@
     <div class="mb-4">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" class="mb-1" alt="">
-            {{ translate('add_new_User') }}
+            {{ translate('Add_New_User') }}
         </h2>
     </div>
     <form class="user" action="{{route('admin.department.add-users', $dept_id)}}" method="post" enctype="multipart/form-data" id="add-department-users-form">
@@ -116,9 +116,9 @@
             <div class="card-footer">
                 <div class="d-flex align-items-center justify-content-end gap-10">
                     <input type="hidden" name="from_submit" value="admin">
-                    <button type="reset" class="btn btn-secondary reset-button">{{translate('reset')}} </button>
+                    <button type="reset" class="btn btn-secondary reset-button">{{translate('Reset')}} </button>
                     <button type="button" class="btn btn--primary btn-user form-submit" data-form-id="add-department-users-form" data-redirect-route="{{route('admin.department.add-users', $dept_id)}}"
-                            data-message="{{translate('want_to_add_this_user_in_department').'?'}}">{{translate('submit')}}</button>
+                            data-message="{{translate('want_to_add_this_user_in_department').'?'}}">{{translate('Submit')}}</button>
                 </div>
             </div>
         </div>

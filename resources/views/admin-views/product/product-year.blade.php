@@ -25,7 +25,7 @@
 
                 <div class="row">
                     <div class="mb-3 col-lg-4">
-                        <label for="year_value" class="form-label">{{ translate('year') }}</label>
+                        <label for="year_value" class="form-label">{{ translate('Year') }}</label>
                         <input type="number" class="form-control" id="year_value" name="year" min="1900" max="{{ date('Y') + 1 }}" required>
                     </div>
                     <div class="col-lg-8">
@@ -48,7 +48,7 @@
                             @foreach($languages as $index => $language)
                             <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="year-lang-{{ $language }}">
                                 <div class="mb-3">
-                                    <label for="year_name_{{ $language }}" class="form-label">{{ translate('year') }} ({{ strtoupper($language) }})</label>
+                                    <label for="year_name_{{ $language }}" class="form-label">{{ translate('Year') }} ({{ strtoupper($language) }})</label>
                                     <input
                                         type="text"
                                         class="form-control"
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="text-end">
-                    <button type="submit" id="yearSubmitBtn" class="btn btn--primary w-10rem">{{ translate('submit') }}</button>
+                    <button type="submit" id="yearSubmitBtn" class="btn btn--primary w-10rem">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>
@@ -88,7 +88,7 @@
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                         placeholder="{{ translate('search_by_year') }}"
                                         value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -100,8 +100,8 @@
                         <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{ translate('SL') }}</th>
-                                <th>{{ translate('year') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th>{{ translate('Year') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -145,7 +145,7 @@
     function resetYearForm() {
         $('#year_id').val('');
         $('#year_value').val('');
-        $('#yearSubmitBtn').text(@json(translate('submit')));
+        $('#yearSubmitBtn').text(@json(translate('Submit')));
 
         yearLanguages.forEach(function (language) {
             $('#year_name_' + language).val('');
@@ -159,7 +159,7 @@
             $.get($(this).data('url'), function (data) {
                 $('#year_id').val(data.id);
                 $('#year_value').val(data.year);
-                $('#yearSubmitBtn').text(@json(translate('update')));
+                $('#yearSubmitBtn').text(@json(translate('Update')));
 
                 yearLanguages.forEach(function (language) {
                     $('#year_name_' + language).val(data.names[language] || '');
@@ -175,7 +175,7 @@
             const id = $(this).data('id');
 
             Swal.fire({
-                title: @json(translate('are_you_sure')),
+                title: @json(translate('Are_you_sure')),
                 text: @json(translate('this_action_cannot_be_undone')),
                 icon: 'warning',
                 showCancelButton: true,
@@ -198,7 +198,7 @@
                         Swal.fire(@json(translate('deleted')), @json(translate('year_deleted_successfully')), 'success');
                     },
                     error: function() {
-                        Swal.fire(@json(translate('failed')), @json(translate('could_not_delete_year')), 'error');
+                        Swal.fire(@json(translate('Failed')), @json(translate('could_not_delete_year')), 'error');
                     }
                 });
             });

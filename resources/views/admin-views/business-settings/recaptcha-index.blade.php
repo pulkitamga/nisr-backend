@@ -7,7 +7,7 @@
         <div class="mb-4 pb-2">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/3rd-party.png')}}" alt="">
-                {{translate('3rd_party')}}
+                {{translate('3rd_Party')}}
             </h2>
         </div>
         @include('admin-views.business-settings.third-party-inline-menu')
@@ -18,7 +18,7 @@
                         @csrf
                         <div class="card-body">
                             <div class="d-flex justify-content-between gap-2 align-items-center mb-3">
-                                <div>{{translate('status')}}</div>
+                                <div>{{translate('Status')}}</div>
 
                                 <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder mb-2 text-capitalize">
                                     {{translate('how_it_works')}}
@@ -46,7 +46,7 @@
                                                    data-on-image = "recaptcha-off.png"
                                                    data-off-image = "recaptcha-off.png"
                                                    data-on-title = "{{translate('important').'!'}}"
-                                                   data-off-title = "{{translate('warning').'!'}}"
+                                                   data-off-title = "{{translate('Warning').'!'}}"
                                                    data-on-message = "<p>{{translate('reCAPTCHA_is_now_enabled_for_added_security').'.'.translate('users_may_be_prompted_to_complete_a_reCAPTCHA_challenge_to_verify_their_human_identity_and protect_against_spam_and_malicious_activity')}}</p>"
                                                    data-off-message = "<p>{{translate('disabling_reCAPTCHA_may_leave_your_website_vulnerable_to_spam_and_malicious_activity_and_suspects_that_a_user_may_be_a_bot').' '.translate('it_is_highly_recommended_to_keep_reCAPTCHA_enabled_to_ensure_the_security_and_integrity_of_your_website')}}</p>">
                                             <span class="switcher_control"></span>
@@ -71,7 +71,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <h5 class="mt-4 mb-3 d-flex">{{translate('instructions')}}</h5>
+                            <h5 class="mt-4 mb-3 d-flex">{{translate('Instructions')}}</h5>
                             <ol class="ps-4 instructions-list">
                                 <li>
                                     {{translate('to_get_site_key_and_secret_key_Go_to_the_Credentials_page')}}
@@ -87,8 +87,8 @@
                                 <li>{{translate('copy_Site_Key_and_Secret_Key,_Paste_in_the_input_filed_below_and_Save').'.'}}</li>
                             </ol>
                             <div class="d-flex justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5 {{env('APP_MODE')!='demo'?'':'call-demo'}}">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </form>
@@ -111,7 +111,7 @@
                                     <h4 class="lh-md mb-3 text-capitalize">{{translate('find_SMTP_server_details')}}</h4>
                                     <ul class="d-flex flex-column px-4 gap-2 mb-4">
                                     <li>{{translate('contact_your_email_service_provider_or_IT_administrator_to_obtain_the_SMTP_server_details_such_as_hostname_port_username_and_password').'.'}}</li>
-                                        <li>{{translate('note').':'.translate('if_you`re_not_sure_where_to_find_these_details,_check_the_email_provider`s_documentation_or_support_resources_for_guidance').'.'}}</li>
+                                        <li>{{translate('Note').':'.translate('if_you`re_not_sure_where_to_find_these_details,_check_the_email_provider`s_documentation_or_support_resources_for_guidance').'.'}}</li>
                                     </ul>
                                 </div>
                             </div>

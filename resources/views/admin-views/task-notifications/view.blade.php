@@ -50,17 +50,17 @@
                                     <span class="value">{{ $SupportnotificationData->supportTicket->type }}</span>
                                 </div>
                                 <div>
-                                    <span class="key">{{ translate('priority') }}</span>
+                                    <span class="key">{{ translate('Priority') }}</span>
                                     <span>:</span>
                                     <span class="value">{{ $SupportnotificationData->supportTicket->priority }}</span>
                                 </div> -->
                                 <div>
-                                    <span class="key">{{ translate('title') }}</span>
+                                    <span class="key">{{ translate('Title') }}</span>
                                     <span>:</span>
                                     <span class="value">{{ $SupportnotificationData->title }}</span>
                                 </div>
                                 <div>
-                                    <span class="key">{{ translate('message') }}</span>
+                                    <span class="key">{{ translate('Message') }}</span>
                                     <span>:</span>
                                     <span class="value">{{ $SupportnotificationData->message }}</span>
                                 </div>

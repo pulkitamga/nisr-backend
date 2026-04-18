@@ -24,7 +24,7 @@
                         <select class="js-select2-custom form-control __form-control" name="seller_id">
                             <option class="text-center"
                                 value="inhouse" {{ $seller_id == 'inhouse' ? 'selected' : '' }}>
-                                {{translate('inhouse')}}
+                                {{translate('in_House')}}
                             </option>
 
                         </select>
@@ -46,18 +46,18 @@
                     <div class="col-sm-6 col-md-3" id="from_div">
                         <div class="form-floating">
                             <input type="date" name="from" value="{{$from}}" id="from_date" class="form-control">
-                            <label>{{ ucwords(translate('start_date'))}}</label>
+                            <label>{{ ucwords(translate('Start_Date'))}}</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3" id="to_div">
                         <div class="form-floating">
                             <input type="date" value="{{$to}}" name="to" id="to_date" class="form-control">
-                            <label>{{ ucwords(translate('end_date'))}}</label>
+                            <label>{{ ucwords(translate('End_Date'))}}</label>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3 filter-btn">
                         <button type="submit" class="btn btn--primary px-4 px-md-5">
-                            {{translate('filter')}}
+                            {{translate('Filter')}}
                         </button>
                     </div>
                 </div>
@@ -83,13 +83,13 @@
                     <div class="text-center">
                         <strong class="text-primary">{{ $product_count['pending_product_count'] }}</strong>
                         <div class="d-flex">
-                            <span>{{translate('pending')}}</span>
+                            <span>{{translate('Pending')}}</span>
                         </div>
                     </div>
                     <div class="text-center">
                         <strong class="text-success">{{ $product_count['active_product_count'] }}</strong>
                         <div class="d-flex">
-                            <span>{{translate('active')}}</span>
+                            <span>{{translate('Active')}}</span>
                         </div>
                     </div>
                 </div>
@@ -145,9 +145,9 @@
                         <input type="hidden" name="from" value="{{ $from }}">
                         <input type="hidden" name="to" value="{{ $to }}">
                         <input id="datatableSearch_" type="search" name="search" class="form-control"
-                            placeholder="{{translate('search_product_name')}}" aria-label="{{ translate('Search orders') }}"
+                            placeholder="{{translate('search_Product_Name')}}" aria-label="{{ translate('search_orders') }}"
                             value="{{ $search }}">
-                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                     </div>
                 </form>
                 <div class="dropdown">
@@ -169,13 +169,13 @@
                         <tr>
                             <th>{{translate('SL')}}</th>
                             <th>
-                                {{translate('product_Name')}}
+                                {{translate('Product_name')}}
                             </th>
                             <th>
                                 {{translate('product_Unit_Price')}}
                             </th>
                             <th>
-                                {{translate('total_Amount_Sold')}}
+                                {{translate('total_Amount Sold')}}
                             </th>
                             <th>
                                 {{translate('total_Quantity_Sold')}}
@@ -212,7 +212,7 @@
                                         ), currencyCode: getCurrencyCode()) }}
                             </td>
                             <td>
-                                {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('available') : translate('not_available')) : $product->current_stock }}
+                                {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('Available') : translate('not_available')) : $product->current_stock }}
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">

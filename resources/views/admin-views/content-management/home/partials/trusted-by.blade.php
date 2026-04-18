@@ -32,14 +32,14 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
         <div class="row">
             <input type="hidden" name="lang[]" value="{{ $lang }}">
             <div class="col-lg-6">
-                <label class="title-color d-flex">{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
+                <label class="title-color d-flex">{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
                     value="{{ $lang == $defaultLanguage ? ($item['heading'] ?? '') : ($translations[$lang]['heading'] ?? '') }}"
                     placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="col-lg-6">
-                <label class="title-color d-flex">{{ translate('paragraph') }} ({{ strtoupper($lang) }})</label>
+                <label class="title-color d-flex">{{ translate('Paragraph') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="paragraph[]" class="form-control"
                     value="{{ $lang == $defaultLanguage ? ($item['paragraph'] ?? '') : ($translations[$lang]['paragraph'] ?? '') }}"
                     placeholder="{{ translate('enter_paragraph') }}">
@@ -50,15 +50,15 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 
     <div class="row">
         <div class="col-lg-6">
-            <label class="title-color d-flex">{{ translate('year') }}</label>
+            <label class="title-color d-flex">{{ translate('Year') }}</label>
             <input type="text" name="year" class="form-control" value="{{ $item['year'] }}"
                 placeholder="{{ translate('enter_year') }}">
         </div>
     </div>
 
     <div class="d-flex justify-content-end gap-2 mt-4">
-        <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
+        <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
     </div>
 </form>
 @endforeach

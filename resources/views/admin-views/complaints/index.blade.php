@@ -29,9 +29,9 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_ticket_by_subject_or_status').'...'}}"
-                                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
+                                               aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
                                         <button type="submit"
-                                                class="btn btn--primary">{{translate('search')}}</button>
+                                                class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -49,13 +49,13 @@
 	                                            data-value="priority">
 	                                        <option value="all">{{translate('all_Priority')}}</option>
 	                                        <option
-	                                            value="low" {{$priority=='low'?'selected':''}}>{{translate('low')}}</option>
+	                                            value="low" {{$priority=='low'?'selected':''}}>{{translate('Low')}}</option>
 	                                        <option
-	                                            value="medium" {{$priority=='medium'?'selected':''}}>{{translate('medium')}}</option>
+	                                            value="medium" {{$priority=='medium'?'selected':''}}>{{translate('Medium')}}</option>
 	                                        <option
-	                                            value="high" {{$priority=='high'?'selected':''}}>{{translate('high')}}</option>
+	                                            value="high" {{$priority=='high'?'selected':''}}>{{translate('High')}}</option>
 	                                        <option
-	                                            value="urgent" {{$priority=='urgent'?'selected':''}}>{{translate('urgent')}}</option>
+	                                            value="urgent" {{$priority=='urgent'?'selected':''}}>{{translate('Urgent')}}</option>
 	                                    </select>
 
 	                                    @php($statusId=request()->has('status') ? request()->input('status'):'')
@@ -88,9 +88,9 @@
                                     @endif 
                                 </th> 
                                 <th>{{translate('Customer')}}</th>
-                                <th>{{translate('Date')}}</th>
+                                <th>{{translate('DATE')}}</th>
                                 <th>{{translate('Description')}}</th>                                
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>

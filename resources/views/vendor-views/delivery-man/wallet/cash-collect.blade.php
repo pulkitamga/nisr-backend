@@ -60,9 +60,9 @@
                             <thead class="thead-light thead-50 text-capitalize table-nowrap">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('name')}}</th>
-                                <th>{{translate('amount')}}</th>
-                                <th>{{translate('transaction_date')}}</th>
+                                <th>{{translate('Name')}}</th>
+                                <th>{{translate('Amount')}}</th>
+                                <th>{{translate('transaction_Date')}}</th>
                             </tr>
                             </thead>
 

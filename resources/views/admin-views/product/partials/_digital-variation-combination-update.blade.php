@@ -48,7 +48,7 @@
                             <input type="number" name="digital_product_price[{{ $uniqueKey }}]" value="{{ usdToDefaultCurrency(amount: $combination['price']) }}"
                                    min="0" step="0.01"
                                    class="form-control variation-price-input remove-symbol" required
-                                   placeholder="{{ translate('ex').': 100' }}">
+                                   placeholder="{{ translate('Ex').': 100' }}">
                         </td>
                         <td>
                             <input type="text" name="digital_product_sku[{{ $uniqueKey }}]"

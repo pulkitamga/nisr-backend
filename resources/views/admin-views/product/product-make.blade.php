@@ -45,7 +45,7 @@
                     <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="make-lang-{{ $language }}">
                         <div class="row">
                             <div class="mb-3 col-lg-6">
-                                <label for="make_name_{{ $language }}" class="form-label">{{ translate('make') }} ({{ strtoupper($language) }})</label>
+                                <label for="make_name_{{ $language }}" class="form-label">{{ translate('Make') }} ({{ strtoupper($language) }})</label>
                                 <input
                                     type="text"
                                     class="form-control"
@@ -55,7 +55,7 @@
                                 >
                             </div>
                             <div class="mb-3 col-lg-6">
-                                <label for="make_models_{{ $language }}" class="form-label">{{ translate('model') }} ({{ strtoupper($language) }})</label>
+                                <label for="make_models_{{ $language }}" class="form-label">{{ translate('Model') }} ({{ strtoupper($language) }})</label>
                                 <input
                                     type="text"
                                     class="form-control vehicle-model-tags"
@@ -75,7 +75,7 @@
                 </div>
 
                 <div class="text-end">
-                    <button type="submit" id="submitBtn" class="btn btn--primary w-10rem">{{ translate('submit') }}</button>
+                    <button type="submit" id="submitBtn" class="btn btn--primary w-10rem">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>
@@ -97,7 +97,7 @@
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                         placeholder="{{ translate('search_by_make_name') }}"
                                         value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                         </div>
@@ -111,7 +111,7 @@
                                 <th>{{ translate('SL') }}</th>
                                 <th>{{ translate('make_name') }}</th>
                                 <th class="text-center">{{ translate('make_models') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -163,7 +163,7 @@
 
     function resetMakeForm() {
         $('#make_id').val('');
-        $('#submitBtn').text(@json(translate('submit')));
+        $('#submitBtn').text(@json(translate('Submit')));
 
         makeLanguages.forEach(function (language) {
             $('#make_name_' + language).val('');
@@ -181,7 +181,7 @@
 
             resetMakeForm();
             $('#make_id').val(id);
-            $('#submitBtn').text(@json(translate('update')));
+            $('#submitBtn').text(@json(translate('Update')));
 
             $.get($(this).data('url'), function(data) {
                 makeLanguages.forEach(function (language) {
@@ -204,14 +204,14 @@
         });
 
         $('#makeModelForm').on('submit', function() {
-            $('#submitBtn').text(@json(translate('submit')));
+            $('#submitBtn').text(@json(translate('Submit')));
         });
 
         $('.delete-make-btn').on('click', function() {
             const id = $(this).data('id');
 
             Swal.fire({
-                title: @json(translate('are_you_sure')),
+                title: @json(translate('Are_you_sure')),
                 text: @json(translate('this_action_cannot_be_undone')),
                 icon: 'warning',
                 showCancelButton: true,
@@ -234,7 +234,7 @@
                         Swal.fire(@json(translate('deleted')), @json(translate('make_deleted_successfully')), 'success');
                     },
                     error: function() {
-                        Swal.fire(@json(translate('failed')), @json(translate('could_not_delete_make')), 'error');
+                        Swal.fire(@json(translate('Failed')), @json(translate('could_not_delete_make')), 'error');
                     }
                 });
             });

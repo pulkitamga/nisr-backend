@@ -17,7 +17,7 @@
                                 <img
                                     src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
                                      class="avatar avatar-lg rounded avatar-bordered"
-                                     alt="{{ $product['name'].'_'.translate('image') }}">
+                                     alt="{{ $product['name'].'_'.translate('Image') }}">
                                 <div
                                     class="title-color line--limit-2">{{substr($product['name'],0,20)}} {{strlen($product['name'])>20?'...':''}}</div>
                             </div>

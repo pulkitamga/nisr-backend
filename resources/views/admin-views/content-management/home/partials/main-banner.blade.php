@@ -8,7 +8,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
 @endphp
 <div class="d-flex justify-content-end my-3">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBannerModal" data-toggle="modal" data-target="#addBannerModal">
-        {{ translate('Add Banner') }}
+        {{ translate('add_banner') }}
     </button>
 </div>
 
@@ -19,8 +19,8 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
             <tr>
                 <th>{{ translate('Heading') }}</th>
                 <th>{{ translate('Paragraph') }}</th>
-                <th class="text-nowrap">{{ translate('Button Text') }}</th>
-                <th>{{ translate('Button Link') }}</th>
+                <th class="text-nowrap">{{ translate('Button_Text') }}</th>
+                <th>{{ translate('button_link') }}</th>
                 <th>{{ translate('Image') }}</th>
                 <th>{{ translate('Status') }}</th>
                 <th>{{ translate('Action') }}</th>
@@ -148,16 +148,16 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                 data-lang="{{ $lang }}"
                                 rows="3"></textarea>
 
-                            <label>{{ translate('Button Text') }}({{ strtoupper($lang) }})</label>
+                            <label>{{ translate('Button_Text') }}({{ strtoupper($lang) }})</label>
                             <input name="buttonText[]" id="edit-buttonText"
-                                placeholder="{{ translate('Button Text') }}" class="form-control lang-button"
+                                placeholder="{{ translate('Button_Text') }}" class="form-control lang-button"
                                 data-lang="{{ $lang }}">
                         </div>
                     </div>
                     @endforeach
-                    <label>{{ translate('Button Link') }}</label>
+                    <label>{{ translate('button_link') }}</label>
                     <input name="buttonLink" id="editButtonLink" class="form-control mb-2"
-                        placeholder="{{ translate('Button Link') }}">
+                        placeholder="{{ translate('button_link') }}">
 
                     <label>{{ translate('Image') }}</label>
                     <input type="hidden" name="remove_image" id="editBannerRemoveImage" value="0">
@@ -175,7 +175,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                             <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
                                 <div class="d-flex flex-column justify-content-center align-items-center">
                                     <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                    <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                    <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                                 </div>
                             </div>
                         </div>
@@ -240,7 +240,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                             </div>
 
                             <div class="form-group">
-                                <label>{{ translate('Button Text') }} ({{ strtoupper($lang) }})</label>
+                                <label>{{ translate('Button_Text') }} ({{ strtoupper($lang) }})</label>
                                 <input type="text" name="buttonText[]" class="form-control">
                             </div>
                         </div>
@@ -249,7 +249,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                     </div>
 
                     <div class="form-group col-md-6">
-                        <label>{{ translate('Button Link') }}</label>
+                        <label>{{ translate('button_link') }}</label>
                         <input type="text" name="buttonLink" class="form-control" required>
                     </div>
 
@@ -270,7 +270,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                                 <div class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
                                     <div class="d-flex flex-column justify-content-center align-items-center">
                                         <img alt="" class="w-75" src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                        <h3 class="text-muted text-capitalize">{{ translate('Upload Image') }}</h3>
+                                        <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                                     </div>
                                 </div>
                             </div>
@@ -322,7 +322,7 @@ if (!in_array($defaultLanguage, $languages ?? [], true)) {
                 }
             },
             error: function() {
-                alert(@json(__('Something went wrong.')));
+                alert(@json(__('something_went_wrong.')));
             }
         });
     }

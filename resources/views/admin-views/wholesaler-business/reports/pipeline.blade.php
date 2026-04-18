@@ -107,15 +107,15 @@
                             <select class="form-control" name="date_type" id="date_type">
                                 <option value="this_year"
                                     {{ ($filters['date_type'] ?? 'this_year') == 'this_year' ? 'selected' : '' }}>
-                                    {{ translate('this_year') }}
+                                    {{ translate('this_Year') }}
                                 </option>
                                 <option value="this_month"
                                     {{ ($filters['date_type'] ?? '') == 'this_month' ? 'selected' : '' }}>
-                                    {{ translate('this_month') }}
+                                    {{ translate('this_Month') }}
                                 </option>
                                 <option value="this_week"
                                     {{ ($filters['date_type'] ?? '') == 'this_week' ? 'selected' : '' }}>
-                                    {{ translate('this_week') }}
+                                    {{ translate('this_Week') }}
                                 </option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') == 'today' ? 'selected' : '' }}>
                                     {{ translate('today') }}
@@ -128,18 +128,18 @@
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
                         </div>
                         <div class="col-md-2 custom-date-range"
                             style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('wholesaler') }}</label>
+                            <label class="form-label mb-1">{{ translate('Wholesaler') }}</label>
                             <select class="form-control" name="wholesaler_id">
-                                <option value="0">{{ translate('all') }}</option>
+                                <option value="0">{{ translate('All') }}</option>
                                 @foreach ($wholesalers as $wholesaler)
                                     <option value="{{ $wholesaler->id }}"
                                         {{ (int) ($filters['wholesaler_id'] ?? 0) === (int) $wholesaler->id ? 'selected' : '' }}>
@@ -149,9 +149,9 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label mb-1">{{ translate('tier') }}</label>
+                            <label class="form-label mb-1">{{ translate('Tier') }}</label>
                             <select class="form-control" name="tier">
-                                <option value="">{{ translate('all') }}</option>
+                                <option value="">{{ translate('All') }}</option>
                                 @foreach ($tiers as $tier)
                                     <option value="{{ $tier }}"
                                         {{ ($filters['tier'] ?? '') === $tier ? 'selected' : '' }}>{{ $tier }}
@@ -160,9 +160,9 @@
                             </select>
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2 pt-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
                             <a href="{{ route('admin.wholesale.dashboard.reports.pipeline') }}"
-                                class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                                class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.wholesale.dashboard.reports.pipeline', array_merge(request()->query(), ['download' => 'excel'])) }}"
                                 class="btn btn-outline-success"><i class="tio-download-to me-1"></i>
                                 {{ translate('excel') }}</a>
@@ -195,7 +195,7 @@
             <div class="col-sm-6 col-xl-3">
                 <div class="card kpi-card h-100">
                     <div class="card-body">
-                        <p class="kpi-label mb-2">{{ translate('confirmed_orders') }}</p>
+                        <p class="kpi-label mb-2">{{ translate('Confirmed_Orders') }}</p>
                         <p class="kpi-value">{{ number_format((int) $kpi['confirmed_count']) }}</p>
                     </div>
                 </div>
@@ -305,8 +305,8 @@
                         <table class="table table-borderless table-thead-bordered table-nowrap card-table mb-0">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>{{ translate('tier') }}</th>
-                                    <th class="text-end">{{ translate('orders') }}</th>
+                                    <th>{{ translate('Tier') }}</th>
+                                    <th class="text-end">{{ translate('Orders') }}</th>
                                     <th class="text-end">{{ translate('revenue') }}</th>
                                 </tr>
                             </thead>
@@ -417,7 +417,7 @@
                                 fill: false
                             },
                             {
-                                label: @json(translate('confirmed_orders')),
+                                label: @json(translate('Confirmed_Orders')),
                                 data: trendData.confirmed || [],
                                 borderColor: '#38bdf8',
                                 backgroundColor: 'rgba(56, 189, 248, 0.18)',

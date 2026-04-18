@@ -18,7 +18,7 @@
                     @csrf
                     <div class="border rounded border-color-c1 px-4 py-3 d-flex justify-content-between mb-1">
                         <h5 class="mb-0 d-flex gap-1 c1">
-                            {{translate('temporary_close')}}
+                            {{translate('temporary_Close')}}
                         </h5>
                         <input type="hidden" name="id" value="{{ $shop->id }}">
                         <div class="position-relative">
@@ -51,11 +51,11 @@
                         </div>
                         <div class="d-inline-flex gap-2">
                             <button class="btn btn-block __inline-70 text-capitalize" data-toggle="modal" data-target="#vacation-mode-modal">
-                                {{translate('go_to_vacation_mode')}}
+                                {{translate('go_to_Vacation_Mode')}}
                             </button>
 
                             <a class="btn btn--primary __inline-70 px-4 text-white" href="{{route('vendor.shop.update',[$shop->id])}}">
-                                {{translate('edit')}}
+                                {{translate('Edit')}}
                             </a>
                         </div>
                     </div>
@@ -75,15 +75,15 @@
                             @endif
                             <div class="">
                                 <div class="flex-start">
-                                    <h4>{{translate('name').' '.':'}} </h4>
+                                    <h4>{{translate('Name').' '.':'}} </h4>
                                     <h4 class="mx-1">{{$shop->name}}</h4>
                                 </div>
                                 <div class="flex-start">
-                                    <h6>{{translate('phone').' '.':'}}</h6>
+                                    <h6>{{translate('Phone').' '.':'}}</h6>
                                     <h6 class="mx-1">{{$shop->contact}}</h6>
                                 </div>
                                 <div class="flex-start">
-                                    <h6>{{translate('address').' '.':'}}</h6>
+                                    <h6>{{translate('Address').' '.':'}}</h6>
                                     <h6 class="mx-1">{{$shop->address}}</h6>
                                 </div>
                             </div>
@@ -100,7 +100,7 @@
                         @csrf
                         <div class="modal-header border-bottom pb-2">
                             <div>
-                                <h5 class="modal-title text-capitalize" id="exampleModalLabel">{{translate('vacation_mode')}}</h5>
+                                <h5 class="modal-title text-capitalize" id="exampleModalLabel">{{translate('vacation_Mode')}}</h5>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
@@ -120,21 +120,21 @@
                             <div class="mb-5">*{{translate('set_vacation_mode_for_shop_means_you_will_be_not_available_receive_order_and_provider_products_for_placed_order_at_that_time')}}</div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <label class="text-capitalize">{{translate('vacation_start')}}</label>
+                                    <label class="text-capitalize">{{translate('vacation_Start')}}</label>
                                     <input type="date" name="vacation_start_date" value="{{ $shop->vacation_start_date }}" id="start-date-time" class="form-control" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="text-capitalize">{{translate('vacation_end')}}</label>
+                                    <label class="text-capitalize">{{translate('vacation_End')}}</label>
                                     <input type="date" name="vacation_end_date" value="{{ $shop->vacation_end_date }}" id="end-date-time" class="form-control" required>
                                 </div>
                                 <div class="col-md-12 mt-2 ">
-                                    <label class="text-capitalize">{{translate('vacation_note')}}</label>
+                                    <label class="text-capitalize">{{translate('vacation_Note')}}</label>
                                     <textarea class="form-control" name="vacation_note" id="vacation_note">{{ $shop->vacation_note }}</textarea>
                                 </div>
                             </div>
                             <div class="text-end gap-5 mt-2">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('close')}}</button>
-                                <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{translate('Close')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('Update')}}</button>
                             </div>
                         </div>
                     </form>

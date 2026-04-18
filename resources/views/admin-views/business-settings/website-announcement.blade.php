@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2 text-capitalize">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/announcement.png')}}" alt="">
-                {{translate('announcement_setup')}}
+                {{translate('announcement_Setup')}}
             </h2>
         </div>
         <form action="{{ route('admin.business-settings.announcement') }}" method="post" enctype="multipart/form-data">
@@ -21,12 +21,12 @@
                         <div class="d-flex gap-10 align-items-center mb-2">
                             <input type="radio" name="announcement_status"
                                     value="1" {{$announcement['status']==1?'checked':''}}>
-                            <label class="title-color mb-0">{{translate('active')}}</label>
+                            <label class="title-color mb-0">{{translate('Active')}}</label>
                         </div>
                         <div class="d-flex gap-10 align-items-center mb-4">
                             <input type="radio" name="announcement_status"
                                     value="0" {{$announcement['status']==0?'checked':''}}>
-                            <label class="title-color mb-0">{{translate('inactive')}}</label>
+                            <label class="title-color mb-0">{{translate('Inactive')}}</label>
                         </div>
                         <div class="d-flex flex-wrap gap-4">
                             <div class="form-group text-center">

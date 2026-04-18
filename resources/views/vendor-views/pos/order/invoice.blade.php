@@ -6,14 +6,14 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
     <div class="text-center pt-4 mb-3">
         <h2 class="line-height-1">{{ getWebConfig('company_name') }}</h2>
         <h5 class="line-height-1 font-size-16px">
-            {{ translate('phone') }} : {{ getWebConfig('company_phone') }}
+            {{ translate('Phone') }} : {{ getWebConfig('company_phone') }}
         </h5>
     </div>
 
     <span class="dashed-hr"></span>
     <div class="row mt-3">
         <div class="col-6">
-            <h5>{{ translate('order_ID') }} : {{ $order['id'] }}</h5>
+            <h5>{{ translate('Order_ID') }} : {{ $order['id'] }}</h5>
         </div>
         <div class="col-6">
             <h5 class="">
@@ -22,9 +22,9 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
         </div>
         @if($order->customer)
             <div class="col-12">
-                <h5 class="text-capitalize">{{ translate('customer_name') }} : {{$order->customer['f_name'].' '.$order->customer['l_name']}}</h5>
+                <h5 class="text-capitalize">{{ translate('Customer_Name') }} : {{$order->customer['f_name'].' '.$order->customer['l_name']}}</h5>
                 @if ($order->customer->id !=0)
-                    <h5>{{ translate('phone') }} : {{$order->customer['phone']}}</h5>
+                    <h5>{{ translate('Phone') }} : {{$order->customer['phone']}}</h5>
                 @endif
 
             </div>
@@ -35,9 +35,9 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
     <table class="table table-bordered mt-3 text-start width-99">
         <thead>
         <tr>
-            <th class="text-center text-uppercase">{{ translate('qty') }}</th>
+            <th class="text-center text-uppercase">{{ translate('QTY') }}</th>
             <th class="text-start text-uppercase">{{ translate('desc') }}</th>
-            <th class="text-center">{{ translate('price') }}</th>
+            <th class="text-center">{{ translate('Price') }}</th>
         </tr>
         </thead>
 
@@ -58,7 +58,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                     <td class="text-start">
                         <span> {{ Str::limit($detail->product['name'], 200) }}</span><br>
                         @if($detail->product->product_type == 'physical' && count(json_decode($detail['variation'],true))>0)
-                            <strong><u>{{ translate('variation') }} : </u></strong>
+                            <strong><u>{{ translate('Variation') }} : </u></strong>
                             @foreach(json_decode($detail['variation'],true) as $key1 =>$variation)
                                 <div class="font-size-sm text-body color-black">
                                     <span>{{ translate($key1) }} :  </span>
@@ -68,7 +68,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
                             @endforeach
                         @endif
 
-                        {{ translate('discount') }}
+                        {{ translate('Discount') }}
                         : {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['discount']), currencyCode: getCurrencyCode()) }}
                     </td>
                     <td class="text-end">
@@ -95,33 +95,33 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-end">{{ translate('item_discount') }}:</td>
+            <td class="text-end">{{ translate('Item_Discount') }}:</td>
             <td class="text-end">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['itemDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-end">{{ translate('extra_discount') }}:</td>
+            <td class="text-end">{{ translate('extra_Discount') }}:</td>
             <td class="text-end">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['extraDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-end">{{ translate('subtotal') }}:</td>
+            <td class="text-end">{{ translate('Subtotal') }}:</td>
             <td class="text-end">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-end">{{ translate('tax') }} / {{ translate('VAT') }}:</td>
+            <td class="text-end">{{ translate('Tax') }} / {{ translate('VAT') }}:</td>
             <td class="text-end">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-end">{{ translate('coupon_discount') }}:</td>
+            <td class="text-end">{{ translate('Coupon_Discount') }}:</td>
             <td class="text-end">-{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: abs((float)$orderTotalPriceSummary['couponDiscount'])), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
             <td class="text-end font-size-20px">
-                {{ translate('total') }}:
+                {{ translate('Total') }}:
             </td>
             <td class="text-end font-size-20px">
                 {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
@@ -157,7 +157,7 @@ $orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(ord
 
 
     <div class="d-flex flex-row justify-content-between border-top">
-        <span>{{ translate('paid_by') }}: {{ translate($order->payment_method) }}</span>
+        <span>{{ translate('paid_By') }}: {{ translate($order->payment_method) }}</span>
     </div>
     <span class="dashed-hr"></span>
     <h5 class="text-center pt-3 text-uppercase">

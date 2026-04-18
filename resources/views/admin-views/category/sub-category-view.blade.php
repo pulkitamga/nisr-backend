@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('sub_Category'))
+@section('title', translate('Sub_Category'))
 
 @section('content')
 <div class="content container-fluid">
@@ -39,7 +39,7 @@
                                         @foreach($languages as $lang)
                                         <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{ $lang}}-form">
                                             <label class="title-color" for="exampleFormControlInput1">
-                                                {{ translate('sub_category_name') }}
+                                                {{ translate('sub_Category_Name') }}
                                                 <span class="text-danger">*</span>
                                                 ({{strtoupper($lang) }})
                                             </label>
@@ -64,7 +64,7 @@
                                         </select>
                                     </div>
                                     <div class="form-group {{ theme_root_path() == 'theme_aster'?'w-100':'col-md-6 col-lg-4' }}">
-                                        <label class="title-color" for="priority">{{ translate('priority') }}
+                                        <label class="title-color" for="priority">{{ translate('Priority') }}
                                             <span>
                                                 <i class="tio-info-outined" data-toggle="tooltip" data-placement="top" title="{{ translate('the_lowest_number_will_get_the_highest_priority') }}"></i>
                                             </span>
@@ -114,8 +114,8 @@
                             @endif
                         </div>
                         <div class="d-flex flex-wrap gap-2 justify-content-end">
-                            <button type="reset" class="btn btn-secondary">{{ translate('reset') }}</button>
-                            <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                            <button type="reset" class="btn btn-secondary">{{ translate('Reset') }}</button>
+                            <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                         </div>
                     </form>
                 </div>
@@ -143,7 +143,7 @@
                                         </div>
                                     </div>
                                     <input id="" type="search" name="searchValue" class="form-control" placeholder="{{ translate('search_by_sub_category_name') }}" value="{{ request('searchValue') }}">
-                                    <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                                    <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                                 </div>
                             </form>
                             <div class="dropdown">
@@ -164,12 +164,12 @@
                                 @if (theme_root_path() == 'theme_aster')
                                 <th class="text-center">{{ translate('sub_category_Image') }}</th>
                                 @endif
-                                <th>{{ translate('sub_category_name') }}</th>
-                                <th>{{ translate('category_name') }}</th>
-                                <th class="text-center">{{ translate('priority') }}</th>
+                                <th>{{ translate('sub_Category_Name') }}</th>
+                                <th>{{ translate('category_Name') }}</th>
+                                <th class="text-center">{{ translate('Priority') }}</th>
                                 <th class="text-center">{{ translate('exchange_charge') }}</th>
                                 <th class="text-center">{{ translate('installation_charge') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -226,10 +226,10 @@
 
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
-                                        <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('edit') }}" href="{{ route('admin.sub-category.update',[$category['id']]) }}">
+                                        <a class="btn btn-outline-info btn-sm square-btn" title="{{ translate('Edit') }}" href="{{ route('admin.sub-category.update',[$category['id']]) }}">
                                             <i class="tio-edit"></i>
                                         </a>
-                                        <a class="btn btn-outline-danger btn-sm square-btn category-delete-button" title="{{ translate('delete') }}" id="{{ $category['id']}}">
+                                        <a class="btn btn-outline-danger btn-sm square-btn category-delete-button" title="{{ translate('Delete') }}" id="{{ $category['id']}}">
                                             <i class="tio-delete"></i>
                                         </a>
                                     </div>

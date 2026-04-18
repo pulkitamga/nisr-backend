@@ -67,11 +67,11 @@
         </span>
         <span class="fs-14px" style="font-weight: 400;line-height: 135.5%;color: #182E4B;display:block; margin-bottom:10px;">
             <span class="fs-14px" style="font-weight: 700;line-height: 19px;color: #EF7822;">
-                {{ translate('note') }}:
+                {{ translate('Note') }}:
             </span>
             {{$data->transaction_type=='add_fund_by_admin' ? translate('Reward_by_company_admin') : translate('loyalty_point_to_wallet') }}
         </span>
-        <span class="fs-14px" style="font-weight: 700;line-height: 135.5%;color: #182E4B; display:block; margin-bottom: 5px;">{{ translate('dear') }} {{$data->user->f_name.' '.$data->user->l_name}}</span>
+        <span class="fs-14px" style="font-weight: 700;line-height: 135.5%;color: #182E4B; display:block; margin-bottom: 5px;">{{ translate('Dear') }} {{$data->user->f_name.' '.$data->user->l_name}}</span>
         <span style="font-weight: 400;font-size: 12px;line-height: 135.5%;text-align: center;color: #182E4B;display:block; margin-bottom:34px;">
             {{ translate('Thank you for joining with') }}
             <span style="color: #EF7822;">
@@ -84,11 +84,11 @@
         <table style="width: 100%; text-transform: capitalize; font-size: 11px;line-height: 13px;text-align: center;color: #242A30;">
             <tbody>
             <tr style="font-weight: 700;">
-                <th class="col" style="width:10%;">{{ translate('sl') }}</th>
+                <th class="col" style="width:10%;">{{ translate('SL') }}</th>
                 <th class="col"
-                    style="width:35%;">{{ translate('transaction') }} {{ translate('id') }}</th>
+                    style="width:35%;">{{ translate('transaction') }} {{ translate('ID') }}</th>
                 <th class="col"
-                    style="width:20%">{{ translate('transaction') }} {{ translate('date') }}</th>
+                    style="width:20%">{{ translate('transaction') }} {{ translate('DATE') }}</th>
                 <th class="col" style="width:15%">{{ translate('credit') }}</th>
                 <th class="col" style="width:15%">{{ translate('debit') }}</th>
                 <th class="col" style="width:15%;">{{ translate('balance') }}</th>
@@ -137,8 +137,8 @@
                 <div style="font-weight: 400;font-size: 11px;line-height: 22px;color: #242A30;">
                     <span style="margin-inline-end:5px;">
                         <a href="{{ 'tel:'.$companyPhone }}"
-                                                          style="text-decoration: none; color: inherit;">{{ translate('phone') }}: {{$companyPhone}}</a></span>
-                    <span><a href="{{ 'mailto:'.$companyEmail }}" style="text-decoration: none; color: inherit;">{{ translate('email') }}: {{$companyEmail}}</a></span>
+                                                          style="text-decoration: none; color: inherit;">{{ translate('Phone') }}: {{$companyPhone}}</a></span>
+                    <span><a href="{{ 'mailto:'.$companyEmail }}" style="text-decoration: none; color: inherit;">{{ translate('Email') }}: {{$companyEmail}}</a></span>
                 </div>
 
                 <span style="font-weight: 400;font-size: 10px;line-height: 22px;color: #242A30;">

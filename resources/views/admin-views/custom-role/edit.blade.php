@@ -86,7 +86,7 @@ $moduleIcons = [
                     <div class="col-lg-12">
                         <div class="form-group mb-4">
                             <label for="name" class="title-color">
-                                {{translate('role_name')}}
+                                {{translate('role_Name')}}
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('role_name_english_only_hint') }}">
                                     <img src="{{ dynamicAsset('public/assets/back-end/img/info-circle.svg') }}" alt="" width="14">
                                 </span>
@@ -103,7 +103,7 @@ $moduleIcons = [
 
                     <div class="col-lg-3 mb-3">
                         <div class="card border card-shadow">
-                            <h3 class="card-header card-header-tab shadow-none border-bottom">{{ translate('role_category') }}</h3>
+                            <h3 class="card-header card-header-tab shadow-none border-bottom">{{ translate('Role_Category') }}</h3>
                             <div class="card-body px-3 py-2">
                                 <div class="nav flex-column nav-pills" id="role-tabs" role="tablist">
                                     @foreach($permissionGroups as $module => $moduleSections)
@@ -237,7 +237,7 @@ $moduleIcons = [
                         @enderror
 
                         <div class="d-flex justify-content-end mt-3">
-                            <button class="btn btn-primary">{{ translate('update') }}</button>
+                            <button class="btn btn-primary">{{ translate('Update') }}</button>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('warranty_policy'))
+@section('title', translate('warranty_Policy'))
 
 @push('css_or_js')
 <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
@@ -25,7 +25,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/Pages.png') }}" alt="">
-            {{ translate('pages') }}
+            {{ translate('Pages') }}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -35,7 +35,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                 <form action="{{ route('admin.business-settings.update-warranty') }}" method="post">
                     @csrf
                 <div class="card-header">
-                    <h5 class="mb-0">{{ translate('warranty_policy') }}</h5>
+                    <h5 class="mb-0">{{ translate('warranty_Policy') }}</h5>
                     <label class="switcher show-status-text justify-content-end" for="warranty-policy-status">
                         <input type="checkbox" class="switcher_input toggle-switch-message" value="1" name="status"
                                id="warranty-policy-status" {{ ($warrantyPolicyPage->status ?? 0) == 1 ? 'checked' : '' }}
@@ -43,11 +43,11 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                                data-toggle-id="warranty-policy-status"
                                data-on-image=""
                                data-off-image=""
-                               data-on-title="{{ translate('want_to_Turn_ON').' '.translate('warranty_policy').' '.translate('status') }}"
-                               data-off-title="{{ translate('want_to_Turn_OFF').' '.translate('warranty_policy').' '.translate('status') }}"
+                               data-on-title="{{ translate('Want_to_Turn_ON').' '.translate('warranty_Policy').' '.translate('Status') }}"
+                               data-off-title="{{ translate('Want_to_Turn_OFF').' '.translate('warranty_Policy').' '.translate('Status') }}"
                                data-on-message="<p>{{ translate('if_you_enable_this_option_warranty_policy_page_will_be_shown_in_the_user_app_and_website') }}</p>"
                                data-off-message="<p>{{ translate('if_you_disable_this_option_warranty_policy_page_will_not_be_shown_in_the_user_app_and_website') }}</p>">
-                            <span class="switcher_control" data-ontitle="{{ translate('on') }}" data-offtitle="{{ translate('off') }}"></span>
+                            <span class="switcher_control" data-ontitle="{{ translate('On') }}" data-offtitle="{{ translate('OFF') }}"></span>
                     </label>
                 </div>
                     <div class="card-body">
@@ -98,7 +98,7 @@ $translations[$translation->locale][$translation->key] = $translation->value;
                             </div>
                         </div>
                         <div class="form-group">
-                            <input class="form-control btn--primary" type="submit" value="{{ translate('submit') }}" name="btn">
+                            <input class="form-control btn--primary" type="submit" value="{{ translate('Submit') }}" name="btn">
                         </div>
                     </div>
                 </form>

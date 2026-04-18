@@ -122,7 +122,7 @@ trait FileManagerTrait
         }
         return [
             'success' => 1,
-            'message' => translate('Removed_successfully')
+            'message' => translate('Removed_Successfully')
         ];
     }
 

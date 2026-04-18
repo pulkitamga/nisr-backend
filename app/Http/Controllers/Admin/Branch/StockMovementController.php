@@ -268,7 +268,7 @@ class StockMovementController extends Controller
 	        $this->stockRequestRepo->stockRequestProduct($product);
 	    }
 
-        Toastr::success(translate('product_added_successfully'));
+        Toastr::success(translate('Product_added_successfully'));
         return redirect()->route('admin.branch.stock.request');
     }
     
@@ -311,12 +311,12 @@ class StockMovementController extends Controller
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('To Branch'),
+                    translate('to_branch'),
                     translate('Transfer Date'),
                     translate('Products'),
                     translate('Category'),
                     translate('Attribute'),
-                    translate('Qty'),
+                    translate('QTY'),
                     translate('Status'),
                 ],
                 title: translate('received_stock_transfer_list'),
@@ -327,10 +327,10 @@ class StockMovementController extends Controller
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('date') . ': ' . ($request->input('restock_date') ?: translate('all')),
-                    translate('category') . ': ' . ($request->input('category_id') ?: translate('all')),
-                    translate('brand') . ': ' . ($request->input('brand_id') ?: translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('DATE') . ': ' . ($request->input('restock_date') ?: translate('All')),
+                    translate('Category') . ': ' . ($request->input('category_id') ?: translate('All')),
+                    translate('Brand') . ': ' . ($request->input('brand_id') ?: translate('All')),
                 ])),
                 columnWidths: ['A' => 20, 'B' => 16, 'C' => 28, 'D' => 20, 'E' => 20, 'F' => 12, 'G' => 14],
                 centerColumns: ['B', 'F', 'G'],

@@ -16,11 +16,11 @@
                   <div class="modal-body">
                       <div class="row mb-3">
                           <div class="col-md-6">
-                              <label for="first_name" class="form-label">{{ translate('first_name') }}</label>
+                              <label for="first_name" class="form-label">{{ translate('first_Name') }}</label>
                               <input type="text" name="first_name" class="form-control" required>
                           </div>
                           <div class="col-md-6">
-                              <label for="last_name" class="form-label">{{ translate('Last Name') }}</label>
+                              <label for="last_name" class="form-label">{{ translate('last_Name') }}</label>
                               <input type="text" name="last_name" class="form-control" required>
                           </div>
                       </div>
@@ -38,7 +38,7 @@
 
                       <div class="row mb-3">
                           <div class="col-md-6">
-                              <label for="phone_number" class="form-label">{{ translate('phone_number') }}</label>
+                              <label for="phone_number" class="form-label">{{ translate('phone_Number') }}</label>
                               <input type="text" name="phone_number" class="form-control">
                           </div>
                           <div class="col-md-6">

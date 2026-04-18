@@ -1,8 +1,8 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
     <div>
-        <div><strong>{{ translate('product') }}:</strong> {{ $product->name }}</div>
-        <div><strong>{{ translate('variation') }}:</strong> {{ $variation ?? translate('Default') }}</div>
-        <div><strong>{{ translate('current_stock') }}:</strong> {{ $currentStock }}</div>
+        <div><strong>{{ translate('Product') }}:</strong> {{ $product->name }}</div>
+        <div><strong>{{ translate('Variation') }}:</strong> {{ $variation ?? translate('Default') }}</div>
+        <div><strong>{{ translate('Current_Stock') }}:</strong> {{ $currentStock }}</div>
     </div>
     <div class="d-flex align-items-center gap-2">
         <input type="checkbox" class="action-toggle-internal-transfer" id="include-internal-transfer"
@@ -77,11 +77,11 @@
     <table class="table table-sm table-bordered">
         <thead class="thead-light">
             <tr>
-                <th>{{ translate('date') }}</th>
-                <th>{{ translate('type') }}</th>
-                <th>{{ translate('quantity') }}</th>
-                <th>{{ translate('category') }}</th>
-                <th>{{ translate('reference') }}</th>
+                <th>{{ translate('DATE') }}</th>
+                <th>{{ translate('Type') }}</th>
+                <th>{{ translate('Quantity') }}</th>
+                <th>{{ translate('Category') }}</th>
+                <th>{{ translate('Reference') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -90,7 +90,7 @@
                     <td>{{ \Carbon\Carbon::parse($history['date'])->format('d/m/Y H:i') }}</td>
                     <td>
                         <span class="{{ $history['type'] === 'IN' ? 'text-success' : 'text-danger' }} fw-semibold">
-                            {{ $history['type'] === 'IN' ? translate('Stock In') : translate('Stock Out') }}
+                            {{ $history['type'] === 'IN' ? translate('stock_in') : translate('stock_out') }}
                         </span>
                     </td>
                     <td class="{{ $history['type'] === 'IN' ? 'text-success' : 'text-danger' }} fw-semibold">
@@ -102,8 +102,8 @@
                         <small class="text-muted">{{ $history['remarks_label'] ?? $history['remarks'] }}</small>
                         @if ($history['from_branch'] || $history['to_branch'])
                             <small class="d-block text-muted">
-                                {{ $history['from_branch'] ? (translate('from') . ': ' . $history['from_branch']) : '' }}
-                                {{ $history['to_branch'] ? (' | ' . translate('to') . ': ' . $history['to_branch']) : '' }}
+                                {{ $history['from_branch'] ? (translate('From') . ': ' . $history['from_branch']) : '' }}
+                                {{ $history['to_branch'] ? (' | ' . translate('To') . ': ' . $history['to_branch']) : '' }}
                             </small>
                         @endif
                     </td>

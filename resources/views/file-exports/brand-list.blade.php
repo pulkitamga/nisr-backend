@@ -24,10 +24,10 @@
             <tr>
                 <td> {{translate('SL')}}	</td>
                 <td> {{translate('brand_Logo')}}</td>
-                <td> {{translate('name')}}</td>
+                <td> {{translate('Name')}}</td>
                 <td> {{translate('total_Product')}}	</td>
                 <td> {{translate('total_Order')}}	</td>
-                <td> {{translate('status')}}	</td>
+                <td> {{translate('Status')}}	</td>
             </tr>
             @foreach ($data['brands'] as $key=>$item)
                 <tr>

@@ -7,7 +7,7 @@
             <div>
                 <h6 class="fz-13 mb-1 product-name">{{$product['name']}}</h6>
             </div>
-            <div class="fz-10">{{translate('price').' '.':'.' '}} <span>{{setCurrencySymbol(usdToDefaultCurrency(amount: $product['unit_price']))}}</span></div>
+            <div class="fz-10">{{translate('Price').' '.':'.' '}} <span>{{setCurrencySymbol(usdToDefaultCurrency(amount: $product['unit_price']))}}</span></div>
             @if ($product->added_by == "seller")
                 <div class="fz-10">{{translate('shop').' '.':'.' '}} <span class="text-primary">{{isset($product->seller) ? $product->seller->shop->name : translate('shop_not_found') }}</span></div>
             @else

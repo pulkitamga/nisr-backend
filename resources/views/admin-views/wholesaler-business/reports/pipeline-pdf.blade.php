@@ -293,7 +293,7 @@
                         </div>
                     </td>
                     <td style="width: 14.28%;">
-                        <div class="kpi-label">{{ translate('confirmed_orders') }}</div>
+                        <div class="kpi-label">{{ translate('Confirmed_Orders') }}</div>
                         <div class="kpi-value">
                             <strong>{{ number_format((int) ($kpi['confirmed_count'] ?? 0)) }}</strong>
                         </div>
@@ -393,8 +393,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{{ translate('tier') }}</th>
-                    <th>{{ translate('orders') }}</th>
+                    <th>{{ translate('Tier') }}</th>
+                    <th>{{ translate('Orders') }}</th>
                     <th>{{ translate('revenue') }}</th>
                 </tr>
             </thead>

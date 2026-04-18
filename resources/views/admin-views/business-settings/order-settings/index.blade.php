@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-            {{translate('business_setup')}}
+            {{translate('business_Setup')}}
         </h2>
         <div class="btn-group">
             <div class="ripple-animation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -20,7 +20,7 @@
                 class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                    <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                    <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                 </div>
                 <p class="title-color font-weight-medium mb-0">{{ translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
             </div>
@@ -71,7 +71,7 @@
                         <div
                             class="d-flex justify-content-between align-items-center gap-10 form-control form-group">
                             <span class="title-color">
-                                {{translate('minimum_order_amount')}}
+                                {{translate('minimum_Order_Amount')}}
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="top"
                                     title="{{translate('if_enabled_customers_must_place_at_least_or_more_than_the_order_amount_that_admin_or_vendors_set')}}">
                                     <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
@@ -128,7 +128,7 @@
                         <div
                             class="d-flex justify-content-between align-items-center gap-10 form-control form-group">
                             <span class="title-color d-flex align-items-center gap-1 text-capitalize">
-                                {{translate('free_delivery')}}
+                                {{translate('free_Delivery')}}
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                     data-placement="top"
                                     title="{{translate('if_enabled_free_delivery_will_be_available_when_customers_order_over_a_certain_amount')}}">
@@ -165,10 +165,10 @@
                             <select name="free_delivery_responsibility" id="free-delivery-responsibility"
                                 class="form-control js-select2-custom">
                                 <option value="admin" {{ $freeDeliveryResponsibility == 'admin' ? 'selected' : '' }}>
-                                    {{ translate('admin') }}
+                                    {{ translate('Admin') }}
                                 </option>
                                 <option value="seller" {{ $freeDeliveryResponsibility == 'seller' ? 'selected' : '' }}>
-                                    {{ translate('vendor') }}
+                                    {{ translate('Vendor') }}
                                 </option>
                             </select>
                         </div>
@@ -181,7 +181,7 @@
                         <div class="form-group">
                             <label class="title-color d-flex align-items-center gap-2 text-capitalize"
                                 for="free_delivery_over_amount_vendor">
-                                {{translate('free_delivery_over')}}({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
+                                {{translate('free_Delivery_Over')}}({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                     data-placement="top"
                                     title="{{translate('free_delivery_over_amount_for_every_vendor_if_they_do_not_set_any_range_yet')}}">
@@ -190,7 +190,7 @@
                             </label>
                             <input type="number" class="form-control" min="0"
                                 name="free_delivery_over_amount_seller" id="free_delivery_over_amount_vendor"
-                                placeholder="{{translate('ex').':'.'10'}}"
+                                placeholder="{{translate('Ex').':'.'10'}}"
                                 value="{{ usdToDefaultCurrency($freeDeliveryOverAmountSeller) ?? 0 }}">
                         </div>
                     </div>
@@ -199,9 +199,9 @@
                     <div class="col-xl-4 col-md-6">
                         <div class="form-group">
                             <label class="title-color text-capitalize" for="refund_day_limit">{{translate('refund_order_validity')}}
-                                ({{translate('days')}})</label>
+                                ({{translate('Days')}})</label>
                             <input type="text" class="form-control" name="refund_day_limit" id="refund_day_limit"
-                                placeholder="{{translate('ex').':'.'10'}}" value="{{ $refundDayLimit ?? 0 }}">
+                                placeholder="{{translate('Ex').':'.'10'}}" value="{{ $refundDayLimit ?? 0 }}">
                         </div>
                     </div>
                     @php($guestCheckout=getWebConfig('guest_checkout'))
@@ -273,13 +273,13 @@
                                 </span>
                             </label>
                             <input type="text" class="form-control" name="character_trigger_limit_for_autosearch" id="character_trigger_limit_for_autosearch"
-                                placeholder="{{translate('ex').':'.'2'}}" value="{{ $autoSearchLimit ?? 0 }}">
+                                placeholder="{{translate('Ex').':'.'2'}}" value="{{ $autoSearchLimit ?? 0 }}">
                         </div>
                     </div>
 
                 </div>
                 <div class="d-flex justify-content-end">
-                    <button type="submit" id="submit" class="btn btn--primary px-4">{{translate('save')}}</button>
+                    <button type="submit" id="submit" class="btn btn--primary px-4">{{translate('Save')}}</button>
                 </div>
             </form>
         </div>

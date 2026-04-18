@@ -31,7 +31,7 @@
 								<tr>
 									<th class="text-center">SL</th>
 									<th class="text-center">{{ __('Select') }}</th>
-									<th>{{ __('Branch Name') }}</th>
+									<th>{{ __('Branch_Name') }}</th>
 									<th class="text-center">{{ __('Available QTY') }}</th>
 									<th>{{ __('Branch Address') }}</th>
 								</tr>

@@ -24,7 +24,7 @@
                                 <div class="col-lg-6">
                                     <div class="mb-2">
                                         <label for="name" class="title-color font-weight-medium">
-                                            {{ translate('products') }}
+                                            {{ translate('Products') }}
                                         </label>
                                         <select
                                             class="js-example-basic-multiple js-states js-example-responsive form-control"
@@ -42,7 +42,7 @@
                                     </div>
                                     <div class="form-group md-2">
                                         <label for="name" class="title-color font-weight-medium">
-                                            {{ translate('banner') }}
+                                            {{ translate('Banner') }}
                                         </label>
                                         <span class="text-info ms-1">
                                             ( {{ translate('ratio') }} {{ '5:1' }} )
@@ -72,10 +72,10 @@
 
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="reset" id="reset" class="btn btn-secondary px-4">
-                                    {{ translate('reset') }}
+                                    {{ translate('Reset') }}
                                 </button>
                                 <button type="submit" class="btn btn--primary px-4">
-                                    {{ translate('update') }}
+                                    {{ translate('Update') }}
                                 </button>
                             </div>
                         </form>

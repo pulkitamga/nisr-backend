@@ -38,7 +38,7 @@
                 @endif
 
                 <a href="{{ route('admin.warranty.activation.list') }}" class="btn btn-light">
-                    <i class="tio-arrow-backward"></i> {{ translate('Back to List') }}
+                    <i class="tio-arrow-backward"></i> {{ translate('Back_to_list') }}
                 </a>
             </div>
         </div>
@@ -61,14 +61,14 @@
                     <ul class="list-unstyled list-unstyled-py-3">
                         <li><strong>{{ translate('Product') }}:</strong> <span class="bidi-auto">{{ $warranty->product?->name ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Warranty Duration') }}:</strong> <span class="bidi-ltr">{{ $warranty->warranty_months }}</span> {{ translate('months') }}</li>
-                        <li><strong>{{ translate('Start Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->start_date?->format('d M, Y') ?? translate('not_started') }}</span></li>
-                        <li><strong>{{ translate('End Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->end_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('Start_Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->start_date?->format('d M, Y') ?? translate('not_started') }}</span></li>
+                        <li><strong>{{ translate('End_Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->end_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Remaining Days') }}:</strong>
                             <span class="text-{{ $warranty->remaining_days > 30 ? 'success' : 'warning' }}">
-                                <span class="bidi-ltr">{{ $warranty->remaining_days }}</span> {{ translate('days') }}
+                                <span class="bidi-ltr">{{ $warranty->remaining_days }}</span> {{ translate('Days') }}
                             </span>
                         </li>
-                        <li><strong>{{ translate('Activation Method') }}:</strong>
+                        <li><strong>{{ translate('activation_method') }}:</strong>
                             <span class="badge badge-soft-info bidi-auto">{{ ucfirst(str_replace('_', ' ', $warranty->activation_method)) }}</span>
                         </li>
                     </ul>
@@ -80,7 +80,7 @@
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5><i class="tio-user"></i> {{ translate('Customer Details') }}</h5>
+                    <h5><i class="tio-user"></i> {{ translate('customer_details') }}</h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-unstyled list-unstyled-py-3">
@@ -88,7 +88,7 @@
                         <li><strong>{{ translate('Email') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->email ?? $warranty->activated_by_email ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $warranty->user?->phone ?? $warranty->activated_by_phone ?? translate('not_available') }}</span></li>
                         <li><strong>{{ translate('Activated IP') }}:</strong> <span class="bidi-ltr">{{ $warranty->activated_ip ?? translate('not_available') }}</span></li>
-                        <li><strong>{{ translate('Purchase Date') }}:</strong> <span class="bidi-ltr">{{ $warranty->purchase_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
+                        <li><strong>{{ translate('purchase_date') }}:</strong> <span class="bidi-ltr">{{ $warranty->purchase_date?->format('d M, Y') ?? translate('not_available') }}</span></li>
                     </ul>
                 </div>
             </div>
@@ -213,7 +213,7 @@
                                     </div>
                                     @endif
                                     <div>
-                                        <strong>{{ $event->user?->name ?? translate('user') }}</strong><br>
+                                        <strong>{{ $event->user?->name ?? translate('User') }}</strong><br>
                                     </div>
                                 </div>
                             </td>
@@ -243,7 +243,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="serial_number" value="{{ $warranty->serial_number }}">
                     <div class="form-group">
-                        <label class="input-label">{{ translate('Serial Number') }}</label>
+                        <label class="input-label">{{ translate('serial_number') }}</label>
                         <input type="text" class="form-control" value="{{ $warranty->serial_number }}" disabled>
                     </div>
                     <div class="form-group">

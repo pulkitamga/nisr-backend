@@ -16,13 +16,13 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('title')}}</label>
+                                        <label class="title-color">{{translate('Title')}}</label>
                                         <input type="text" name="title" class="form-control" value="{{$vendorRegistrationHeader?->title}}" placeholder="{{translate('enter_title')}}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="title-color text-capitalize">{{translate('sub_title')}}</label>
+                                        <label class="title-color text-capitalize">{{translate('Sub_Title')}}</label>
                                         <input type="text" name="sub_title" class="form-control" value="{{$vendorRegistrationHeader?->sub_title}}" placeholder="{{translate('enter_sub_title')}}">
                                     </div>
                                 </div>
@@ -33,8 +33,8 @@
                         <div class="card-body">
                             <div class="mx-auto max-w-400">
                                 <div class="mb-3 text-center">
-                                    <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('image')}}</label>
-                                    <span class="badge badge-soft-info">{{'('.translate('size').' : '.'310px x 240px'.')'}}</span>
+                                    <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{translate('Image')}}</label>
+                                    <span class="badge badge-soft-info">{{'('.translate('Size').' : '.'310px x 240px'.')'}}</span>
                                 </div>
 
                                 <div class="custom_upload_input">
@@ -54,7 +54,7 @@
                                             class="d-flex flex-column justify-content-center align-items-center">
                                             <img alt="" class="w-75"
                                                 src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                            <h3 class="text-muted text-capitalize">{{ translate('upload_image') }}</h3>
+                                            <h3 class="text-muted text-capitalize">{{ translate('Upload_Image') }}</h3>
                                         </div>
                                     </div>
                                 </div>
@@ -62,13 +62,13 @@
                                 <p class="text-muted text-center mt-2">
                                     {{ translate('image_format').' : '.'Jpg, png, jpeg, webp,'}}
                                     <br>
-                                    {{ translate('image_size').' : '.translate('max').' ' .'2 MB'}}</p>
+                                    {{ translate('image_size').' : '.translate('Max').' ' .'2 MB'}}</p>
                             </div>
                         </div>
                     </div>
                     <div class="row justify-content-end gap-3 mt-3 mx-1">
-                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                        <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                        <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                     </div>
                 </div>
             </div>

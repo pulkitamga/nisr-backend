@@ -7,7 +7,7 @@
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/Pages.png')}}" alt="">
-            {{ translate('pages') }}
+            {{ translate('Pages') }}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -24,13 +24,13 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-sm-12 col-md-6 mb-3">
-                                <label for="title">{{ translate('title') }}</label>
+                                <label for="title">{{ translate('Title') }}</label>
                                 <input type="text" class="form-control" name="features_section_top[title]"
                                     placeholder="{{ translate('type_your_title_text') }}"
                                     value="{{ isset($featuresSectionTop) ? json_decode($featuresSectionTop->value)->title : '' }}">
                             </div>
                             <div class="col-sm-12 col-md-6 mb-3">
-                                <label for="subtitle">{{ translate('sub_Title') }}</label>
+                                <label for="subtitle">{{ translate('Sub_Title') }}</label>
                                 <input type="text" class="form-control" name="features_section_top[subtitle]"
                                     placeholder="{{ translate('type_your_subtitle_text') }}"
                                     value="{{ isset($featuresSectionTop) ? json_decode($featuresSectionTop->value)->subtitle : '' }}">
@@ -44,7 +44,7 @@
                 <div class="card">
                     <div class="card-header justify-content-between">
                         <h5 class="mb-0">{{ translate('features_Section').' '.'-'.' '.translate('middle') }}</h5>
-                        <span id="add-this-features-card-middle" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_new') }}</span>
+                        <span id="add-this-features-card-middle" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_New') }}</span>
                     </div>
                     <div class="card-body">
                         <div class="row" id="features-section-middle-row">
@@ -61,14 +61,14 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label for="title">{{ translate('title') }}</label>
+                                                <label for="title">{{ translate('Title') }}</label>
                                                 <input type="text" class="form-control"
                                                     name="features_section_middle[title][]"
                                                     value="{{ $item->title }}" required
                                                     placeholder="{{ translate('type_your_title_text') }}">
                                             </div>
                                             <div class="mb-3">
-                                                <label class="text-capitalize" for="sub-title">{{ translate('sub_title') }}</label>
+                                                <label class="text-capitalize" for="sub-title">{{ translate('Sub_Title') }}</label>
                                                 <textarea class="form-control" name="features_section_middle[subtitle][]" required
                                                     placeholder="{{ translate('type_your_subtitle_text') }}">{{ $item->subtitle  }}</textarea>
                                             </div>
@@ -87,14 +87,14 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label for="title">{{ translate('title') }}</label>
+                                                <label for="title">{{ translate('Title') }}</label>
                                                 <input type="text" class="form-control"
                                                     name="features_section_middle[title][]"
                                                     value="" required
                                                     placeholder="{{ translate('type_your_title_text') }}">
                                             </div>
                                             <div class="mb-3">
-                                                <label class="text-capitalize" for="sub-title">{{ translate('sub_title') }}</label>
+                                                <label class="text-capitalize" for="sub-title">{{ translate('Sub_Title') }}</label>
                                                 <textarea class="form-control" name="features_section_middle[subtitle][]" required
                                                     placeholder="{{ translate('type_your_subtitle_text') }}"></textarea>
                                             </div>
@@ -113,7 +113,7 @@
                 <div class="card">
                     <div class="card-header justify-content-between">
                         <h5 class="mb-0">{{ translate('features_Section').' '.'-'.' '.translate('bottom') }}</h5>
-                        <span id="add-this-features-card-bottom" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_new') }}</span>
+                        <span id="add-this-features-card-bottom" class="btn btn--primary text-capitalize"><i class="tio-add pe-2"></i>{{ translate('add_New') }}</span>
                     </div>
                     <div class="card-body">
                         <div class="row" id="features-Section-bottom-row">
@@ -130,7 +130,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label for="title">{{ translate('title') }}</label>
+                                                <label for="title">{{ translate('Title') }}</label>
                                                 <input type="text" class="form-control" disabled value="{{ $item->title }}"
                                                 name="icontitle"
                                                     placeholder="{{ translate('type_your_title_text') }}">
@@ -170,7 +170,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <label for="title">{{ translate('title') }}</label>
+                                                <label for="title">{{ translate('Title') }}</label>
                                                 <input type="text" class="form-control"
                                                     name="features_section_bottom[title][]"
                                                     value="" required
@@ -211,15 +211,15 @@
                 </div>
             </div>
             <div class="col-12 d-flex justify-content-end py-2">
-                <button type="submit" class="btn btn--primary px-5">{{ translate('submit') }}</button>
+                <button type="submit" class="btn btn--primary px-5">{{ translate('Submit') }}</button>
             </div>
         </div>
     </form>
 </div>
 <span id="get-feature-section-append-translate-text"
-      data-title="{{translate('title')}}"
+      data-title="{{translate('Title')}}"
       data-title-placeholder="{{translate('type_your_title_text')}}"
-      data-sub-title="{{translate('sub-title')}}"
+      data-sub-title="{{translate('Sub_Title')}}"
       data-sub-title-placeholder="{{translate('type_your_title_text')}}"
       data-icon-box="{{translate('icon_box')}}"
       data-upload-icon="{{translate('upload_icon')}}">

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('app_settings'))
+@section('title', translate('app_Settings'))
 @push('css_or_js')
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.css')}}"/>
 @endpush
@@ -10,7 +10,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2 text-capitalize">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/system-setting.png')}}" alt="">
-                {{translate('system_setup')}}
+                {{translate('system_Setup')}}
             </h2>
             <div class="text-primary d-flex align-items-center gap-3 font-weight-bolder text-capitalize">
                 {{translate('read_instructions')}}
@@ -52,12 +52,12 @@
                                     </div>
                                     <input type="hidden" name="for_android[status]" value="1">
                                     <input type="text" class="form-control" name="for_android[version]"
-                                           placeholder="{{translate('ex').':'.'2.1'}}" required
+                                           placeholder="{{translate('Ex').':'.'2.1'}}" required
                                            value="{{ $userAppVersionControl['for_android']['version'] ?? '' }}">
                                 </div>
                                 <div class="">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <label class="title-color mb-0 text-capitalize">{{translate('download_URL_for_customer_app')}}</label>
+                                        <label class="title-color mb-0 text-capitalize">{{translate('download_URL_For_Customer_App')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
                                               title="{{translate('add_the_Android_app_download_URL_that_will_redirect_users_when_they_agree_to_update_the_app').'.' }}">
@@ -65,7 +65,7 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_android[link]"
-                                           placeholder="{{translate('ex').':'.'https://play.google.com/store/apps'}}" required
+                                           placeholder="{{translate('Ex').':'.'https://play.google.com/store/apps'}}" required
                                            value="{{ $userAppVersionControl['for_android']['link'] ?? '' }}">
                                 </div>
                             </div>
@@ -86,7 +86,7 @@
                                     </div>
                                     <input type="hidden" name="for_ios[status]" value="1">
                                     <input type="text" class="form-control" name="for_ios[version]"
-                                           placeholder="{{translate('ex').':'.'2.1'}}" required
+                                           placeholder="{{translate('Ex').':'.'2.1'}}" required
                                            value="{{ $userAppVersionControl['for_ios']['version'] ?? '' }}">
                                 </div>
 
@@ -100,15 +100,15 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_ios[link]"
-                                           placeholder="{{translate('ex').':'.'https://www.apple.com/app-store/'}}" required
+                                           placeholder="{{translate('Ex').':'.'https://www.apple.com/app-store/'}}" required
                                            value="{{ $userAppVersionControl['for_ios']['link'] ?? '' }}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="d-flex flex-wrap justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>
@@ -160,7 +160,7 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_android[link]"
-                                           placeholder="{{translate('ex').'https://play.google.com/store/apps'}}"
+                                           placeholder="{{translate('Ex').'https://play.google.com/store/apps'}}"
                                            required
                                            value="{{ $sellerAppVersionControl['for_android']['link'] ?? '' }}">
                                 </div>
@@ -184,7 +184,7 @@
                                     </div>
                                     <input type="hidden" name="for_ios[status]" value="1">
                                     <input type="text" class="form-control" name="for_ios[version]"
-                                           placeholder="{{translate('ex').':'.'2.1'}}" required
+                                           placeholder="{{translate('Ex').':'.'2.1'}}" required
                                            value="{{ $sellerAppVersionControl['for_ios']['version'] ?? '' }}">
                                 </div>
 
@@ -199,15 +199,15 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_ios[link]"
-                                           placeholder="{{translate('ex').':'.' https://www.apple.com/app-store/'}}" required
+                                           placeholder="{{translate('Ex').':'.' https://www.apple.com/app-store/'}}" required
                                            value="{{ $sellerAppVersionControl['for_ios']['link'] ?? '' }}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="d-flex flex-wrap justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>
@@ -242,7 +242,7 @@
                                     </div>
                                     <input type="hidden" name="for_android[status]" value="1">
                                     <input type="text" class="form-control" name="for_android[version]"
-                                           placeholder="{{translate('ex').':'.'2.1'}}" required
+                                           placeholder="{{translate('Ex').':'.'2.1'}}" required
                                            value="{{ $deliverymanAppVersionControl['for_android']['version'] ?? '' }}">
                                 </div>
                                 <div class="">
@@ -256,7 +256,7 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_android[link]"
-                                           placeholder="{{translate('ex').':'.'https://play.google.com/store/apps'}}" required
+                                           placeholder="{{translate('Ex').':'.'https://play.google.com/store/apps'}}" required
                                            value="{{ $deliverymanAppVersionControl['for_android']['link'] ?? '' }}">
                                 </div>
                             </div>
@@ -269,7 +269,7 @@
                             <div class="bg-light p-3 rounded">
                                 <div class="form-group">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <label class="title-color mb-0 text-capitalize">{{translate('minimum_deliveryman_app_version')}}</label>
+                                        <label class="title-color mb-0 text-capitalize">{{translate('minimum_Deliveryman_App_Version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right"
                                                   title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
                                             <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
@@ -277,7 +277,7 @@
                                     </div>
                                     <input type="hidden" name="for_android[status]" value="1">
                                     <input type="text" class="form-control" name="for_ios[version]"
-                                           placeholder="{{translate('ex').':'.'2.1'}}" required
+                                           placeholder="{{translate('Ex').':'.'2.1'}}" required
                                            value="{{ $deliverymanAppVersionControl['for_ios']['version'] ?? '' }}">
                                 </div>
 
@@ -291,15 +291,15 @@
                                         </span>
                                     </div>
                                     <input type="url" class="form-control" name="for_ios[link]"
-                                           placeholder="{{translate('ex').':'.'https://www.apple.com/app-store/'}}" required
+                                           placeholder="{{translate('Ex').':'.'https://www.apple.com/app-store/'}}" required
                                            value="{{ $deliverymanAppVersionControl['for_ios']['link'] ?? '' }}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="d-flex flex-wrap justify-content-end gap-3">
-                                <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                                <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+                                <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
+                                <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
                             </div>
                         </div>
                     </div>

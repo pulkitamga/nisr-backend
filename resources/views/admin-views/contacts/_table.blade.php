@@ -5,12 +5,12 @@
         <thead class="thead-light thead-50 text-capitalize">
         <tr>
             <th>{{translate('SL')}}</th>
-            <th>{{translate('customer_Name')}}</th>
-            <th>{{translate('contact_Info')}}</th>
-            <th>{{translate('subject')}}</th>
+            <th>{{translate('Customer_Name')}}</th>
+            <th>{{translate('_contact_info')}}</th>
+            <th>{{translate('Subject')}}</th>
             <th>{{translate('time_&_Date')}}</th>
             <th class="text-center">{{translate('reply_status')}}</th>
-            <th class="text-center">{{translate('action')}}</th>
+            <th class="text-center">{{translate('Action')}}</th>
         </tr>
         </thead>
         <tbody>
@@ -39,7 +39,7 @@
                 </td>
                 <td>
                     <div class="d-flex gap-10 justify-content-center">
-                        <a title="{{translate('view')}}"
+                        <a title="{{translate('View')}}"
                            class="btn btn-outline-info btn-sm square-btn"
                            href="{{route('admin.contact.view',$contact->id)}}">
                             <i class="tio-invisible"></i>
@@ -47,7 +47,7 @@
                         <a class="btn btn-outline-danger btn-sm delete delete-data-without-form"
                            data-id="{{$contact['id']}}"
                            data-action="{{route('admin.contact.delete')}}"
-                           title="{{ translate('delete')}}">
+                           title="{{ translate('Delete')}}">
                             <i class="tio-delete"></i>
                         </a>
                     </div>
@@ -66,7 +66,7 @@
     <div class="text-center p-4">
         <img class="mb-3 w-160"
              src="{{dynamicAsset(path: 'public/assets/back-end/svg/illustrations/sorry.svg')}}"
-             alt="{{translate('image_description')}}">
+             alt="{{translate('image_Description')}}">
         <p class="mb-0">{{translate('no_data_to_show')}}</p>
     </div>
 @endif

@@ -117,14 +117,14 @@ class AppServiceProvider extends ServiceProvider
                         'name' => Helpers::get_settings($web, 'company_name'),
                         'company_name' => getWebConfig(name: 'company_name'),
                         'phone' => getWebConfig(name: 'company_phone'),
-                        'web_logo' => getWebConfig(name: 'company_web_logo'),
-                        'mob_logo' => getWebConfig(name: 'company_mobile_logo'),
+                        'web_logo' => getWebConfig(name: 'company_web_logo') ?? ['key' => null, 'path' => getStorageImages(path: null, type: 'logo'), 'status' => 200],
+                        'mob_logo' => getWebConfig(name: 'company_mobile_logo') ?? ['key' => null, 'path' => getStorageImages(path: null, type: 'logo'), 'status' => 200],
                         'business_mode' => getWebConfig(name: 'business_mode'),
-                        'fav_icon' => getWebConfig(name: 'company_fav_icon'),
+                        'fav_icon' => getWebConfig(name: 'company_fav_icon') ?? ['key' => null, 'path' => getStorageImages(path: null, type: 'logo'), 'status' => 200],
                         'email' => getWebConfig(name: 'company_email'),
-                        'about' => Helpers::get_settings($web, 'about_us'),
+                        'about' => Helpers::get_settings($web, 'about_us') ?? (object)['value' => ''],
                         'footer_description' => getWebConfig(name: 'footer_description_text'),
-                        'footer_logo' => getWebConfig(name: 'company_footer_logo'),
+                        'footer_logo' => getWebConfig(name: 'company_footer_logo') ?? ['key' => null, 'path' => getStorageImages(path: null, type: 'logo'), 'status' => 200],
                         'copyright_text' => getWebConfig(name: 'company_copyright_text'),
                         'decimal_point_settings' => !empty(getWebConfig(name: 'decimal_point_settings')) ? getWebConfig(name: 'decimal_point_settings') : 0,
                         'seller_registration' => getWebConfig(name: 'seller_registration') ?? 0,
@@ -132,9 +132,9 @@ class AppServiceProvider extends ServiceProvider
                         'loyalty_point_status' => getWebConfig(name: 'loyalty_point_status'),
                         'guest_checkout_status' => getWebConfig(name: 'guest_checkout'),
                         'digital_product_setting' => getWebConfig(name: 'digital_product'),
-                        'language' => getWebConfig(name: 'language'),
-                        'publishing_houses' => Schema::hasTable('publishing_houses') ? ProductManager::getPublishingHouseList() : null,
-                        'digital_product_authors' => Schema::hasTable('authors') ? ProductManager::getProductAuthorList() : null,
+                        'language' => getWebConfig(name: 'language') ?? [],
+                        'publishing_houses' => Schema::hasTable('publishing_houses') ? ProductManager::getPublishingHouseList() : collect(),
+                        'digital_product_authors' => Schema::hasTable('authors') ? ProductManager::getProductAuthorList() : collect(),
                         'firebase_otp_verification' => $firebaseOTPVerification,
                         'firebase_otp_verification_status' => $firebaseOTPVerificationStatus,
                         'warranty_require_otp' => getWebConfig(name: 'warranty_require_otp'),
@@ -193,6 +193,9 @@ class AppServiceProvider extends ServiceProvider
                             })
                             ->count();
 
+                        $iosDownloadConfig = getWebConfig(name: 'download_app_apple_stroe');
+                        $androidDownloadConfig = getWebConfig(name: 'download_app_google_stroe');
+
                         $web_config += [
                             'cookie_setting' => Helpers::get_settings($web, 'cookie_setting'),
                             'announcement' => getWebConfig(name: 'announcement'),
@@ -201,8 +204,8 @@ class AppServiceProvider extends ServiceProvider
                             'main_categories' => $this->cacheMainCategoriesList(),
                             'priority_wise_brands' => $this->cachePriorityWiseBrandList(),
                             'social_media' => SocialMedia::where('active_status', 1)->get(),
-                            'ios' => getWebConfig(name: 'download_app_apple_stroe'),
-                            'android' => getWebConfig(name: 'download_app_google_stroe'),
+                            'ios' => is_array($iosDownloadConfig) ? $iosDownloadConfig : ['status' => 0, 'link' => ''],
+                            'android' => is_array($androidDownloadConfig) ? $androidDownloadConfig : ['status' => 0, 'link' => ''],
                             'refund_policy' => getBusinessPolicyConfig('refund-policy'),
                             'return_policy' => getBusinessPolicyConfig('return-policy'),
                             'cancellation_policy' => getBusinessPolicyConfig('cancellation-policy'),

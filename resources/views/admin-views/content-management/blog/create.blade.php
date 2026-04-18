@@ -38,13 +38,13 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         @foreach($language as $lang)
         <div class="form-system-language-form {{ $lang != $activeLanguage ? 'd-none' : '' }}" id="{{ $lang }}-form">
             <div class="form-group">
-                <label>{{ translate('heading') }} ({{ strtoupper($lang) }})</label>
+                <label>{{ translate('Heading') }} ({{ strtoupper($lang) }})</label>
                 <input type="text" name="heading[]" class="form-control"
-                       placeholder="{{ translate('Enter Heading') }}">
+                       placeholder="{{ translate('enter_heading') }}">
             </div>
 
             <div class="form-group">
-                <label>{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                <label>{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                 <textarea name="description[]" class="form-control" rows="5"
                           placeholder="{{ translate('Enter Description') }}"></textarea>
             </div>
@@ -55,7 +55,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
         {{-- Image Upload --}}
         <div class="form-group">
-            <label>{{ translate('image') }}</label>
+            <label>{{ translate('Image') }}</label>
             <input type="file" id="blog_image" name="image" class="form-control" accept="image/*" onchange="previewImage(event)" required>
         </div>
 
@@ -78,7 +78,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
 
         {{-- Category --}}
         <div class="form-group">
-            <label>{{ translate('category') }}</label>
+            <label>{{ translate('Category') }}</label>
             <select name="category" class="form-control" required>
                 @foreach($categories as $category)
                     <option value="{{ $category }}">{{ $category }}</option>
@@ -87,8 +87,8 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
         </div>
 
         <div class="form-group mt-4 d-flex gap-2 flex-wrap">
-            <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
-            <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+            <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('Cancel') }}</a>
+            <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
         </div>
     </form>
 </div>

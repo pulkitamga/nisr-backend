@@ -42,14 +42,14 @@ class ErrorLogsController extends BaseController
             'redirect_url' => $request['redirect_url'],
             'redirect_status' => $request->get('redirect_status', '301')
         ]);
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 
     public function delete(Request $request): RedirectResponse
     {
         $this->errorLogsRepo->delete(params: ['id' => $request['id']]);
-        Toastr::success(translate('deleted_successfully'));
+        Toastr::success(translate('Deleted_successfully'));
         return redirect()->back();
     }
 

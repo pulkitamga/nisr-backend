@@ -1021,8 +1021,8 @@ class OrderManager
                     }
                 }
                 $data = [
-                    'subject' => translate('order_placed'),
-                    'title' => translate('order_placed'),
+                    'subject' => translate('Order_Placed'),
+                    'title' => translate('Order_Placed'),
                     'userName' => $userName,
                     'userType' => 'customer',
                     'templateName' => 'order-place',
@@ -1131,8 +1131,8 @@ class OrderManager
             }
             if ($emailServices_smtp['status'] == 1) {
                 $data = [
-                    'subject' => translate('order_placed'),
-                    'title' => translate('order_placed'),
+                    'subject' => translate('Order_Placed'),
+                    'title' => translate('Order_Placed'),
                     'userName' => $user['f_name'],
                     'userType' => 'customer',
                     'templateName' => 'order-place',

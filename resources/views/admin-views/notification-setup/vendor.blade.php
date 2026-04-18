@@ -29,7 +29,7 @@
                                         </div>
                                     </div>
                                     <input id="datatableSearch_" type="search" name="searchValue" class="form-control" placeholder="{{translate('Search by topics name')}}">
-                                    <button type="submit" class="btn btn--primary input-group-text">{{translate('search')}}</button>
+                                    <button type="submit" class="btn btn--primary input-group-text">{{translate('Search')}}</button>
                                 </div>
                             </form>
                             <div class="dropdown">

@@ -90,7 +90,7 @@
                 <form method="GET" action="{{ url()->current() }}">
                     <div class="row g-2 align-items-start">
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('department') }}</label>
+                            <label class="form-label mb-1">{{ translate('Department') }}</label>
                             <select class="js-select2-custom form-control" name="department_ids[]" multiple>
                                 @foreach($departments as $department)
                                     <option value="{{ $department->id }}" {{ in_array($department->id, $filters['department_ids'] ?? []) ? 'selected' : '' }}>
@@ -101,7 +101,7 @@
                             <small class="text-muted">{{ translate('leave_empty_for_all') }}</small>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label mb-1">{{ translate('employee') }}</label>
+                            <label class="form-label mb-1">{{ translate('Employee') }}</label>
                             <select class="js-select2-custom form-control" name="employee_ids[]" multiple>
                                 @foreach($employees as $employee)
                                     <option value="{{ $employee->id }}" {{ in_array($employee->id, $filters['employee_ids'] ?? []) ? 'selected' : '' }}>
@@ -114,24 +114,24 @@
                         <div class="col-md-2">
                             <label class="form-label mb-1">{{ translate('date_range') }}</label>
                             <select class="form-control" name="date_type" id="crm_agent_date_type">
-                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>{{ translate('this_year') }}</option>
-                                <option value="this_month" {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>{{ translate('this_month') }}</option>
-                                <option value="this_week" {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>{{ translate('this_week') }}</option>
+                                <option value="this_year" {{ ($filters['date_type'] ?? 'this_year') === 'this_year' ? 'selected' : '' }}>{{ translate('this_Year') }}</option>
+                                <option value="this_month" {{ ($filters['date_type'] ?? '') === 'this_month' ? 'selected' : '' }}>{{ translate('this_Month') }}</option>
+                                <option value="this_week" {{ ($filters['date_type'] ?? '') === 'this_week' ? 'selected' : '' }}>{{ translate('this_Week') }}</option>
                                 <option value="today" {{ ($filters['date_type'] ?? '') === 'today' ? 'selected' : '' }}>{{ translate('today') }}</option>
                                 <option value="custom_date" {{ ($filters['date_type'] ?? '') === 'custom_date' ? 'selected' : '' }}>{{ translate('custom_range') }}</option>
                             </select>
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_agent_from_div" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('from') }}</label>
+                            <label class="form-label mb-1">{{ translate('From') }}</label>
                             <input type="date" class="form-control" name="from" value="{{ $filters['from'] }}">
                         </div>
                         <div class="col-md-2 custom-date-range" id="crm_agent_to_div" style="{{ ($filters['date_type'] ?? 'this_year') === 'custom_date' ? '' : 'display:none;' }}">
-                            <label class="form-label mb-1">{{ translate('to') }}</label>
+                            <label class="form-label mb-1">{{ translate('To') }}</label>
                             <input type="date" class="form-control" name="to" value="{{ $filters['to'] }}">
                         </div>
                         <div class="col-12 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn--primary">{{ translate('filter') }}</button>
-                            <a href="{{ route('admin.report.crm-agent-sales-matrix') }}" class="btn btn-outline-secondary">{{ translate('reset') }}</a>
+                            <button type="submit" class="btn btn--primary">{{ translate('Filter') }}</button>
+                            <a href="{{ route('admin.report.crm-agent-sales-matrix') }}" class="btn btn-outline-secondary">{{ translate('Reset') }}</a>
                             <a href="{{ route('admin.report.crm-agent-sales-matrix-export-excel', request()->query()) }}" class="btn btn-outline-success">
                                 <i class="tio-download-to me-1"></i> {{ translate('excel') }}
                             </a>
@@ -165,7 +165,7 @@
             </div>
             <div class="col-md-3">
                 <div class="report-kpi-card">
-                    <div class="report-kpi-title">{{ translate('total_customers') }}</div>
+                    <div class="report-kpi-title">{{ translate('total_Customers') }}</div>
                     <div class="report-kpi-value">{{ $summary['grand']['total_customers'] }}</div>
                 </div>
             </div>
@@ -213,7 +213,7 @@
                     @empty
                         <tr>
                             <td colspan="{{ (count($employeesForMatrix) * 4) + 3 }}" class="text-center py-4">
-                                {{ translate('no_data_found') }}
+                                {{ translate('no_Data_found') }}
                             </td>
                         </tr>
                     @endforelse
@@ -247,10 +247,10 @@
                             <table class="table table-sm mb-0">
                                 <thead>
                                 <tr>
-                                    <th>{{ translate('employee') }}</th>
-                                    <th class="text-center">{{ translate('retail') }}</th>
-                                    <th class="text-center">{{ translate('wholesale') }}</th>
-                                    <th class="text-center">{{ translate('total') }}</th>
+                                    <th>{{ translate('Employee') }}</th>
+                                    <th class="text-center">{{ translate('Retail') }}</th>
+                                    <th class="text-center">{{ translate('Wholesale') }}</th>
+                                    <th class="text-center">{{ translate('Total') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -262,7 +262,7 @@
                                         <td class="text-center font-weight-bold">{{ $item->total_batteries }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-3">{{ translate('no_data_found') }}</td></tr>
+                                    <tr><td colspan="4" class="text-center py-3">{{ translate('no_Data_found') }}</td></tr>
                                 @endforelse
                                 </tbody>
                             </table>
@@ -277,15 +277,15 @@
                         <table class="table table-sm mb-0">
                             <tbody>
                             <tr>
-                                <td>{{ translate('retail') }}</td>
+                                <td>{{ translate('Retail') }}</td>
                                 <td class="text-end">{{ $summary['batteries_by_type']['retail'] }}</td>
                             </tr>
                             <tr>
-                                <td>{{ translate('wholesale') }}</td>
+                                <td>{{ translate('Wholesale') }}</td>
                                 <td class="text-end">{{ $summary['batteries_by_type']['wholesale'] }}</td>
                             </tr>
                             <tr class="font-weight-bold">
-                                <td>{{ translate('total') }}</td>
+                                <td>{{ translate('Total') }}</td>
                                 <td class="text-end">{{ $summary['batteries_by_type']['total'] }}</td>
                             </tr>
                             </tbody>
@@ -300,15 +300,15 @@
                         <table class="table table-sm mb-0">
                             <tbody>
                             <tr>
-                                <td>{{ translate('retail') }}</td>
+                                <td>{{ translate('Retail') }}</td>
                                 <td class="text-end">{{ $summary['customers_by_type']['retail'] }}</td>
                             </tr>
                             <tr>
-                                <td>{{ translate('wholesale') }}</td>
+                                <td>{{ translate('Wholesale') }}</td>
                                 <td class="text-end">{{ $summary['customers_by_type']['wholesale'] }}</td>
                             </tr>
                             <tr class="font-weight-bold">
-                                <td>{{ translate('total') }}</td>
+                                <td>{{ translate('Total') }}</td>
                                 <td class="text-end">{{ $summary['customers_by_type']['total'] }}</td>
                             </tr>
                             </tbody>

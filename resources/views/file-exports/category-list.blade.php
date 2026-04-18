@@ -35,7 +35,7 @@
         @if($data['title'] == 'sub_category' || $data['title'] == 'sub_sub_category')
             <td> {{translate('category_Name')}}</td>
         @endif
-        <td> {{translate('priority')}}	</td>
+        <td> {{translate('Priority')}}	</td>
         @if($data['title'] == 'category')
             <td> {{translate('home_category_status')}}</td>
         @endif

@@ -2,9 +2,9 @@
     $isRtl = session('direction') === 'rtl' || app()->getLocale() === 'ar';
     $isSingleVendorMode = getWebConfig(name: 'business_mode') !== 'multi';
     $transactionRows = collect($transactions)->filter(fn($transaction) => $transaction?->order)->values();
-    $displayStatus = $status === 'all' ? translate('all_status') : translate($status);
+    $displayStatus = $status === 'all' ? translate('all_Status') : translate($status);
     $displayCustomerInfo = $customer_info === 'all' ? translate('all_customer') : $customer_info;
-    $displaySellerInfo = $seller_info === 'all' ? translate('all') : ($seller_info === 'inhouse' ? translate('inhouse') : $seller_info);
+    $displaySellerInfo = $seller_info === 'all' ? translate('All') : ($seller_info === 'inhouse' ? translate('in_House') : $seller_info);
     $logoSrc = '';
     $logoFile = is_array($company_web_logo ?? null) ? ($company_web_logo['key'] ?? '') : ($company_web_logo ?? '');
 
@@ -66,7 +66,7 @@
     <div class="header clearfix">
         <div class="header-main">
             <h2>{{ translate('order_Transaction_Statement') }}</h2>
-            <p>{{ translate('duration') }}: {{ $dateRange }}</p>
+            <p>{{ translate('Duration') }}: {{ $dateRange }}</p>
             <p>{{ translate('generated_on') }}: {{ now()->translatedFormat('d M Y, h:i A') }}</p>
         </div>
         @if (!$isSingleVendorMode && $logoSrc)
@@ -78,8 +78,8 @@
 
     <table class="meta">
         <tr>
-            <td><strong>{{ translate('customer_Info') }}</strong>: {{ $displayCustomerInfo }}</td>
-            <td><strong>{{ translate('status') }}</strong>: {{ $displayStatus }}</td>
+            <td><strong>{{ translate('Customer_Info') }}</strong>: {{ $displayCustomerInfo }}</td>
+            <td><strong>{{ translate('Status') }}</strong>: {{ $displayStatus }}</td>
             @if (!$isSingleVendorMode)
                 <td><strong>{{ translate('vendor_Info') }}</strong>: {{ $displaySellerInfo }}</td>
             @endif
@@ -97,7 +97,7 @@
                 <div class="kpi-value">{{ $kpi_data['in_house_orders'] ?? 0 }}</div>
             </td>
             <td>
-                <div class="kpi-label">{{ translate('in_House_Products') }}</div>
+                <div class="kpi-label">{{ translate('in-House_Products') }}</div>
                 <div class="kpi-value">{{ $kpi_data['total_in_house_products'] ?? 0 }}</div>
             </td>
             <td>
@@ -123,8 +123,8 @@
                         <div class="chart-title">{{ translate('payment_statistics') }}</div>
                         <img src="{{ $chartImagePayment }}" alt="{{ translate('payment_statistics') }}">
                         <div class="chart-stats">
-                            <div>{{ translate('cash_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
-                            <div>{{ translate('digital_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
+                            <div>{{ translate('cash_Payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['cash_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
+                            <div>{{ translate('digital_Payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['digital_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
                             <div>{{ translate('wallet') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['wallet_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
                             <div>{{ translate('offline_payments') }}: {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $payment_data['offline_payment'] ?? 0), currencyCode: getCurrencyCode()) }}</div>
                         </div>
@@ -134,13 +134,13 @@
         </tr>
     </table>
 
-    <div class="section-title">{{ translate('order_summary') }} <small>({{ $dateRange }})</small></div>
+    <div class="section-title">{{ translate('order_Summary') }} <small>({{ $dateRange }})</small></div>
     <table class="summary">
         <thead>
             <tr>
                 <th style="width:8%;">{{ translate('SL') }}</th>
-                <th style="width:62%;">{{ translate('details') }}</th>
-                <th style="width:30%;">{{ translate('amount') }}</th>
+                <th style="width:62%;">{{ translate('Details') }}</th>
+                <th style="width:30%;">{{ translate('Amount') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -148,14 +148,14 @@
             <tr><td>2</td><td>{{ translate('total_Product_Discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_product_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>3</td><td>{{ translate('total_Coupon_Discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_coupon_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>4</td><td>{{ translate('total_Discounted_Amount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_discounted_amount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
-            <tr><td>5</td><td>{{ translate('total') }} {{ translate('VAT/TAX') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_tax'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>5</td><td>{{ translate('Total') }} {{ translate('VAT/TAX') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_tax'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>6</td><td>{{ translate('total_Delivery_Charge') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_delivery_charge'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>7</td><td>{{ translate('total_Deliveryman_incentive') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_deliveryman_incentive'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>8</td><td>{{ translate('total_Order_Amount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_order_amount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
-            <tr><td>9</td><td>{{ translate('admin_discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>9</td><td>{{ translate('admin_Discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>10</td><td>{{ translate('seller_discount') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_seller_discount'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
-            <tr><td>11</td><td>{{ translate('admin_commission') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_commission'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
-            <tr><td>12</td><td>{{ translate('admin_net_income') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_net_income'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>11</td><td>{{ translate('admin_Commission') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_commission'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
+            <tr><td>12</td><td>{{ translate('admin_Net_Income') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_admin_net_income'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
             <tr><td>13</td><td>{{ translate('seller_net_income') }}</td><td>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $summary_data['total_seller_net_income'] ?? 0), currencyCode: getCurrencyCode()) }}</td></tr>
         </tbody>
     </table>
@@ -166,16 +166,16 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>{{ translate('order_id') }}</th>
-                    <th>{{ translate('shop_name') }}</th>
-                    <th>{{ translate('customer_name') }}</th>
-                    <th class="amount">{{ translate('amount') }}</th>
-                    <th class="amount">{{ translate('admin_commission') }}</th>
-                    <th class="amount">{{ translate('admin_net_income') }}</th>
-                    <th>{{ translate('payment_method') }}</th>
-                    <th>{{ translate('payment_Status') }}</th>
-                    <th>{{ translate('status') }}</th>
-                    <th>{{ translate('date') }}</th>
+                    <th>{{ translate('Order_ID') }}</th>
+                    <th>{{ translate('Shop_Name') }}</th>
+                    <th>{{ translate('Customer_Name') }}</th>
+                    <th class="amount">{{ translate('Amount') }}</th>
+                    <th class="amount">{{ translate('admin_Commission') }}</th>
+                    <th class="amount">{{ translate('admin_Net_Income') }}</th>
+                    <th>{{ translate('Payment_Method') }}</th>
+                    <th>{{ translate('Payment_Status') }}</th>
+                    <th>{{ translate('Status') }}</th>
+                    <th>{{ translate('DATE') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -213,7 +213,7 @@
                         <td>{{ $transaction->order_id }}</td>
                         <td>
                             @if ($transaction->seller_is == 'admin')
-                                {{ translate('inhouse') }}
+                                {{ translate('in_House') }}
                             @elseif(isset($transaction->seller?->shop?->name))
                                 {{ $transaction->seller->shop->name }}
                             @else
@@ -241,7 +241,7 @@
             </tbody>
         </table>
     @else
-        <div class="empty">{{ translate('no_data_found') }}</div>
+        <div class="empty">{{ translate('no_Data_found') }}</div>
     @endif
 
     <div class="footer">
@@ -252,7 +252,7 @@
                     {{ translate('generated_on') }}: {{ now()->translatedFormat('j F Y, h:i A') }}<br>
                     {{ translate('order_Transaction_Statement') }}
                     @if (!$isSingleVendorMode)
-                        <br>{{ translate('phone') }}: {{ $company_phone }} | {{ translate('email') }}: {{ $company_email }}
+                        <br>{{ translate('Phone') }}: {{ $company_phone }} | {{ translate('Email') }}: {{ $company_email }}
                     @endif
                 </td>
                 <td width="20%"></td>

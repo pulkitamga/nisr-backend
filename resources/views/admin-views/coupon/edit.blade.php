@@ -48,7 +48,7 @@
                                     <div class="{{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form" id="{{$lang}}-form">
                                         <input type="text" name="title[]" class="form-control" id="title"
                                             value="{{$lang == $defaultLanguage ? $coupon->getRawOriginal('title') : $coupon->getTranslatedField('title', $lang, '') }}"
-                                            placeholder="{{translate('title')}} ({{ strtoupper($lang) }})" required>
+                                            placeholder="{{translate('Title')}} ({{ strtoupper($lang) }})" required>
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{$lang}}">
                                 @endforeach
@@ -58,26 +58,26 @@
                                 <a href="javascript:void(0)" class="float-end" id="generateCode">{{translate('generate_code')}}</a>
                                 <input type="text" name="code" value="{{$coupon['code']}}"
                                     class="form-control" id="code"
-                                    placeholder="{{translate('ex')}}: EID100" required>
+                                    placeholder="{{translate('Ex')}}: EID100" required>
                             </div>
 
                             @if($web_config['business_mode'] == 'multi' && $web_config['seller_registration'])
 
                             <div class="col-md-6 col-lg-4 form-group first_order">
-                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('coupon_bearer')}}</label>
+                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('coupon_Bearer')}}</label>
                                 <select class="form-control" name="coupon_bearer" id="coupon_bearer">
                                     <option disabled selected>{{translate('select_coupon_bearer')}}</option>
-                                    <option value="seller" {{$coupon['coupon_bearer']=='seller'?'selected':''}}>{{translate('vendor')}}</option>
-                                    <option value="inhouse" {{$coupon['coupon_bearer']=='inhouse'?'selected':''}}>{{translate('admin')}}</option>
+                                    <option value="seller" {{$coupon['coupon_bearer']=='seller'?'selected':''}}>{{translate('Vendor')}}</option>
+                                    <option value="inhouse" {{$coupon['coupon_bearer']=='inhouse'?'selected':''}}>{{translate('Admin')}}</option>
                                 </select>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group coupon_by first_order">
-                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('vendor')}}</label>
+                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('Vendor')}}</label>
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control" name="seller_id" id="vendor_wise_coupon">
                                     <option disabled selected>{{translate('select_Vendor')}}</option>
                                     <option value="0" {{$coupon['seller_id']=='0'?'selected':''}}>{{translate('all_Vendor')}}</option>
                                     @if($coupon['coupon_bearer'] == 'inhouse')
-                                    <option value="inhouse" {{is_null($coupon['seller_id'])?'selected':''}}>{{translate('inhouse')}}</option>
+                                    <option value="inhouse" {{is_null($coupon['seller_id'])?'selected':''}}>{{translate('in_House')}}</option>
                                     @endif
                                     @foreach($sellers as $seller)
                                     <option value="{{ $seller->id }}" {{$coupon['seller_id']==$seller->id?'selected':''}}>{{ $seller->shop->name }}</option>
@@ -88,7 +88,7 @@
                             @endif
 
                             <div class="col-md-6 col-lg-4 form-group coupon_type first_order">
-                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('customer')}}</label>
+                                <label for="name" class="title-color font-weight-medium d-flex">{{translate('Customer')}}</label>
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control" name="customer_id">
                                     <option disabled selected>{{translate('select_customer')}}</option>
                                     <option value="0" {{$coupon['customer_id']=='0'?'selected':''}}>{{translate('all_customer')}}</option>
@@ -102,16 +102,16 @@
                                 <input type="number" name="limit" min="0" value="{{ $coupon['limit'] }}" id="coupon_limit" class="form-control" placeholder="{{translate('ex'.':'.'10')}}">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group free_delivery">
-                                <label for="name" class="title-color text-capitalize">{{translate('discount_type')}}</label>
+                                <label for="name" class="title-color text-capitalize">{{translate('Discount_Type')}}</label>
                                 <select id="discount_type" class="form-control" name="discount_type">
-                                    <option value="amount" {{$coupon['discount_type']=='amount'?'selected':''}}>{{translate('amount')}}</option>
+                                    <option value="amount" {{$coupon['discount_type']=='amount'?'selected':''}}>{{translate('Amount')}}</option>
                                     <option value="percentage" {{$coupon['discount_type']=='percentage'?'selected':''}}>{{translate('percentage')}}</option>
                                 </select>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group free_delivery">
-                                <label for="name" class="title-color text-capitalize">{{translate('discount_Amount')}} <span id="discount_percent"> (%)</span></label>
+                                <label for="name" class="title-color text-capitalize">{{translate('Discount_Amount')}} <span id="discount_percent"> (%)</span></label>
                                 <input type="number" min="0" max="1000000" step=".01" name="discount" class="form-control" id="discount" value="{{$coupon['discount_type']=='amount'? usdToDefaultCurrency(amount:$coupon['discount']):$coupon['discount']}}"
-                                    placeholder="{{translate('ex').':'.'500'}}" required>
+                                    placeholder="{{translate('Ex').':'.'500'}}" required>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name" class="title-color text-capitalize">{{translate('minimum_purchase')}}</label>
@@ -124,9 +124,9 @@
                                     placeholder="{{translate('maximum_discount')}}">
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
-                                <label for="name" class="title-color text-capitalize">{{translate('start_date')}}</label>
+                                <label for="name" class="title-color text-capitalize">{{translate('Start_Date')}}</label>
                                 <input type="date" name="start_date" class="form-control" id="start_date" value="{{date('Y-m-d',strtotime($coupon['start_date']))}}"
-                                    placeholder="{{translate('start_date')}}" required>
+                                    placeholder="{{translate('Start_Date')}}" required>
                             </div>
                             <div class="col-md-6 col-lg-4 form-group">
                                 <label for="name" class="title-color text-capitalize">{{translate('expire_date')}}</label>
@@ -136,7 +136,7 @@
                         </div>
 
                         <div class="d-flex align-items-center justify-content-end flex-wrap gap-10">
-                            <button type="reset" class="btn btn-secondary px-4">{{translate('reset')}}</button>
+                            <button type="reset" class="btn btn-secondary px-4">{{translate('Reset')}}</button>
                             <button type="submit" class="btn btn--primary px-4">{{translate('Update')}}</button>
                         </div>
                     </form>

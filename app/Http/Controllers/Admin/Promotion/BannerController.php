@@ -116,6 +116,6 @@ class BannerController extends BaseController
         $banner = $this->bannerRepo->getFirstWhere(params: ['id' => $request['id']]);
         $this->deleteFile(filePath: '/banner/' . $banner['photo']);
         $this->bannerRepo->delete(params: ['id' => $request['id']]);
-        return response()->json(['message' => translate('banner_deleted_successfully')]);
+        return response()->json(['message' => translate('Banner_deleted_successfully')]);
     }
 }

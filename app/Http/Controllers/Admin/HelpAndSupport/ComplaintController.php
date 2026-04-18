@@ -239,7 +239,7 @@ class ComplaintController extends BaseController
         ]);
 
         return response()->json([
-            'message' => translate('status_updated_successfully')
+            'message' => translate('Status_updated_successfully')
         ], 200);
     }
 

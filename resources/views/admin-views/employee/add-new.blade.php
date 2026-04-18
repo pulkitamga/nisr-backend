@@ -20,19 +20,19 @@
                     <div class="card-body">
                         <h5 class="mb-0 page-header-title text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-3">
                             <i class="tio-user"></i>
-                            {{translate('general_information')}}
+                            {{translate('general_Information')}}
                         </h5>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name"
-                                        class="title-color">{{translate('full_name')}}</label>
+                                        class="title-color">{{translate('full_Name')}}</label>
                                     <input type="text" name="name" class="form-control" id="name"
-                                        placeholder="{{translate('ex'). ':'. translate('John_Doe')}}"
+                                        placeholder="{{translate('Ex'). ':'. translate('John_Doe')}}"
                                         value="{{old('name')}}" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="phone" class="title-color">{{translate('phone')}}</label>
+                                    <label for="phone" class="title-color">{{translate('Phone')}}</label>
                                     <div class="mb-3">
                                         <input class="form-control form-control-user phone-input-with-country-picker"
                                             type="tel" id="exampleInputPhone" value="{{old('phone')}}"
@@ -55,7 +55,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="branch-id" class="title-color">{{ translate('branch') }}</label>
+                                    <label for="branch-id" class="title-color">{{ translate('Branch') }}</label>
                                     <select name="branch_id[]" class="form-control js-select2-custom" multiple>
                                         @foreach ($branches as $branch)
                                         <option value="{{ $branch->id }}">
@@ -66,9 +66,9 @@
 
                                 </div>
                                 <div class="form-group">
-                                    <label for="role_id" class="title-color">{{translate('department')}}</label>
+                                    <label for="role_id" class="title-color">{{translate('Department')}}</label>
                                     <select class="form-control" name="department_id" id="department_id">
-                                        <option value="0" selected>{{translate('select_department')}}</option>
+                                        <option value="0" selected>{{translate('Select_Department')}}</option>
                                         @foreach($departments as $dept)
                                         <option value="{{$dept->id}}">{{ $dept->name }}</option>
                                         @endforeach
@@ -104,7 +104,7 @@
                                 <div class="form-group">
                                     <label for="identify_number" class="title-color">{{translate('identify_number')}}</label>
                                     <input type="text" name="identify_number" value="{{old('identify_number')}}" class="form-control"
-                                        placeholder="{{translate('ex').':'.'9876123123'}}" id="identify_number">
+                                        placeholder="{{translate('Ex').':'.'9876123123'}}" id="identify_number">
                                 </div>
                             </div>
                             <div class="col-lg-6">
@@ -121,7 +121,7 @@
                                             <input type="file" name="image" id="custom-file-upload" class="custom-file-input image-input"
                                                 data-image-id="viewer"
                                                 accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" required>
-                                            <label class="custom-file-label" for="custom-file-upload">{{translate('choose_file')}}</label>
+                                            <label class="custom-file-label" for="custom-file-upload">{{translate('choose_File')}}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -144,10 +144,10 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="email" class="title-color">{{translate('email')}}</label>
+                                    <label for="email" class="title-color">{{translate('Email')}}</label>
                                     <input type="email" name="email" value="{{old('email')}}" class="form-control"
                                         id="email"
-                                        placeholder="{{translate('ex').':'.'ex@gmail.com'}}" required>
+                                        placeholder="{{translate('Ex').':'.'ex@gmail.com'}}" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -204,8 +204,8 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-3">
-                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{translate('reset')}}</button>
-                            <button type="submit" class="btn btn--primary px-4">{{translate('submit')}}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary px-4">{{translate('Reset')}}</button>
+                            <button type="submit" class="btn btn--primary px-4">{{translate('Submit')}}</button>
                         </div>
                     </div>
                 </div>
@@ -243,7 +243,7 @@
                     identifyNumber.setAttribute('placeholder', 'Ex: A1234567');
                 } else {
                     identifyNumber.setAttribute('inputmode', 'numeric');
-                    identifyNumber.setAttribute('placeholder', "{{translate('ex').':'.'9876123123'}}");
+                    identifyNumber.setAttribute('placeholder', "{{translate('Ex').':'.'9876123123'}}");
                 }
             };
 

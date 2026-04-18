@@ -27,7 +27,7 @@
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('app_name')}}</label>
                                 <input type="text" value="{{ env('APP_NAME') }}" name="app_name" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . translate('DynamicLogic')}}" required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . translate('DynamicLogic')}}" required disabled>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
@@ -60,7 +60,7 @@
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('app_url')}}</label>
                                 <input type="text" value="{{ env('APP_URL') }}" name="app_url" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . 'http://localhost'}}" required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . 'http://localhost'}}" required disabled>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                                 <label class="title-color d-flex">{{translate('DB_connection')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_CONNECTION') : '---' }}"
                                     name="db_connection" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . 'mysql' }}" required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . 'mysql' }}" required disabled>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
@@ -78,14 +78,14 @@
                                 <label class="title-color d-flex">{{translate('DB_host')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_HOST') : '---' }}"
                                     name="db_host" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . 'http://localhost/' }}" required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . 'http://localhost/' }}" required disabled>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
                             <div class="form-group">
                                 <label class="title-color d-flex">{{translate('DB_port')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_PORT') : '---' }}"
-                                    name="db_port" class="form-control" placeholder="{{ translate('ex') . ':' . '3306' }}"
+                                    name="db_port" class="form-control" placeholder="{{ translate('Ex') . ':' . '3306' }}"
                                     required disabled>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                                 <label class="title-color d-flex">{{translate('DB_database')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_DATABASE') : '---' }}"
                                     name="db_database" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . 'demo_db'}} " required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . 'demo_db'}} " required disabled>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
@@ -102,7 +102,7 @@
                                 <label class="title-color d-flex">{{translate('DB_username')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_USERNAME') : '---' }}"
                                     name="db_username" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . translate('root')  }}" required disabled>
+                                    placeholder="{{ translate('Ex') . ':' . translate('root')  }}" required disabled>
                             </div>
                         </div>
                         <div class="col-md-4 col-12">
@@ -110,15 +110,15 @@
                                 <label class="title-color d-flex">{{translate('DB_password')}}</label>
                                 <input type="text" value="{{ env('APP_MODE') != 'demo' ? env('DB_PASSWORD') : '---' }}"
                                     name="db_password" class="form-control"
-                                    placeholder="{{ translate('ex') . ':' . translate('password') }}" disabled>
+                                    placeholder="{{ translate('Ex') . ':' . translate('password') }}" disabled>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end flex-wrap gap-3">
-                        <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
+                        <button type="reset" class="btn btn-secondary px-5">{{translate('Reset')}}</button>
                         <button type="{{env('APP_MODE') != 'demo' ? 'submit' : 'button'}}"
-                            class="btn btn--primary px-5 {{env('APP_MODE') != 'demo' ? '' : 'call-demo'}}">{{translate('submit')}}</button>
+                            class="btn btn--primary px-5 {{env('APP_MODE') != 'demo' ? '' : 'call-demo'}}">{{translate('Submit')}}</button>
                     </div>
                 </form>
             </div>

@@ -14,7 +14,7 @@
     <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
         <h2 class="h1 mb-0 d-flex gap-2">
             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png') }}" alt="">
-            {{ translate('add_New_Stock_Request') }}
+            {{ translate('Add_New_Stock_Request') }}
         </h2>
     </div>
 
@@ -25,7 +25,7 @@
             <div class="card-header">
                 <div class="d-flex gap-2">
                     <i class="tio-user-big"></i>
-                    <h4 class="mb-0">{{ translate('stock_Request') }}</h4>
+                    <h4 class="mb-0">{{ translate('Stock_Request') }}</h4>
                 </div>
             </div>
             <div class="card-body">
@@ -41,7 +41,7 @@
                             <select class="js-select2-custom form-control" name="from_branch_id"
                                 required>
                                 <option value="{{ old('branch_id') }}" selected
-                                    disabled>{{ translate('select_branch') }}</option>
+                                    disabled>{{ translate('Select_Branch') }}</option>
                                 @foreach ($fromBranches as $branch)
                                 @if($branch['id'] != 1)
                                 <option value="{{ $branch['id'] }}"
@@ -62,7 +62,7 @@
                             <select class="js-select2-custom form-control" name="to_branch_id"
                                 required>
                                 <option value="{{ old('branch_id') }}" selected
-                                    disabled>{{ translate('select_branch') }}</option>
+                                    disabled>{{ translate('Select_Branch') }}</option>
                                 @foreach ($toBranches as $branch)
                                 <option value="{{ $branch['id'] }}" selected>
                                     {{ $branch['branch_name'] }}
@@ -74,7 +74,7 @@
                     <div class="col-md-6 col-lg-4 col-xl-3" id="from_div">
                         <label class="title-color d-flex justify-content-between gap-2">
                             <span class="d-flex align-items-center gap-2">
-                                {{ translate('Date') }}
+                                {{ translate('DATE') }}
                                 <span class="input-required-icon">*</span>
                             </span>
                         </label>
@@ -110,7 +110,7 @@
     <td class="text-center">1.</td>
     <td>
         <select class="js-select2-custom form-control category-select" name="products[0][category_id]" required>
-            <option value="" selected disabled>{{ translate('select_category') }}</option>
+            <option value="" selected disabled>{{ translate('select_Category') }}</option>
             @foreach ($categories as $category)
                 <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
             @endforeach
@@ -120,7 +120,7 @@
         <select name="products[0][product_id]" 
                 class="js-select2-custom form-control product-select" 
                 data-row-id="0" required>
-            <option value="">{{ translate('select_product') }}</option>
+            <option value="">{{ translate('select_Product') }}</option>
             @foreach ($products as $product)
                 <option value="{{ $product['id'] }}"
                     data-variation='@json($product->variation ? json_decode($product->variation, true) : [])'>
@@ -146,7 +146,7 @@
                     <div class="row justify-content-end">
                         <div class="col-sm-12">
                             <div class="mt-3">
-                                <button type="button" class="btn btn-md btn-primary" id="add-product-row">{{ translate('Add Product') }}</button>
+                                <button type="button" class="btn btn-md btn-primary" id="add-product-row">{{ translate('Add_Product') }}</button>
                             </div>
                         </div>
                     </div>
@@ -155,9 +155,9 @@
         </div>
 
         <div class="row justify-content-end gap-3 mt-3 mx-1">
-            <button type="reset" class="btn btn-secondary px-5">{{ translate('reset') }}</button>
+            <button type="reset" class="btn btn-secondary px-5">{{ translate('Reset') }}</button>
             <button type="button" class="btn btn--primary px-5 product-add-stock-request-check">
-                {{ translate('submit') }}
+                {{ translate('Submit') }}
             </button>
         </div>
     </form>
@@ -186,7 +186,7 @@
             <td class="text-center">${productRowCount + 1}.</td>
             <td>
                 <select class="js-select2-custom form-control category-select" name="products[${productRowCount}][category_id]" required>
-                    <option value="" selected disabled>{{ translate('select_category') }}</option>
+                    <option value="" selected disabled>{{ translate('select_Category') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category['id'] }}">{{ $category['name'] }}</option>
                     @endforeach
@@ -196,7 +196,7 @@
                 <select name="products[${productRowCount}][product_id]" 
                         class="js-select2-custom form-control product-select" 
                         data-row-id="${productRowCount}" required>
-                    <option value="">{{ translate('select_product') }}</option>
+                    <option value="">{{ translate('select_Product') }}</option>
                     @foreach ($products as $product)
                         <option value="{{ $product['id'] }}"
                             data-variation='@json($product->variation ? json_decode($product->variation, true) : [])'>

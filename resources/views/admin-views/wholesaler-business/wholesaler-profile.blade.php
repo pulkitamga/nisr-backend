@@ -61,27 +61,27 @@
 
                     <div class="customer-details-new-card">
                         <img src="{{ getStorageImages(path: $wholesaler->image_full_url , type: 'backend-profile') }}"
-                            alt="{{translate('image')}}" class="aspect-1">
+                            alt="{{translate('Image')}}" class="aspect-1">
                         <div class="customer-details-new-card-content">
                             <h6 class="name line--limit-2">{{ $business->company_name }}</h6>
                             <ul class="customer-details-new-card-content-list">
-                                <li><span class="key">{{translate('contact')}}</span><span class="field-colon">:</span><strong
-                                        class="value bidi-ltr">{{ $wholesaler->phone ?? translate('no_data_found') }}</strong>
+                                <li><span class="key">{{translate('Contact')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->phone ?? translate('no_Data_found') }}</strong>
                                 </li>
-                                <li><span class="key">{{translate('email')}}</span><span class="field-colon">:</span><strong
-                                        class="value bidi-ltr">{{ $wholesaler->email ?? translate('no_data_found') }}</strong>
+                                <li><span class="key">{{translate('Email')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->email ?? translate('no_Data_found') }}</strong>
                                 </li>
                                 <li><span class="key text-capitalize">{{translate('joined_date')}}</span><span
                                         class="field-colon">:</span><strong class="value bidi-ltr">{{ date('d M Y',
                                         strtotime($wholesaler->created_at)) }}</strong></li>
                                 <li><span class="key">{{translate('reffer by')}}</span><span
                                         class="field-colon">:</span><strong class="value bidi-auto">{{ $wholesaler->refferd_by ??
-                                        translate('no_data_found') }}</strong></li>
-                                <li><span class="key">{{translate('tier')}}</span><span class="field-colon">:</span><strong
-                                        class="value bidi-auto">{{ $wholesaler->tier ?? translate('no_data_found') }}</strong>
+                                        translate('no_Data_found') }}</strong></li>
+                                <li><span class="key">{{translate('Tier')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-auto">{{ $wholesaler->tier ?? translate('no_Data_found') }}</strong>
                                 </li>
-                                <li><span class="key">{{translate('discount')}}</span><span class="field-colon">:</span><strong
-                                        class="value bidi-ltr">{{ $wholesaler->wholesaler_discount ?? translate('no_data_found')
+                                <li><span class="key">{{translate('Discount')}}</span><span class="field-colon">:</span><strong
+                                        class="value bidi-ltr">{{ $wholesaler->wholesaler_discount ?? translate('no_Data_found')
                                         }}%</strong></li>
                                 <li><span class="key">{{translate('MOQ Override')}}</span><span
                                         class="field-colon">:</span><strong class="value bidi-auto">{{ $wholesaler->moq_override_enabled
@@ -149,16 +149,16 @@
                             </h6>
                             <div class="row g-2">
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{
+                                    <p class="mb-1"><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{
                                         $address['contact_person_name'] }}</span></p>
                                 </div>
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}
+                                    <p class="mb-1"><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}
                                     </span>
                                     </p>
                                 </div>
                                 <div class="col-12">
-                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> <span class="bidi-auto">{{ $address['address']
+                                    <p class="mb-1"><strong>{{ translate('Address') }}:</strong> <span class="bidi-auto">{{ $address['address']
                                         }}</span></p>
                                 </div>
                             </div>
@@ -176,16 +176,16 @@
                             </h6>
                             <div class="row g-2">
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('name') }}:</strong> <span class="bidi-auto">{{
+                                    <p class="mb-1"><strong>{{ translate('Name') }}:</strong> <span class="bidi-auto">{{
                                         $address['contact_person_name'] }}</span></p>
                                 </div>
                                 <div class="col-sm-6">
-                                    <p class="mb-1"><strong>{{ translate('phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}
+                                    <p class="mb-1"><strong>{{ translate('Phone') }}:</strong> <span class="bidi-ltr">{{ $address['phone'] }}
                                     </span>
                                     </p>
                                 </div>
                                 <div class="col-12">
-                                    <p class="mb-1"><strong>{{ translate('address') }}:</strong> <span class="bidi-auto">{{ $address['address']
+                                    <p class="mb-1"><strong>{{ translate('Address') }}:</strong> <span class="bidi-auto">{{ $address['address']
                                         }}</span></p>
                                 </div>
                             </div>
@@ -289,7 +289,7 @@
                                 aria-hidden="true">x</span></i></button>
                     </div>
                     <div class="modal-body">
-                        <label>{{ translate('Invoice No') }}</label>
+                        <label>{{ translate('Invoice NO') }}</label>
                         <input type="text" name="invoice_no" id="invoice_no" class="form-control" required>
                         <small id="invoiceAvailability" class="text-sm mt-1"></small>
                     </div>
@@ -338,7 +338,7 @@
         <div class="inline-page-menu my-4">
             <ul class="list-unstyled" id="orderTabs">
                 <li class="">
-                    <a class="nav-link active" href="#" data-type="purchase">{{ translate('Purchase Order') }}</a>
+                    <a class="nav-link active" href="#" data-type="purchase">{{ translate('Purchase_order') }}</a>
                 </li>
                 <li class="">
                     <a class="nav-link" href="#" data-type="quotation">{{ translate('Quotation') }}</a>
@@ -375,7 +375,7 @@
 
                     </div>
                     <div class="modal-body">
-                        <label>{{ translate('Purchase Order No') }}</label>
+                        <label>{{ translate('Purchase_Order_No') }}</label>
                         <input type="text" name="purchase_order_no" id="purchase_order_no"
                             class="form-control" required>
                         <small id="availabilityMessage" class="text-sm mt-1"></small>

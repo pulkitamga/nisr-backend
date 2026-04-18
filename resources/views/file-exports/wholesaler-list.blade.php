@@ -11,19 +11,19 @@
             <th>
                 {{translate('filter_By').' '.'-'.' '.ucwords($data['filter'])}}
                 <br>
-                {{translate('total_request').' '.'-'.' '.count($data['wholesaler'])}}
+                {{translate('total__Request').' '.'-'.' '.count($data['wholesaler'])}}
 
             </th>
         </tr>
        
         <tr>
             <td>{{translate('SL')}}</td>
-            <td>{{translate('wholesaler')}}</td>
-            <td>{{translate('company')}}</td>
-            <td>{{translate('email')}}</td>
-            <td>{{translate('mobile')}}</td>
+            <td>{{translate('Wholesaler')}}</td>
+            <td>{{translate('Company')}}</td>
+            <td>{{translate('Email')}}</td>
+            <td>{{translate('Mobile')}}</td>
             <td>{{translate('wholesaler_discount')}}</td>
-            <td>{{translate('tier')}}</td>
+            <td>{{translate('Tier')}}</td>
             <td>{{translate('moq_status')}}</td>
             <td>{{translate('wholesaler_status')}}</td>
             <td>{{translate('trade')}}</td>

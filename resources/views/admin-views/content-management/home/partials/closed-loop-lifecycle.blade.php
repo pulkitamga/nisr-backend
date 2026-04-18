@@ -49,13 +49,13 @@ if ($cards === []) {
                         </div>
 
                         <div class="col-lg-8">
-                            <label class="form-label">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                            <label class="form-label">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                             <input type="text" name="title[]" class="form-control"
                                 value="{{ $lang === $defaultLanguage ? ($section['title'] ?? '') : ($translations[$lang]['section']['title'] ?? '') }}">
                         </div>
 
                         <div class="col-lg-8">
-                            <label class="form-label">{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                            <label class="form-label">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                             <textarea name="description[]" class="form-control" rows="3">{{ $lang === $defaultLanguage ? ($section['description'] ?? '') : ($translations[$lang]['section']['description'] ?? '') }}</textarea>
                         </div>
 
@@ -76,7 +76,7 @@ if ($cards === []) {
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-lg-6">
-                                <label class="form-label">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                <label class="form-label">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                                 <input type="text" name="cards[{{ $index }}][title][{{ $lang }}]" class="form-control"
                                     value="{{ $lang === $defaultLanguage ? ($card['title'] ?? '') : ($translations[$lang]['cards'][$index]['title'] ?? '') }}">
                             </div>
@@ -88,7 +88,7 @@ if ($cards === []) {
                             </div>
 
                             <div class="col-lg-8">
-                                <label class="form-label">{{ translate('description') }} ({{ strtoupper($lang) }})</label>
+                                <label class="form-label">{{ translate('Description') }} ({{ strtoupper($lang) }})</label>
                                 <textarea name="cards[{{ $index }}][description][{{ $lang }}]" class="form-control" rows="4">{{ $lang === $defaultLanguage ? ($card['description'] ?? '') : ($translations[$lang]['cards'][$index]['description'] ?? '') }}</textarea>
                             </div>
 
@@ -104,7 +104,7 @@ if ($cards === []) {
     @endforeach
 
     <div class="d-flex justify-content-end gap-3 mt-4">
-        <button type="reset" class="btn btn-secondary px-4">{{ translate('reset') }}</button>
-        <button type="submit" class="btn btn--primary px-4">{{ translate('update') }}</button>
+        <button type="reset" class="btn btn-secondary px-4">{{ translate('Reset') }}</button>
+        <button type="submit" class="btn btn--primary px-4">{{ translate('Update') }}</button>
     </div>
 </form>

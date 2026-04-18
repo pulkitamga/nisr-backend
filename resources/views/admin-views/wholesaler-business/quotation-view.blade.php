@@ -226,17 +226,17 @@
                             </p>
                         </div>
                         <div class="col-md-6 {{ $isRtl ? 'text-end' : 'text-start' }}">
-                            <h6>{{ translate('Order Info') }}</h6>
+                            <h6>{{ translate('order_Info') }}</h6>
                             <p>
-                                <strong>{{ translate('Quotation NO') }}:</strong> <span class="bidi-ltr">{{ $order->quotation_no }}</span><br>
-                                <strong>{{ translate('Purchase Order NO') }}:</strong> <span class="bidi-ltr">{{ $order->purchase_order_no }}</span><br>
-                                <strong>{{ translate('Date') }}:</strong> <span class="bidi-ltr">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span><br>
+                                <strong>{{ translate('Quotation_No') }}:</strong> <span class="bidi-ltr">{{ $order->quotation_no }}</span><br>
+                                <strong>{{ translate('Purchase_Order_No') }}:</strong> <span class="bidi-ltr">{{ $order->purchase_order_no }}</span><br>
+                                <strong>{{ translate('DATE') }}:</strong> <span class="bidi-ltr">{{ \Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</span><br>
 
                             </p>
                         </div>
                     </div>
                     @php($totelTax=0)
-                    <h6 class="mb-3">{{ translate('Product Details') }}</h6>
+                    <h6 class="mb-3">{{ translate('product_details') }}</h6>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="thead-light">
@@ -246,7 +246,7 @@
                                     <th>{{ translate('Quantity') }}</th>
                                     <th>{{ translate('Price') }}</th>
                                     <th>{{ translate('Tax') }}</th>
-                                    <th>{{ translate('Final Price') }}</th>
+                                    <th>{{ translate('Final_price') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -257,7 +257,7 @@
 
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td>{{ $item->product->getTranslatedField('name') ?? __('N/A') }} ({{ $item->product_variation_type ?? __('No Variation') }})</td>
+                                    <td>{{ $item->product->getTranslatedField('name') ?? __('N/A') }} ({{ $item->product_variation_type ?? __('no_variation') }})</td>
                                     <td>{{ $item->product_quantity }}</td>
                                     <td>{{ webCurrencyConverter(amount:$item->base_price) }}</td>
                                     <td>{{ webCurrencyConverter(amount:$tax) }}</td>
@@ -275,7 +275,7 @@
                             <div class="p-3">
                                 @if (!empty(strip_tags($order->terms_and_conditions)))
                                 <div class="mt-4">
-                                    <h4 class="font-weight-bold mb-1">{{ translate('Terms and Conditions') }}</h4>
+                                    <h4 class="font-weight-bold mb-1">{{ translate('Terms_and_Conditions') }}</h4>
                                     <p>{!!getTranslatedValue($order, 'terms_and_conditions', $order->terms_and_conditions)  !!}</p>
                                 </div>
                                 @endif
@@ -291,7 +291,7 @@
                         <div class="col-md-5 ms-auto">
                             <div class="p-3">
                                 <h6 class="mb-3 font-weight-bold text-center border py-lg-2 bg-dark text-white">
-                                    {{ translate('Sub Total') }}
+                                    {{ translate('Subtotal') }}
                                 </h6>
                                 <ul class="list-unstyled mb-3">
                                     <li class="d-flex justify-content-between mb-1">
@@ -313,7 +313,7 @@
 
                                 <ul class="list-unstyled mb-3">
                                     <li class="d-flex justify-content-between mb-1">
-                                        <span>{{ __('Wholesaler Discount') }}</span>
+                                        <span>{{ __('wholesaler_discount') }}</span>
                                         <span>{{ webCurrencyConverter(amount:$order->wholesaler_discount_amount) }}</span>
                                     </li>
                                 </ul>

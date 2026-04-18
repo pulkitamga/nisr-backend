@@ -35,7 +35,7 @@
                                                         class="d-flex flex-column justify-content-center align-items-center aspect-1">
                                                         <img alt="" width="33"
                                                              src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}">
-                                                        <h3 class="text-muted fz-12">{{ translate('upload_file') }}</h3>
+                                                        <h3 class="text-muted fz-12">{{ translate('Upload_File') }}</h3>
                                                     </div>
                                                 </div>
                                             </label>
@@ -75,12 +75,12 @@
                     <div class="mb-3 btn--container justify-content-center">
                         <button type="reset" id="xml_file_upload_cancel" class="btn btn-soft-danger font-weight-bold"
                                 data-dismiss="modal" aria-label="{{ translate('Close') }}">
-                            {{ translate('cancel') }}
+                            {{ translate('Cancel') }}
                         </button>
 
                         <button type="{{env('APP_MODE')!='demo'? 'submit' : 'button' }}" id="xml_file_upload_submit" class="btn btn--primary font-weight-bold {{env('APP_MODE')!='demo'? '' : 'call-demo' }}"
                                 disabled>
-                            {{ translate('submit') }}
+                            {{ translate('Submit') }}
                         </button>
                     </div>
                 </form>

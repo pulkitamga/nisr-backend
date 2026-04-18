@@ -412,7 +412,7 @@ class WholeSalerController extends BaseController
             return redirect()->back()->with('success', translate('Business rejected successfully'));
         }
 
-        return redirect()->back()->with('error', translate('Invalid action'));
+        return redirect()->back()->with('error', translate('invalid_action'));
     }
 
     public function toggleMOQOverride(Request $request)
@@ -427,7 +427,7 @@ class WholeSalerController extends BaseController
         $user->save();
 
 
-        $title   = translate('MOQ override');
+        $title   = translate('MOQ Override');
         $message = $request->boolean('status')
             ? translate('Your minimum order quantity restriction is now disabled. You can start purchase orders from quantity 1.')
             : translate('Your minimum order quantity restriction is active again. Standard minimum quantities will apply.');
@@ -699,7 +699,7 @@ class WholeSalerController extends BaseController
         });
 
 
-        $title   = translate('Quotation Send');
+        $title   = translate('quotation_send');
         $message = translate('Admin send you an quotation review it in my quotations');
         $link    = route('home');
 
@@ -942,7 +942,7 @@ class WholeSalerController extends BaseController
         $tier->is_active = $request->status;
         $tier->save();
 
-        return response()->json(['message' => translate('Status updated successfully')]);
+        return response()->json(['message' => translate('Status_updated_successfully')]);
     }
 
     public function invoiceEdit($id)

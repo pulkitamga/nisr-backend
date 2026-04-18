@@ -9,9 +9,9 @@
         <th>{{ translate('delivery_Man_Information').' '.'-' }}</th>
         <th></th>
         <th>
-            {{translate('name').' '.'-'.' '.$data['delivery_man']['f_name'].' '.$data['delivery_man']['l_name']}}
+            {{translate('Name').' '.'-'.' '.$data['delivery_man']['f_name'].' '.$data['delivery_man']['l_name']}}
             <br>
-            {{translate('rating').' '.'-'.' '.(isset($data['delivery_man']?->rating[0]?->average) ? number_format($data['delivery_man']?->rating[0]?->average, 1) : 0) }}
+            {{translate('Rating').' '.'-'.' '.(isset($data['delivery_man']?->rating[0]?->average) ? number_format($data['delivery_man']?->rating[0]?->average, 1) : 0) }}
             <br>
             {{translate('total_Order').' '.'-'.' '.count($data['orders'])}}
         </th>
@@ -35,8 +35,8 @@
     </tr>
     <tr>
         <td> {{translate('SL')}}    </td>
-        <td> {{translate('order_ID')}}</td>
-        <td> {{translate('order_Date')}}</td>
+        <td> {{translate('Order_ID')}}</td>
+        <td> {{translate('Order_Date')}}</td>
         @if ($data['type'] != 'earn')
         <td> {{translate('total_Item')}}</td>
         @endif
@@ -45,9 +45,9 @@
         @endif
         <td> {{translate($data['type'] == 'earn' ? 'earning_status' : 'payment_status')}}</td>
         @if ($data['type'] == 'earn')
-            <td> {{translate('payment_method')}}</td>
+            <td> {{translate('Payment_Method')}}</td>
         @endif
-        <td> {{translate('order_Status')}}</td>
+        <td> {{translate('Order_Status')}}</td>
     </tr>
     @foreach ($data['orders'] as $key=>$item)
         <tr>
@@ -61,7 +61,7 @@
                 <td> {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $item?->deliveryman_charge ?? 0)) }}</td>
             @endif
             @if ($data['type'] == 'earn')
-                <td> {{translate($item->order_status == 'delivered' && $item->payment_status == 'paid' ? translate('received') : translate('not_received'))}} </td>
+                <td> {{translate($item->order_status == 'delivered' && $item->payment_status == 'paid' ? translate('Received') : translate('not_received'))}} </td>
             @else
                 <td> {{translate($item->payment_status)}} </td>
             @endif

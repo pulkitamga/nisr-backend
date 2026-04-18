@@ -25,29 +25,29 @@
                                 <div class="card border bank-info-card bg-bottom text--black bg-contain bg-img" style="background-image: url({{dynamicAsset(path: 'public/assets/back-end/img/wallet-bg.png')}});">
                                     <div class="p-20">
                                         <div class="text-capitalize">
-                                            <i class="tio-user"></i> {{translate('holder_name').':'}} <strong class="text-title">{{$vendor->holder_name ?? translate('no_data_found')}}</strong>
+                                            <i class="tio-user"></i> {{translate('holder_Name').':'}} <strong class="text-title">{{$vendor->holder_name ?? translate('no_Data_found')}}</strong>
                                         </div>
                                     </div>
 
                                     <a href="{{route('vendor.profile.update-bank-info',[$vendor->id])}}" class="btn btn-sm btn--primary edit-btn">
-                                        {{translate('edit')}} <i class="tio-edit"></i>
+                                        {{translate('Edit')}} <i class="tio-edit"></i>
                                     </a>
                                     <div class="card-body position-relative pt-2">
                                         <ul class="dm-info p-0 m-0">
                                             <li>
                                                 <span class="__w-100px">{{translate('bank_Name')}}</span>
                                                 <span>:</span>
-                                                <strong class="right ps-4">{{$vendor->bank_name ?? translate('no_data_found')}}</strong>
+                                                <strong class="right ps-4">{{$vendor->bank_name ?? translate('no_Data_found')}}</strong>
                                             </li>
                                             <li>
-                                                <span class="__w-100px">{{translate('branch_Name')}}</span>
+                                                <span class="__w-100px">{{translate('Branch_Name')}}</span>
                                                 <span>:</span>
-                                                <strong class="right ps-4">{{$vendor->branch ?? translate('no_data_found')}}</strong>
+                                                <strong class="right ps-4">{{$vendor->branch ?? translate('no_Data_found')}}</strong>
                                             </li>
                                             <li>
                                                 <span class="__w-100px">{{translate('account_Number')}}</span>
                                                 <span>:</span>
-                                                <strong class="right ps-4">{{$vendor->account_no ?? translate('no_data_found')}}</strong>
+                                                <strong class="right ps-4">{{$vendor->account_no ?? translate('no_Data_found')}}</strong>
                                             </li>
                                         </ul>
                                     </div>

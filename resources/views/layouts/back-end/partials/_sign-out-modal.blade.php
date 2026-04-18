@@ -12,8 +12,8 @@
                     <h5 class="modal-title mb-2">{{ translate('do_you_want_to_logout').'?' }} </h5>
                 </div>
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="{{ route('admin.logout') }}" class="btn btn--primary min-w-120">{{translate('yes')}}</a>
-                    <button type="button" class="btn btn-danger min-w-120" data-dismiss="modal">{{ translate('cancel') }}</button>
+                    <a href="{{ route('admin.logout') }}" class="btn btn--primary min-w-120">{{translate('Yes')}}</a>
+                    <button type="button" class="btn btn-danger min-w-120" data-dismiss="modal">{{ translate('Cancel') }}</button>
                 </div>
             </div>
         </div>

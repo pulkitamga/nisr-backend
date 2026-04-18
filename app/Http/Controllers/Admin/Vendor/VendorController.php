@@ -199,30 +199,30 @@ class VendorController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('store_Name'),
+                    translate('Store_Name'),
                     translate('vendor_Name'),
-                    translate('phone'),
-                    translate('email'),
+                    translate('Phone'),
+                    translate('Email'),
                     translate('joined_At'),
                     translate('total_Products'),
                     translate('total_Order'),
-                    translate('status'),
+                    translate('Status'),
                 ],
-                title: translate('vendor_List'),
+                title: translate('Vendor_List'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
-                    ['label' => translate('active'), 'value' => (string) $active],
-                    ['label' => translate('inactive'), 'value' => (string) $inactive],
+                    ['label' => translate('Active'), 'value' => (string) $active],
+                    ['label' => translate('Inactive'), 'value' => (string) $inactive],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                 columnWidths: ['A' => 24, 'B' => 24, 'C' => 18, 'D' => 28, 'E' => 18, 'F' => 16, 'G' => 16, 'H' => 14],
                 centerColumns: ['E', 'F', 'G', 'H'],
                 sumColumns: ['F', 'G']
             ),
-            LocalizedExport::fileName(translate('vendor_List'))
+            LocalizedExport::fileName(translate('Vendor_List'))
         );
     }
 

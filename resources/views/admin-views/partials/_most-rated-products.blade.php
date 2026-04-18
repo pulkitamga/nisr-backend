@@ -17,7 +17,7 @@
                                 <div>
                                     <img class="avatar avatar-bordered border-gold avatar-60 rounded"
                                          src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
-                                         alt="{{$product->name}}{{translate('image')}}">
+                                         alt="{{$product->name}}{{translate('Image')}}">
                                 </div>
                                 <div class="fz-12 title-color text-center line--limit-1">
                                     {{isset($product['name']) ? substr($product->name, 0, 30) . (strlen($product->name)>20?'...':''):'not exists'}}

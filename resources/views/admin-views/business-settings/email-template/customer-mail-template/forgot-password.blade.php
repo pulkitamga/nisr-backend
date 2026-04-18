@@ -9,7 +9,7 @@
         {!! $body !!}
     </div>
     <div>
-        <p>{{translate('click_here')}} <br> <a class="{{isset($data['passwordResetURL']) ? '' : 'cursor-default'}}" href="{{$data['passwordResetURL'] ?? 'javascript:'}}">{{translate('change_password')}}</a>
+        <p>{{translate('click_here')}} <br> <a class="{{isset($data['passwordResetURL']) ? '' : 'cursor-default'}}" href="{{$data['passwordResetURL'] ?? 'javascript:'}}">{{translate('change_Password')}}</a>
     </div>
     <hr>
     @include('admin-views.business-settings.email-template.partials-design.footer')

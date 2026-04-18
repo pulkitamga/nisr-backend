@@ -32,7 +32,7 @@
                                         <input value="{{old('l_name')}}"  type="text" name="l_name" class="form-control" placeholder="{{translate('last_Name')}}">
                                     </div>
                                     <div class="form-group">
-                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('phone')}}</label>
+                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Phone')}}</label>
                                         <div class="input-group mb-3">
                                             <div>
                                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control"
@@ -44,7 +44,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <input value="{{old('phone')}}" type="text" name="phone" class="form-control" placeholder="{{translate('ex').':'.'017********'}}">
+                                            <input value="{{old('phone')}}" type="text" name="phone" class="form-control" placeholder="{{translate('Ex').':'.'017********'}}">
                                         </div>
                                     </div>
 
@@ -55,19 +55,19 @@
                                         <select name="identity_type" class="form-control">
                                             <option value="passport">{{translate('passport')}}</option>
                                             <option value="driving_license">{{translate('driving_License')}}</option>
-                                            <option value="nid">{{translate('nid')}}</option>
+                                            <option value="nid">{{translate('NID')}}</option>
                                             <option value="company_id">{{translate('company_ID')}}</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('identity_Number')}}</label>
                                         <input value="{{ old('identity_number') }}"  type="text" name="identity_number" class="form-control"
-                                               placeholder="{{translate('ex').':'.'DH-23434-LS'}}">
+                                               placeholder="{{translate('Ex').':'.'DH-23434-LS'}}">
                                     </div>
                                     <div class="form-group">
-                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('address')}}</label>
+                                        <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Address')}}</label>
                                         <div class="input-group mb-3">
-                                            <textarea name="address" class="form-control" id="address" rows="1" placeholder="{{translate('address')}}">{{ old('address') }}</textarea>
+                                            <textarea name="address" class="form-control" id="address" rows="1" placeholder="{{translate('Address')}}">{{ old('address') }}</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -76,7 +76,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="title-color">{{translate('deliveryman_image')}}</label>
+                                        <label class="title-color">{{translate('delivery_Man_Image')}}</label>
                                         <span class="text-info">* ( {{translate('ratio')}} 1:1 )</span>
                                         <div class="custom-file">
                                             <input value="{{ old('image') }}" type="file" name="image" id="customFileEg1" class="custom-file-input"
@@ -85,7 +85,7 @@
                                         </div>
                                         <div class="mt-4 text-center">
                                             <img class="upload-img-view" id="viewer"
-                                                 src="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg')}}" alt="{{translate('delivery_man_image')}}"/>
+                                                 src="{{dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg')}}" alt="{{translate('delivery_Man_Image')}}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -109,8 +109,8 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('email')}}</label>
-                                            <input value="{{old('email')}}" type="email" name="email" class="form-control" placeholder="{{translate('ex').':'.'ex@example.com'}}">
+                                            <label class="title-color d-flex" for="exampleFormControlInput1">{{translate('Email')}}</label>
+                                            <input value="{{old('email')}}" type="email" name="email" class="form-control" placeholder="{{translate('Ex').':'.'ex@example.com'}}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -166,9 +166,9 @@
                                     </div>
                                 </div>
                                 <div class="d-flex gap-3 justify-content-end">
-                                    <button type="reset" id="reset" class="btn btn-secondary px-4">{{translate('reset')}}</button>
+                                    <button type="reset" id="reset" class="btn btn-secondary px-4">{{translate('Reset')}}</button>
                                     <button type="button" class="btn btn--primary px-4 form-submit" data-form-id="add-delivery-man-form" data-redirect-route="{{route('admin.delivery-man.list')}}"
-                                            data-message="{{translate('want_to_add_this_delivery_man').'?'}}">{{translate('submit')}}</button>
+                                            data-message="{{translate('want_to_add_this_delivery_man').'?'}}">{{translate('Submit')}}</button>
                                 </div>
                         </div>
                     </div>

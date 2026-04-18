@@ -79,7 +79,7 @@ class BlogDownloadAppController extends Controller
             $this->businessSettingRepo->updateOrInsert(type: 'blog_feature_download_app_background', value: json_encode($downloadAppIconImage) ?? 0);
         }
 
-        Toastr::success(translate('updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return back();
     }
 

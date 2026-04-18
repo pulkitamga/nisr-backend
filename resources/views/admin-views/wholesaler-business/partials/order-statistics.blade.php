@@ -6,7 +6,7 @@
                 <h4 class="d-flex align-items-center text-capitalize gap-10 mb-0">
                     <img src="{{dynamicAsset(path: 'public/assets/back-end/img/order-statistics.png')}}"
                          alt="">
-                    {{translate('order_statistics')}}
+                    {{translate('order_Statistics')}}
                 </h4>
             </div>
             <div class="col-md-6 d-flex justify-content-center justify-content-md-end order-stat mb-3">
@@ -36,5 +36,5 @@
     </div>
 </div>
 <span id="order-statistics" data-action="{{route('admin.dashboard.order-statistics')}}"></span>
-<span id="order-statistics-data" data-inhouse-text = "{{translate('inhouse')}}" data-vendor-text = "{{translate('vendor')}}" data-inhouse-order-earn="{{json_encode($inHouseOrderEarningArray)}}" data-vendor-order-earn="{{json_encode($vendorOrderEarningArray)}}" data-label="{{json_encode($label)}}"></span>
+<span id="order-statistics-data" data-inhouse-text = "{{translate('in_House')}}" data-vendor-text = "{{translate('Vendor')}}" data-inhouse-order-earn="{{json_encode($inHouseOrderEarningArray)}}" data-vendor-order-earn="{{json_encode($vendorOrderEarningArray)}}" data-label="{{json_encode($label)}}"></span>
 <input name="order_statistics_label_count" value="{{count($label)}}" hidden>

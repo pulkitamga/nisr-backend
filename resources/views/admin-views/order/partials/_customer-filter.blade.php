@@ -1,4 +1,4 @@
-<label class="form-label" for="customer_id_value">{{ translate('customer') }}</label>
+<label class="form-label" for="customer_id_value">{{ translate('Customer') }}</label>
 <input type="hidden" id="customer_id" name="customer_id" value="{{ request('customer_id') ? request('customer_id') : 'all' }}">
 <select
     id="customer_id_value"

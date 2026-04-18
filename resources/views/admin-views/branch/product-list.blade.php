@@ -1,13 +1,13 @@
 @php use Illuminate\Support\Str; @endphp
 @extends('layouts.back-end.app')
-@section('title', translate('product_List'))
+@section('title', translate('Product_List'))
 
 @section('content')
     <div class="content container-fluid">
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 text-capitalize">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/inhouse-product-list.png')}}" alt="">
-                {{translate('vendor_product_list')}}
+                {{translate('vendor_Product_List')}}
                 <span class="badge badge-soft-dark radius-50 fz-14 ms-1">{{ $products->total() }}</span>
             </h2>
         </div>
@@ -32,9 +32,9 @@
                                         <input id="datatableSearch_" type="search" name="searchValue"
                                                class="form-control"
                                                placeholder="{{translate('search_Product_Name')}}"
-                                               aria-label="{{ translate('Search orders') }}"
+                                               aria-label="{{ translate('search_orders') }}"
                                                value="{{ request('searchValue') }}">
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -48,13 +48,13 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('product Name')}}</th>
-                                <th class="text-end">{{translate('product Type')}}</th>
+                                <th>{{translate('Product_name')}}</th>
+                                <th class="text-end">{{translate('product_Type')}}</th>
                                 <th class="text-end">{{translate('purchase_price')}}</th>
                                 <th class="text-end">{{translate('selling_price')}}</th>
                                 <th class="text-center">{{translate('show_as_featured')}}</th>
-                                <th class="text-center">{{translate('active_status')}}</th>
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('active_Status')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -118,8 +118,8 @@
                                                    data-toggle-id = "product-status{{$product['id']}}"
                                                    data-on-image = "product-status-on.png"
                                                    data-off-image = "product-status-off.png"
-                                                   data-on-title = "{{translate('Want_to_Turn_ON').' '.$product_name.' '.translate('status').'?'}}"
-                                                   data-off-title = "{{translate('Want_to_Turn_OFF').' '.$product_name.' '.translate('status').'?'}}"
+                                                   data-on-title = "{{translate('Want_to_Turn_ON').' '.$product_name.' '.translate('Status').'?'}}"
+                                                   data-off-title = "{{translate('Want_to_Turn_OFF').' '.$product_name.' '.translate('Status').'?'}}"
                                                    data-on-message = "<p>{{translate('if_enabled_this_product_will_be_available_on_the_website_and_customer_app')}}</p>"
                                                    data-off-message = "<p>{{translate('if_disabled_this_product_will_be_hidden_from_the_website_and_customer_app')}}</p>">`)">
                                                 <span class="switcher_control"></span>
@@ -138,12 +138,12 @@
                                                 <i class="tio-invisible"></i>
                                             </a>
                                             <a class="btn btn-outline--primary btn-sm square-btn"
-                                               title="{{translate('edit')}}"
+                                               title="{{translate('Edit')}}"
                                                href="{{route('admin.products.update',[$product['id']])}}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                             <a class="btn btn-outline-danger btn-sm square-btn delete-data" href="javascript:"
-                                               title="{{translate('delete')}}"
+                                               title="{{translate('Delete')}}"
                                                data-id="product-{{$product['id']}}">
                                                 <i class="tio-delete"></i>
                                             </a>
@@ -168,7 +168,7 @@
                         <div class="text-center p-4">
                             <img class="mb-3 w-160"
                                  src="{{dynamicAsset(path: 'public/assets/back-end/svg/illustrations/sorry.svg')}}"
-                                 alt="{{translate('image_description')}}">
+                                 alt="{{translate('image_Description')}}">
                             <p class="mb-0">{{translate('no_data_to_show')}}</p>
                         </div>
                     @endif

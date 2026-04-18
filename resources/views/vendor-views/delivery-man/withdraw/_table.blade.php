@@ -4,11 +4,11 @@
         <thead class="thead-light thead-50 text-capitalize">
         <tr>
             <th>{{translate('SL')}}</th>
-            <th>{{translate('amount')}}</th>
+            <th>{{translate('Amount')}}</th>
             <th>{{translate('Name') }}</th>
-            <th>{{translate('request_time')}}</th>
-            <th class="text-center">{{translate('status')}}</th>
-            <th class="text-center">{{translate('action')}}</th>
+            <th>{{translate('request_Time')}}</th>
+            <th class="text-center">{{translate('Status')}}</th>
+            <th class="text-center">{{translate('Action')}}</th>
         </tr>
         </thead>
         <tbody>
@@ -27,11 +27,11 @@
                 <td>{{ date_format( $withdrawRequest->created_at, 'd-M-Y, h:i:s A') }}</td>
                 <td class="text-center">
                     @if($withdrawRequest->approved==0)
-                        <label class="badge badge-soft-primary">{{translate('pending')}}</label>
+                        <label class="badge badge-soft-primary">{{translate('Pending')}}</label>
                     @elseif($withdrawRequest->approved==1)
-                        <label class="badge badge-soft-success">{{translate('approved')}}</label>
+                        <label class="badge badge-soft-success">{{translate('Approved')}}</label>
                     @else
-                        <label class="badge badge-soft-danger">{{translate('denied')}}</label>
+                        <label class="badge badge-soft-danger">{{translate('Denied')}}</label>
                     @endif
                 </td>
                 <td>
@@ -40,7 +40,7 @@
                             <button
                                class="btn btn-outline-info btn-sm square-btn withdraw-info-show"
                                data-action="{{route('vendor.delivery-man.withdraw.details',[$withdrawRequest['id']])}}"
-                               title="{{translate('view')}}">
+                               title="{{translate('View')}}">
                                 <i class="tio-invisible"></i>
                             </button>
                         @else

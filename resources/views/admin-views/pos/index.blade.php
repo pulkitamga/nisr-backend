@@ -20,7 +20,7 @@
                     <div class="row gy-1">
                         <div class="col-sm-6">
                             <div class="input-group d-flex justify-content-end">
-                                <select name="category" id="category" class="form-control js-select2-custom w-100 action-category-filter" title="{{ translate('select_category') }}">
+                                <select name="category" id="category" class="form-control js-select2-custom w-100 action-category-filter" title="{{ translate('select_Category') }}">
                                     <option value="">{{ translate('all_categories') }}</option>
                                     @foreach ($categories as $item)
                                     <option value="{{$item->id}}" {{$categoryId==$item->id?'selected':''}}>
@@ -38,7 +38,7 @@
                                             <i class="tio-search"></i>
                                         </div>
                                     </div>
-                                    <input id="search" autocomplete="off" type="text" value="{{ $searchValue }}" name="searchValue" class="form-control search-bar-input" placeholder="{{ translate('search_by_name_or_sku') }}" aria-label="{{ translate('search') }}">
+                                    <input id="search" autocomplete="off" type="text" value="{{ $searchValue }}" name="searchValue" class="form-control search-bar-input" placeholder="{{ translate('search_by_name_or_sku') }}" aria-label="{{ translate('Search') }}">
                                     <diV class="card pos-search-card w-4 position-absolute z-index-1 w-100">
                                         <div id="pos-search-box" class="card-body search-result-box d--none"></div>
                                     </diV>
@@ -72,7 +72,7 @@
                     <div class="d-flex justify-content-between mb-3 align-items-xxl-baseline">
                         @if($branch)
                         <h1 class="text-center text-danger">
-                            {{ translate('branch') }}: {{ $branch->branch_name }}
+                            {{ translate('Branch') }}: {{ $branch->branch_name }}
                         </h1>
                         @endif
                         <button type="button" class="btn btn-outline--primary d-flex align-items-center gap-2 action-view-all-hold-orders" data-toggle="tooltip" data-placement="top" title="{{translate('please_resume_the_order_from_here')}}">
@@ -100,7 +100,7 @@
                             @endforeach
                         </select>
 
-                        <button class="btn btn-success rounded text-nowrap" id="add_new_customer" type="button" data-toggle="modal" data-target="#add-customer" title="{{translate('add_new_customer')}}">
+                        <button class="btn btn-success rounded text-nowrap" id="add_new_customer" type="button" data-toggle="modal" data-target="#add-customer" title="{{translate('add_New_Customer')}}">
                             {{ translate('add_New_Customer') }}
                         </button>
                     </div>
@@ -166,7 +166,7 @@
 <span id="message-coupon-added-successfully" data-text="{{ translate('coupon_added_successfully') }}"></span>
 <span id="message-sorry-stock-limit-exceeded" data-text="{{ translate('sorry_stock_limit_exceeded') }}"></span>
 <span id="message-please-choose-all-the-options" data-text="{{ translate('please_choose_all_the_options') }}"></span>
-<span id="message-item-has-been-removed-from-cart" data-text="{{ translate('item_has_been_removed_from_cart') }}"></span>
+<span id="message-item-has-been-removed-from-cart" data-text="{{ translate('Item_has_been_removed_from_cart') }}"></span>
 <span id="message-you-want-to-remove-all-items-from-cart" data-text="{{ translate('you_want_to_remove_all_items_from_cart') }}"></span>
 <span id="message-product-quantity-is-not-enough" data-text="{{ translate('product_quantity_is_not_enough') }}"></span>
 <span id="message-sorry-product-is-out-of-stock" data-text="{{ translate('sorry_product_is_out_of_stock') }}"></span>

@@ -679,7 +679,7 @@ class CartController extends Controller
                         if (json_decode($product->variation)[$i]->qty < $request['quantity']) {
                             return [
                                 'status' => 0,
-                                'message' => translate('out_of_stock') . '!'
+                                'message' => translate('out_of_Stock') . '!'
                             ];
                         }
                     }

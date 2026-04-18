@@ -9,7 +9,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
                 <img width="20" src="{{asset('public/assets/back-end/img/seller_sale.png')}}" alt="">
-                {{translate('product_report')}}
+                {{translate('product_Report')}}
             </h2>
         </div>
         @include('vendor-views.report.product-report-inline-menu')
@@ -30,18 +30,18 @@
                         <div class="col-sm-6 col-md-3" id="from_div">
                             <div class="form-floating">
                                 <input type="date" name="from" value="{{$from}}" id="from_date" class="form-control">
-                                <label>{{translate('start_date')}}</label>
+                                <label>{{translate('Start_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-3" id="to_div">
                             <div class="form-floating">
                                 <input type="date" value="{{$to}}" name="to" id="to_date" class="form-control">
-                                <label>{{translate('end_date')}}</label>
+                                <label>{{translate('End_Date')}}</label>
                             </div>
                         </div>
                         <div class="col-sm-6 col-md-1">
                             <button type="submit" class="btn btn--primary px-4 px-md-5">
-                                {{translate('filter')}}
+                                {{translate('Filter')}}
                             </button>
                         </div>
                     </div>
@@ -64,12 +64,12 @@
                         </div>
                         <div class="text-center">
                             <strong class="text-primary">{{ $product_count['pending_product_count'] }}</strong>
-                            <div>{{translate('pending')}}</div>
+                            <div>{{translate('Pending')}}</div>
                         </div>
                         <div class="text-center">
                             <strong class="text-success">{{ $product_count['active_product_count'] }}</strong>
                             <div>
-                                {{translate('active')}}
+                                {{translate('Active')}}
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                             <span class="ms-2" data-toggle="tooltip" data-placement="top"
                                   title="{{translate('product_wise_discounted_amount_will_be_shown_here')}}">
                                 <img class="info-img" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
-                                     alt="{{translate('image')}}">
+                                     alt="{{translate('Image')}}">
                             </span>
                         </h6>
                     </div>
@@ -126,7 +126,7 @@
                             <input id="datatableSearch_" type="search" name="search" class="form-control"
                                    placeholder="{{translate('search_Product_Name')}}" aria-label="Search orders"
                                    value="{{ $search }}" required>
-                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                         </div>
                     </form>
                     <div class="dropdown">
@@ -144,13 +144,13 @@
                         <tr>
                             <th>{{translate('SL')}}</th>
                             <th>
-                                {{translate('product_Name')}}
+                                {{translate('Product_name')}}
                             </th>
                             <th>
                                 {{translate('product_Unit_Price')}}
                             </th>
                             <th>
-                                {{translate('total_Amount_Sold')}}
+                                {{translate('total_Amount Sold')}}
                             </th>
                             <th>
                                 {{translate('total_Quantity_Sold')}}
@@ -188,7 +188,7 @@
                                         ), currencyCode: getCurrencyCode()) }}
                                 </td>
                                 <td>
-                                    {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('available') : translate('not_available')) : $product->current_stock }}
+                                    {{ $product->product_type == 'digital' ? ($product->status==1 ? translate('Available') : translate('not_available')) : $product->current_stock }}
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">

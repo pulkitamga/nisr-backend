@@ -8,7 +8,7 @@
             <tr>
                 <th>{{ translate('Name') }}</th>
                 <th>{{ translate('Description') }}</th>
-                <th>{{ translate('Due Date') }}</th>
+                <th>{{ translate('due_date') }}</th>
                 <th>{{ translate('Status') }}</th>
                 <th>{{ translate('Employee') }}</th>
                 <th>{{ translate('Department') }}</th>

@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('shipping_method'))
+@section('title', translate('shipping_Method'))
 <style type="text/css">
     #map {
         height: 50vh;
@@ -32,7 +32,7 @@
     <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img src="{{dynamicAsset(path: 'public/assets/back-end/img/business-setup.png')}}" alt="">
-            {{translate('business_setup')}}
+            {{translate('business_Setup')}}
         </h2>
         <div class="btn-group">
             <div class="ripple-animation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -47,7 +47,7 @@
                 class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                    <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                    <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                 </div>
                 <p class="title-color font-weight-medium mb-0">{{
                     translate('please_click_the_Save_button_below_to_save_all_the_changes') }}</p>
@@ -80,7 +80,7 @@
                                         $shippingMethod=='inhouse_shipping' ?'checked':'' }}
                                         data-modal-id="toggle-modal" data-toggle-id="inhouse-shipping"
                                         data-on-image="seller-wise-shipping.png" data-off-image="inhouse-shipping.png"
-                                        data-on-title="{{translate('want_to_change_the_shipping_responsibility_to_Inhouse').'?'}}"
+                                        data-on-title="{{translate('Want_to_change_the_shipping_responsibility_to_Inhouse').'?'}}"
                                         data-off-title="{{translate('want_to_change_the_shipping_responsibility_to_Third_Party_Delivery').'?'}}"
                                         data-on-message="<p>{{translate('admin_will_handle_the_shipping_responsibilities_when_you_choose_inhouse_shipping_method').'.'}}</p>"
                                         data-off-message="<p>{{translate('admin_will_handle_the_shipping_responsibilities_when_you_choose_inhouse_shipping_method').'.'}}</p>">
@@ -112,11 +112,11 @@
                         <div class="">
 
                             <label class="title-color" id="for_inhouse_deliver"
-                                style="{{ $shippingMethod != 'sellerwise_shipping' ? 'display:none':'' }}">{{translate('shipping_method')}}</label>
+                                style="{{ $shippingMethod != 'sellerwise_shipping' ? 'display:none':'' }}">{{translate('shipping_Method')}}</label>
                             <label class="title-color" id="for_seller_deliver"
                                 style="{{ $shippingMethod == 'sellerwise_shipping' ? 'display:none':'' }}">{{translate('shipping_method_for_In-house_deliver')}}</label>
                             <select class="form-control text-capitalize w-100 shipping-type" name="shippingCategory">
-                                <option value="0" selected disabled>{{'---'.translate('select').'---'}}</option>
+                                <option value="0" selected disabled>{{'---'.translate('Select').'---'}}</option>
                                 <option value="order_wise" {{$shippingType=='order_wise' ?'selected':'' }}>
                                     {{translate('order_wise')}} </option>
                                 <option value="category_wise" {{$shippingType=='category_wise' ?'selected':'' }}>
@@ -131,7 +131,7 @@
                                     <img width="16" class="mt-n1"
                                         src="{{dynamicAsset(path: 'public/assets/back-end/img/danger-info.png')}}"
                                         alt="">
-                                    <strong>{{translate('note').' '.':'}}</strong>
+                                    <strong>{{translate('Note').' '.':'}}</strong>
                                     {{translate('when_adding_a_product_a_product_specific_shipping_charge_is_added_Verify_that_all_of_the_products_delivery_costs_are_up_to_date').'.'}}
                                 </p>
                             </div>
@@ -140,7 +140,7 @@
 
                     <div class="col-12 mt-2">
                         <div class="d-flex justify-content-end gap-10">
-                            <button type="submit" class="btn btn--primary px-5">{{translate('save')}}</button>
+                            <button type="submit" class="btn btn--primary px-5">{{translate('Save')}}</button>
                         </div>
                     </div>
                 </div>
@@ -167,10 +167,10 @@
                             <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
-                                    <th>{{translate('image')}}</th>
-                                    <th>{{translate('category_name')}}</th>
+                                    <th>{{translate('Image')}}</th>
+                                    <th>{{translate('category_Name')}}</th>
                                     <th>{{translate('cost_per_product')}}</th>
-                                    <th class="text-center">{{translate('status')}}</th>
+                                    <th class="text-center">{{translate('Status')}}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -213,7 +213,7 @@
                                     <td colspan="5">
                                         <div class="d-flex flex-wrap justify-content-end gap-10">
                                             <button type="submit"
-                                                class="btn btn--primary px-5">{{translate('save')}}</button>
+                                                class="btn btn--primary px-5">{{translate('Save')}}</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -258,10 +258,10 @@
                             @foreach($language as $lang)
                                 <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
                                     id="shipping-method-title-{{$lang}}-form" data-language="{{$lang}}">
-                                    <label class="title-color d-flex" for="shipping-method-title-{{$lang}}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                    <label class="title-color d-flex" for="shipping-method-title-{{$lang}}">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="title[]" class="form-control"
                                         id="shipping-method-title-{{$lang}}"
-                                        placeholder="{{translate('title')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
+                                        placeholder="{{translate('Title')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
                                 </div>
                                 <input type="hidden" name="lang[]" value="{{$lang}}">
                             @endforeach
@@ -270,10 +270,10 @@
                             @foreach($language as $lang)
                                 <div class="form-group {{ $lang != $activeLanguage ? 'd-none' : '' }} form-system-language-form {{$lang}}-form"
                                     id="shipping-method-duration-{{$lang}}-form" data-language="{{$lang}}">
-                                    <label class="title-color d-flex" for="shipping-method-duration-{{$lang}}">{{ translate('duration') }} ({{ strtoupper($lang) }})</label>
+                                    <label class="title-color d-flex" for="shipping-method-duration-{{$lang}}">{{ translate('Duration') }} ({{ strtoupper($lang) }})</label>
                                     <input type="text" name="duration[]" class="form-control"
                                         id="shipping-method-duration-{{$lang}}"
-                                        placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
+                                        placeholder="{{translate('Ex')}} : {{translate('4_to_6_days')}}" {{ $lang === $saveLanguage ? 'required' : '' }}>
                                 </div>
                             @endforeach
                         </div>
@@ -283,7 +283,7 @@
                                     <div class="col-md-12">
                                         <label class="title-color d-flex" for="cost">{{translate('cost')}}</label>
                                         <input type="number" min="0" step="0.01" max="1000000" name="cost"
-                                            class="form-control" placeholder="{{translate('ex')}} :" required>
+                                            class="form-control" placeholder="{{translate('Ex')}} :" required>
                                     </div>
                                 </div>
                             </div>
@@ -291,7 +291,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-10">
-                        <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                        <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                     </div>
                 </form>
             </div>
@@ -312,11 +312,11 @@
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
                             <th>{{translate('SL')}}</th>
-                            <th>{{translate('title')}}</th>
-                            <th>{{translate('duration')}}</th>
+                            <th>{{translate('Title')}}</th>
+                            <th>{{translate('Duration')}}</th>
                             <th>{{translate('cost')}}</th>
-                            <th class="text-center">{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -358,11 +358,11 @@
                             </td>
                             <td>
                                 <div class="d-flex flex-wrap justify-content-center gap-10">
-                                    <a class="btn btn-outline--primary btn-sm edit" title="{{ translate('edit')}}"
+                                    <a class="btn btn-outline--primary btn-sm edit" title="{{ translate('Edit')}}"
                                         href="{{route('admin.business-settings.shipping-method.update',[$method['id']])}}">
                                         <i class="tio-edit"></i>
                                     </a>
-                                    <a title="{{translate('delete')}}"
+                                    <a title="{{translate('Delete')}}"
                                         class="btn btn-outline-danger btn-sm delete-data-without-form"
                                         data-action="{{route('admin.business-settings.shipping-method.delete')}}"
                                         data-id="{{ $method['id'] }}">
@@ -401,7 +401,7 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label class="title-color d-flex" for="title">{{translate('country')}}</label>
+                                        <label class="title-color d-flex" for="title">{{translate('Country')}}</label>
                                         <select id="country" name="country" class="form-control js-select2-custom">
                                             @foreach(COUNTRIES as $country)
                                             <option value="{{$country['code']}}" {{
@@ -418,7 +418,7 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label class="title-color d-flex" for="state">{{translate('state')}}</label>
+                                        <label class="title-color d-flex" for="state">{{translate('State')}}</label>
                                         <select id="state" name="state" class="form-control js-select2-custom"
                                             data-state-id="">
                                             <option value="0" selected="" disabled="">---Select---</option>
@@ -436,7 +436,7 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label class="title-color d-flex" for="title">{{translate('city')}}</label>
+                                        <label class="title-color d-flex" for="title">{{translate('City')}}</label>
                                         <select id="city" name="city" class="form-control js-select2-custom"
                                             data-city-id="">
                                             <option value="0" selected="" disabled="">---Select---</option>
@@ -454,7 +454,7 @@
                             <div class="form-group">
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
-                                        <label class="title-color d-flex" for="title">{{translate('area')}}</label>
+                                        <label class="title-color d-flex" for="title">{{translate('Area')}}</label>
                                           <select id="area" name="area" class="form-control js-select2-custom"
                                             data-city-id="">
                                             <option value="0" selected="" disabled="">---Select---</option>
@@ -469,9 +469,9 @@
                                 <div class="row justify-content-center">
                                     <div class="col-md-12">
                                         <label class="title-color d-flex"
-                                            for="duration">{{translate('duration')}}</label>
+                                            for="duration">{{translate('Duration')}}</label>
                                         <input type="text" name="duration" class="form-control"
-                                            placeholder="{{translate('ex')}} : {{translate('4_to_6_days')}}">
+                                            placeholder="{{translate('Ex')}} : {{translate('4_to_6_days')}}">
                                     </div>
                                 </div>
                             </div>
@@ -482,7 +482,7 @@
                                     <div class="col-md-12">
                                         <label class="title-color d-flex" for="cost">{{translate('cost')}}</label>
                                         <input type="number" min="0" step="0.01" max="1000000" name="cost"
-                                            class="form-control" placeholder="{{translate('ex')}} :">
+                                            class="form-control" placeholder="{{translate('Ex')}} :">
                                     </div>
                                 </div>
                             </div>
@@ -515,7 +515,7 @@
                           </div>
                         </div> -->
                     <div class="d-flex justify-content-end gap-10 mt-5">
-                        <button type="submit" class="btn btn--primary px-5">{{translate('submit')}}</button>
+                        <button type="submit" class="btn btn--primary px-5">{{translate('Submit')}}</button>
                     </div>
                 </form>
             </div>
@@ -540,10 +540,10 @@
                             <th>{{translate('State')}}</th>
                             <th>{{translate('City')}}</th>
                             <th>{{translate('Area')}}</th>
-                            <th>{{translate('duration')}}</th>
+                            <th>{{translate('Duration')}}</th>
                             <th>{{translate('cost')}}</th>
-                            <th class="text-center">{{translate('status')}}</th>
-                            <th class="text-center">{{translate('action')}}</th>
+                            <th class="text-center">{{translate('Status')}}</th>
+                            <th class="text-center">{{translate('Action')}}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -589,11 +589,11 @@
                             </td>
                             <td>
                                 <div class="d-flex flex-wrap justify-content-center gap-10">
-                                    <a class="btn btn-outline--primary btn-sm edit" title="{{ translate('edit')}}"
+                                    <a class="btn btn-outline--primary btn-sm edit" title="{{ translate('Edit')}}"
                                         href="{{route('admin.business-settings.shipping-method.update-area',[$method['id']])}}">
                                         <i class="tio-edit"></i>
                                     </a>
-                                    <a title="{{translate('delete')}}"
+                                    <a title="{{translate('Delete')}}"
                                         class="btn btn-outline-danger btn-sm delete-data-without-form"
                                         data-action="{{route('admin.business-settings.shipping-method.delete-area')}}"
                                         data-id="{{ $method['id'] }}">

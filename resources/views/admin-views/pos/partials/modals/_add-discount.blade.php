@@ -3,16 +3,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ translate('update_discount') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('close') }}">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ translate('Close') }}">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="title-color">{{ translate('type') }}</label>
+                    <label class="title-color">{{ translate('Type') }}</label>
                     <select name="type" id="type_ext_dis" class="form-control">
                         <option value="amount" {{ isset($discount_type) && $discount_type == 'amount' ? 'selected' : '' }}>
-                            {{ translate('amount') }}
+                            {{ translate('Amount') }}
                         </option>
                         <option
                             value="percent" {{ isset($discount_type) && $discount_type == 'percent' ? 'selected' : '' }}>
@@ -21,12 +21,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="title-color">{{ translate('discount') }}</label>
-                    <input type="number" id="dis_amount" class="form-control" name="discount" placeholder="{{translate('ex').':500'}}">
+                    <label class="title-color">{{ translate('Discount') }}</label>
+                    <input type="number" id="dis_amount" class="form-control" name="discount" placeholder="{{translate('Ex').':500'}}">
                 </div>
                 <div class="form-group">
                     <button type="button" class="btn btn--primary action-extra-discount" data-error-message="{{translate('please_enter_discount_amount')}}">
-                        {{ translate('submit') }}
+                        {{ translate('Submit') }}
                     </button>
                 </div>
             </div>

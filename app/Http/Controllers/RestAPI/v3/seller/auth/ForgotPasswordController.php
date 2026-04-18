@@ -54,7 +54,7 @@ class ForgotPasswordController extends Controller
                         'passwordResetURL' => $reset_url,
                     ];
                     event(new PasswordResetEvent(email: $seller['email'],data: $data));
-                    $response = translate('check_your_email');
+                    $response = translate('Check_your_email');
                 }else{
                     $response= translate('email_failed');
                 }

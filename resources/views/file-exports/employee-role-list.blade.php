@@ -23,8 +23,8 @@
         <td> {{translate('role_Name')}}</td>
         <td> {{translate('Modules')}}</td>
         <td> {{translate('permissions')}}</td>
-        <td> {{translate('created_At')}}</td>
-        <td> {{translate('status')}}</td>
+        <td> {{translate('Created_At')}}</td>
+        <td> {{translate('Status')}}</td>
     </tr>
     @foreach ($data['roles'] as $key=>$item)
         <tr>

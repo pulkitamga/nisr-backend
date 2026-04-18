@@ -125,7 +125,7 @@
                 <div class="item w-120px flex-grow-0">
                     <select class="form-control h-30 py-0" name="meta_max_image_preview_value">
                         <option value="large">{{ translate('large') }}</option>
-                        <option value="medium">{{ translate('medium') }}</option>
+                        <option value="medium">{{ translate('Medium') }}</option>
                         <option value="small">{{ translate('small') }}</option>
                     </select>
                 </div>

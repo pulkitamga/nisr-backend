@@ -421,7 +421,7 @@ class ProductController extends BaseController
                 }
 
                 return [
-                    'message' => translate('product_added_successfully'),
+                    'message' => translate('Product_added_successfully'),
                     'redirect_url' => route('admin.products.list', ['in_house']),
                 ];
             });
@@ -586,7 +586,7 @@ class ProductController extends BaseController
     //     //     }
     //     // }
 
-    //     Toastr::success(translate('product_added_successfully'));
+    //     Toastr::success(translate('Product_added_successfully'));
     //     return redirect()->route('admin.products.list', ['in_house']);
     // }
     public function updateProductAuthorAndPublishingHouse(object|array $request, object|array $product): void
@@ -827,7 +827,7 @@ class ProductController extends BaseController
             ], 422);
         }
 
-        Toastr::error($errors[0]['message'] ?? translate('something_went_wrong'));
+        Toastr::error($errors[0]['message'] ?? translate('Something_went_wrong'));
 
         return redirect()->back()->withInput();
     }
@@ -844,7 +844,7 @@ class ProductController extends BaseController
             'exception' => $exception,
         ]);
 
-        $errorMessage = translate('something_went_wrong');
+        $errorMessage = translate('Something_went_wrong');
 
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json([
@@ -1078,7 +1078,7 @@ class ProductController extends BaseController
         return response()->json([
             'success' => $success,
             'data' => $data,
-            'message' => $success ? translate("status_updated_successfully") : translate("status_updated_failed") . ' ' . translate("Product_must_be_approved"),
+            'message' => $success ? translate("Status_updated_successfully") : translate("status_updated_failed") . ' ' . translate("Product_must_be_approved"),
         ], 200);
     }
 
@@ -1229,24 +1229,24 @@ class ProductController extends BaseController
             new FormattedTableExport(
                 rows: $rows,
                 headings: [
-                    translate('product_Name'),
+                    translate('Product_name'),
                     translate('product_SKU'),
-                    translate('description'),
-                    translate('store_Name'),
+                    translate('Description'),
+                    translate('Store_Name'),
                     translate('category_Name'),
                     translate('sub_Category_Name'),
                     translate('sub_Sub_Category_Name'),
-                    translate('brand'),
+                    translate('Brand'),
                     translate('product_Type'),
-                    translate('price'),
-                    translate('tax'),
-                    translate('discount'),
-                    translate('discount_Type'),
-                    translate('rating'),
-                    translate('stock'),
-                    translate('status'),
+                    translate('Price'),
+                    translate('Tax'),
+                    translate('Discount'),
+                    translate('Discount_Type'),
+                    translate('Rating'),
+                    translate('Stock'),
+                    translate('Status'),
                 ],
-                title: translate('product_list'),
+                title: translate('Product_List'),
                 locale: LocalizedExport::locale(),
                 isRtl: LocalizedExport::isRtl(),
                 metaPairs: [
@@ -1254,19 +1254,19 @@ class ProductController extends BaseController
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
                 filterSummary: implode(' | ', array_filter([
-                    translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
-                    translate('category') . ': ' . ($category !== 'all' ? (string) data_get($category, 'name', $category) : translate('all')),
-                    translate('sub_Category') . ': ' . ($subCategory !== 'all' ? (string) data_get($subCategory, 'name', $subCategory) : translate('all')),
-                    translate('sub_Sub_Category') . ': ' . ($subSubCategory !== 'all' ? (string) data_get($subSubCategory, 'name', $subSubCategory) : translate('all')),
-                    translate('brand') . ': ' . ($brand !== 'all' ? (string) data_get($brand, 'defaultName', data_get($brand, 'name', $brand)) : translate('all')),
-                    translate('store') . ': ' . ($seller?->shop->name ?? translate('all')),
-                    translate('status') . ': ' . ($request->filled('status') ? ($request->status == 0 ? translate('pending') : ($request->status == 1 ? translate('approved') : translate('denied'))) : translate('all')),
+                    translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
+                    translate('Category') . ': ' . ($category !== 'all' ? (string) data_get($category, 'name', $category) : translate('All')),
+                    translate('Sub_Category') . ': ' . ($subCategory !== 'all' ? (string) data_get($subCategory, 'name', $subCategory) : translate('All')),
+                    translate('sub_Sub_Category') . ': ' . ($subSubCategory !== 'all' ? (string) data_get($subSubCategory, 'name', $subSubCategory) : translate('All')),
+                    translate('Brand') . ': ' . ($brand !== 'all' ? (string) data_get($brand, 'defaultName', data_get($brand, 'name', $brand)) : translate('All')),
+                    translate('store') . ': ' . ($seller?->shop->name ?? translate('All')),
+                    translate('Status') . ': ' . ($request->filled('status') ? ($request->status == 0 ? translate('Pending') : ($request->status == 1 ? translate('Approved') : translate('Denied'))) : translate('All')),
                 ])),
                 columnWidths: ['A' => 28, 'B' => 18, 'C' => 40, 'D' => 24, 'E' => 20, 'F' => 20, 'G' => 20, 'H' => 18, 'I' => 16, 'J' => 14, 'K' => 14, 'L' => 14, 'M' => 14, 'N' => 12, 'O' => 12, 'P' => 14],
                 centerColumns: ['I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'],
                 sumColumns: ['O']
             ),
-            LocalizedExport::fileName(translate('product_list'))
+            LocalizedExport::fileName(translate('Product_List'))
         );
     }
 
@@ -1683,7 +1683,7 @@ class ProductController extends BaseController
         $rows = collect($reportData['historyRows'] ?? [])->map(function (array $row) {
             return [
                 Carbon::parse($row['date'])->format('Y-m-d H:i:s'),
-                strtoupper((string)$row['type']) === 'IN' ? translate('Stock In') : translate('Stock Out'),
+                strtoupper((string)$row['type']) === 'IN' ? translate('stock_in') : translate('stock_out'),
                 (int)$row['quantity'],
                 (string)($row['category'] ?? ''),
                 (string)($row['reason_label'] ?? str_replace('_', ' ', (string)($row['reason'] ?? ''))),
@@ -1860,7 +1860,7 @@ class ProductController extends BaseController
                     context: 'Admin Product Quantity Update'
                 );
                 if (!($response['status'] ?? false)) {
-                    Toastr::error($response['message'] ?? translate('something_went_wrong'));
+                    Toastr::error($response['message'] ?? translate('Something_went_wrong'));
                     return back();
                 }
             }
@@ -1940,7 +1940,7 @@ class ProductController extends BaseController
                 context: 'Admin Product Variation Quantity Update'
             );
             if (!($response['status'] ?? false)) {
-                Toastr::error($response['message'] ?? translate('something_went_wrong'));
+                Toastr::error($response['message'] ?? translate('Something_went_wrong'));
                 return back();
             }
         }
@@ -2072,7 +2072,7 @@ class ProductController extends BaseController
         return match (strtoupper(trim($reason))) {
             StockReason::INITIAL_STOCK => translate('initial_stock'),
             StockReason::MANUAL_ADJUSTMENT => translate('manual_adjustment'),
-            StockReason::ORDER_PLACED => translate('order_placed'),
+            StockReason::ORDER_PLACED => translate('Order_Placed'),
             StockReason::ORDER_CANCELLED => translate('order_cancelled'),
             StockReason::RETURN => translate('returns'),
             StockReason::BRANCH_TRANSFER => translate('branch_transfer'),
@@ -2281,7 +2281,7 @@ class ProductController extends BaseController
         }
         $this->productRepo->update(id: $request['id'], data: $dataArray);
 
-        return response()->json(['message' => translate('status_updated_successfully')], 200);
+        return response()->json(['message' => translate('Status_updated_successfully')], 200);
     }
 
     public function deny(ProductDenyRequest $request): JsonResponse

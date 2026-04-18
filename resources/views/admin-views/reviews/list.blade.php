@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer_review.png')}}" alt="">
-                {{translate('customer_reviews')}}
+                {{translate('customer_Reviews')}}
                 <span class="badge badge-soft-dark radius-50 fz-12">{{ $reviews->total() }}</span>
             </h2>
         </div>
@@ -16,7 +16,7 @@
             <form action="{{ url()->current() }}" method="GET">
                 <div class="row gy-3 align-items-end">
                     <div class="col-md-4">
-                        <label for="name" class="title-color">{{ translate('products')}}</label>
+                        <label for="name" class="title-color">{{ translate('Products')}}</label>
                         <div class="dropdown select-product-search w-100">
                             <input type="text" class="product_id" name="product_id" value="{{request('product_id')}}"
                                    hidden>
@@ -27,7 +27,7 @@
                             <div class="dropdown-menu w-100 px-2">
                                 <div class="search-form mb-3">
                                     <button type="button" class="btn"><i class="tio-search"></i></button>
-                                    <input type="text" class="js-form-search form-control search-bar-input search-product" placeholder="{{translate('search_product').'...'}}">
+                                    <input type="text" class="js-form-search form-control search-bar-input search-product" placeholder="{{translate('Search_Product').'...'}}">
                                 </div>
                                 <div class="d-flex flex-column gap-3 max-h-40vh overflow-y-auto overflow-x-hidden search-result-box">
                                     @include('admin-views.partials._search-product',['products'=>$products])
@@ -36,7 +36,7 @@
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label class="title-color" for="customer">{{translate('customer')}}</label>
+                        <label class="title-color" for="customer">{{translate('Customer')}}</label>
                         <input type="hidden" id='customer_id' name="customer_id"
                                value="{{request('customer_id') ? request('customer_id') : 'all'}}">
                         <select data-placeholder="
@@ -52,13 +52,13 @@
                     <div class="col-md-4">
                         <div>
                             <label for="status" class="title-color d-flex">{{ translate('choose') }}
-                                {{ translate('status') }}</label>
+                                {{ translate('Status') }}</label>
                             <select class="form-control" name="status">
                                 <option value="" selected> {{ '---'.translate('select_status').'---' }} </option>
                                 <option value="1" {{ !is_null($status) && $status == 1 ? 'selected' : '' }}>
-                                    {{ translate('active') }}</option>
+                                    {{ translate('Active') }}</option>
                                 <option value="0" {{ !is_null($status) && $status == 0 ? 'selected' : '' }}>
-                                    {{ translate('inactive') }}</option>
+                                    {{ translate('Inactive') }}</option>
                             </select>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                         <div class="btn--container justify-content-end">
                             <a href="{{ route('admin.reviews.list') }}"
                                class="btn btn-secondary px-5">
-                                {{ translate('reset') }}
+                                {{ translate('Reset') }}
                             </a>
                             <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
                         </div>
@@ -100,8 +100,8 @@
                         </div>
                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
                                placeholder="{{ translate('search_by_Product_or_Customer') }}"
-                               aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}" required>
-                        <button type="submit" class="btn btn--primary">{{ translate('search') }}</button>
+                               aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}" required>
+                        <button type="submit" class="btn btn--primary">{{ translate('Search') }}</button>
                     </div>
                 </form>
                 <div class="dropdown">
@@ -119,14 +119,14 @@
                     <tr>
                         <th>{{ translate('SL') }}</th>
                         <th>{{ translate('Review_ID') }}</th>
-                        <th>{{ translate('product') }}</th>
-                        <th>{{ translate('customer') }}</th>
-                        <th>{{ translate('rating') }}</th>
-                        <th>{{ translate('review') }}</th>
+                        <th>{{ translate('Product') }}</th>
+                        <th>{{ translate('Customer') }}</th>
+                        <th>{{ translate('Rating') }}</th>
+                        <th>{{ translate('Review') }}</th>
                         <th>{{ translate('Reply') }}</th>
-                        <th>{{ translate('date') }}</th>
-                        <th class="text-center">{{ translate('status') }}</th>
-                        <th class="text-center">{{ translate('action') }}</th>
+                        <th>{{ translate('DATE') }}</th>
+                        <th class="text-center">{{ translate('Status') }}</th>
+                        <th class="text-center">{{ translate('Action') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -181,7 +181,7 @@
                                                     <img width="60" height="60"
                                                          class="aspect-1 rounded object-fit-cover"
                                                          src="{{ getStorageImages(path: $img, type: 'backend-basic') }}"
-                                                         alt="{{translate('image')}}">
+                                                         alt="{{translate('Image')}}">
                                                 </a>
                                             @endforeach
                                         </div>
@@ -325,7 +325,7 @@
                                                 @if($review?->reply?->reply_text)
                                                     {{ translate('Update') }}
                                                 @else
-                                                    {{ translate('submit') }}
+                                                    {{ translate('Submit') }}
                                                 @endif
                                             </button>
                                         </div>

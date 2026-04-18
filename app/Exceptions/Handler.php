@@ -66,7 +66,7 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof AccessViolationException) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => translate('access_denied')], 403);
+                return response()->json(['message' => translate('access_Denied')], 403);
             }
 
             return response()->view('errors.access-restricted', [

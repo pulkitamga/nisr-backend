@@ -14,12 +14,12 @@
 
         <div class="row mb-4">
             <div class="col-md-6">
-                <label class="form-label">{{ translate('heading') }}</label>
+                <label class="form-label">{{ translate('Heading') }}</label>
                 <input type="text" name="heading" class="form-control" value="{{ old('heading', $blog->heading) }}" required>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">{{ translate('category') }}</label>
+                <label class="form-label">{{ translate('Category') }}</label>
                 <select name="category" class="form-control" required>
                     @foreach($categories as $category)
                         <option value="{{ $category }}" {{ $blog->category == $category ? 'selected' : '' }}>{{ ucfirst($category) }}</option>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="mb-4">
-            <label class="form-label">{{ translate('description') }}</label>
+            <label class="form-label">{{ translate('Description') }}</label>
             <textarea name="description" class="form-control" rows="5" required>{{ old('description', $blog->description) }}</textarea>
         </div>
 
@@ -44,7 +44,7 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">{{ translate('image') }}</label>
+                <label class="form-label">{{ translate('Image') }}</label>
                 <input type="file" name="image" class="form-control">
                 @if ($blog->image)
                     <img src="{{ Storage::url($blog->image) }}" class="mt-2" width="100" alt="Current Image">
@@ -52,8 +52,8 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn--primary">{{ translate('update') }}</button>
-        <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('cancel') }}</a>
+        <button type="submit" class="btn btn--primary">{{ translate('Update') }}</button>
+        <a href="{{ route('admin.content-management.blog') }}" class="btn btn-secondary">{{ translate('Cancel') }}</a>
     </form>
 </div>
 @endsection

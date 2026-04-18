@@ -64,8 +64,8 @@
                             <tr>
                                 <th>{{translate('SL')}}</th>
                                 <th>{{translate('delivery_man_name')}}</th>
-                                <th>{{translate('amount')}}</th>
-                                <th>{{translate('transaction_date')}}</th>
+                                <th>{{translate('Amount')}}</th>
+                                <th>{{translate('transaction_Date')}}</th>
                             </tr>
                             </thead>
                             <tbody id="set-rows">

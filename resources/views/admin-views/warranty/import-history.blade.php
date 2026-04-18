@@ -15,7 +15,7 @@
         [
             'type' => 'search',
             'name' => 'searchValue',
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => request('searchValue'),
             'placeholder' => translate('search_by_import_date'),
             'aria_label' => translate('search_by_import_date'),
@@ -27,7 +27,7 @@
 
     if (request()->filled('searchValue')) {
         $toolbarSummary[] = [
-            'label' => translate('search'),
+            'label' => translate('Search'),
             'value' => Str::limit(request('searchValue'), 28),
             'muted' => true,
         ];
@@ -90,9 +90,9 @@
                 <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                     <thead class="thead-light thead-50 text-capitalize">
                         <tr>
-                            <th>{{ translate('date') }}</th>
-                            <th>{{ translate('quantity') }}</th>
-                            <th>{{ translate('action') }}</th>
+                            <th>{{ translate('DATE') }}</th>
+                            <th>{{ translate('Quantity') }}</th>
+                            <th>{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

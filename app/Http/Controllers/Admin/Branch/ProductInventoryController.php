@@ -37,7 +37,7 @@ class ProductInventoryController extends Controller
                 $product->brand?->getTranslatedField('name') ?? translate('not_available'),
                 getUnitLabel($product->unit),
                 (int) $product->current_stock,
-                $product->status == 1 ? translate('active') : translate('inactive'),
+                $product->status == 1 ? translate('Active') : translate('Inactive'),
                 $this->mapRequestStatusLabel((int) $product->request_status),
             ];
         })->values()->all();
@@ -51,7 +51,7 @@ class ProductInventoryController extends Controller
                     translate('Category'),
                     translate('Brand'),
                     translate('Unit'),
-                    translate('Current Stock'),
+                    translate('Current_Stock'),
                     translate('Status'),
                     translate('Request Status'),
                 ],
@@ -62,7 +62,7 @@ class ProductInventoryController extends Controller
                     ['label' => translate('exported_at'), 'value' => LocalizedExport::exportedAtLabel()],
                     ['label' => translate('count'), 'value' => (string) count($rows)],
                 ],
-                filterSummary: translate('search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('all')),
+                filterSummary: translate('Search') . ': ' . (trim((string) $request->input('searchValue', '')) ?: translate('All')),
                 columnWidths: ['A' => 28, 'B' => 16, 'C' => 20, 'D' => 20, 'E' => 14, 'F' => 14, 'G' => 14, 'H' => 18],
                 centerColumns: ['F', 'G', 'H'],
                 sumColumns: ['F']

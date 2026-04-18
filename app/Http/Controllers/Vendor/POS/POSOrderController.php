@@ -229,7 +229,7 @@ class POSOrderController extends BaseController
         $this->putCartPayload($cartId, []);
         session(['last_order' => $orderId]);
         $this->cartService->getNewCartId();
-        Toastr::success(translate('order_placed_successfully'));
+        Toastr::success(translate('Order_Placed_Successfully'));
         return response()->json();
     }
 

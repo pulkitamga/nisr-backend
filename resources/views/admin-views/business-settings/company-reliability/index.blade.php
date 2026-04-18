@@ -15,7 +15,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
     <div class="mb-3">
         <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
             <img width="20" src="{{dynamicAsset(path: '/public/assets/back-end/img/Pages.png')}}" alt="">
-            {{ translate('pages') }}
+            {{ translate('Pages') }}
         </h2>
     </div>
     @include('admin-views.business-settings.pages-inline-menu')
@@ -80,7 +80,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                         @endphp
                                         <div class="tab-pane fade {{ $lang == $activeLanguage ? 'show active' : '' }}" id="content-{{ $value->item }}-{{ $lang }}" role="tabpanel" aria-labelledby="tab-{{ $value->item }}-{{ $lang }}">
                                             <div class="mb-3">
-                                                <label for="title_{{ $value->item }}_{{ $lang }}">{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                                                <label for="title_{{ $value->item }}_{{ $lang }}">{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                                                 <input type="text"
                                                     name="title[]"
                                                     id="title_{{ $value->item }}_{{ $lang }}"
@@ -121,7 +121,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn--primary mb-3 mx-4 px-3 text-uppercase">{{ translate('save') }}</button>
+                                    <button type="submit" class="btn btn--primary mb-3 mx-4 px-3 text-uppercase">{{ translate('Save') }}</button>
                                 </div>
                             </div>
                         </form>

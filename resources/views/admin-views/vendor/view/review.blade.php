@@ -7,7 +7,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2 align-items-center">
                 <img src="{{dynamicAsset(path: 'public/assets/back-end/img/add-new-seller.png')}}" alt="">
-                {{translate('vendor_details')}}
+                {{translate('Vendor_details')}}
             </h2>
         </div>
         <div class="flex-between d-sm-flex row align-items-center justify-content-between mb-2 mx-1">
@@ -24,14 +24,14 @@
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="approved">
                                 <button type="submit"
-                                        class="btn btn--primary btn-sm">{{translate('approve')}}</button>
+                                        class="btn btn--primary btn-sm">{{translate('Approve')}}</button>
                             </form>
                             <form class="d-inline-block" action="{{route('admin.vendors.updateStatus')}}" method="POST">
                                 @csrf
                                 <input type="hidden" name="id" value="{{$seller->id}}">
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit"
-                                        class="btn btn-danger btn-sm">{{translate('reject')}}</button>
+                                        class="btn btn-danger btn-sm">{{translate('Reject')}}</button>
                             </form>
                         </div>
                     </div>
@@ -41,7 +41,7 @@
         <div class="page-header">
             <div class="flex-between row mx-1">
                 <div>
-                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("shop_Name")." : ".translate("update_Please") }}</h1>
+                    <h1 class="page-header-title">{{ $seller?->shop->name ?? translate("Shop_Name")." : ".translate("update_Please") }}</h1>
                 </div>
             </div>
             <div class="js-nav-scroller hs-nav-scroller-horizontal">
@@ -52,11 +52,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('order')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'order']) }}">{{translate('Order')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('Product')}}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
@@ -72,7 +72,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active"
-                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('review')}}</a>
+                           href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'review']) }}">{{translate('Review')}}</a>
                     </li>
                 </ul>
             </div>
@@ -100,9 +100,9 @@
                                             </div>
                                             <input id="datatableSearch_" type="search" name="searchValue"
                                                    class="form-control"
-                                                   placeholder="{{translate('search_by_product_name')}}" aria-label="{{ translate('Search orders') }}"
+                                                   placeholder="{{translate('search_by_Product_Name')}}" aria-label="{{ translate('search_orders') }}"
                                                    value="{{ request('searchValue') }}">
-                                            <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -115,9 +115,9 @@
                                 <thead class="thead-light thead-50 text-capitalize">
                                 <tr>
                                     <th>{{translate('SL')}}</th>
-                                    <th>{{translate('product')}}</th>
-                                    <th>{{translate('review')}}</th>
-                                    <th>{{translate('rating')}}</th>
+                                    <th>{{translate('Product')}}</th>
+                                    <th>{{translate('Review')}}</th>
+                                    <th>{{translate('Rating')}}</th>
                                 </tr>
                                 </thead>
 

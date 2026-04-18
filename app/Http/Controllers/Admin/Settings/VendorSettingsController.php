@@ -55,7 +55,7 @@ class VendorSettingsController extends BaseController
         $this->businessSettingRepo->updateOrInsert(type: 'product_wise_shipping_cost_approval', value: $request->get('product_wise_shipping_cost_approval', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'vendor_review_reply_status', value: $request->get('vendor_review_reply_status', 0));
         $this->businessSettingRepo->updateOrInsert(type: 'vendor_forgot_password_method', value: $request->get('vendor_forgot_password_method', 'phone'));
-        Toastr::success(translate('Updated_successfully'));
+        Toastr::success(translate('Updated_Successfully'));
         return redirect()->back();
     }
 

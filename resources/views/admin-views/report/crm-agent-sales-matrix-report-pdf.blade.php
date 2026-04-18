@@ -225,7 +225,7 @@
                     </div>
                 </td>
                 <td>
-                    <div class="kpi-label">{{ translate('total_customers') }}</div>
+                    <div class="kpi-label">{{ translate('total_Customers') }}</div>
                     <div class="kpi-value">
                         <strong>{{ number_format($summary['grand']['total_customers'] ?? 0) }}</strong>
                     </div>
@@ -253,7 +253,7 @@
                     </th>
                 @endforeach
                 <th>{{ translate('total_batteries') }}</th>
-                <th>{{ translate('total_customers') }}</th>
+                <th>{{ translate('total_Customers') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -273,7 +273,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ count($employeesForMatrix) * 4 + 3 }}">{{ translate('no_data_found') }}</td>
+                    <td colspan="{{ count($employeesForMatrix) * 4 + 3 }}">{{ translate('no_Data_found') }}</td>
                 </tr>
             @endforelse
         </tbody>
@@ -309,10 +309,10 @@
                         <table style="width: 100%; border-collapse: collapse; margin: 0;">
                             <thead>
                                 <tr>
-                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: {{ $isRtl ? 'right' : 'left' }};">{{ translate('employee') }}</th>
-                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('retail') }}</th>
-                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('wholesale') }}</th>
-                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('total') }}</th>
+                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: {{ $isRtl ? 'right' : 'left' }};">{{ translate('Employee') }}</th>
+                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('Retail') }}</th>
+                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('Wholesale') }}</th>
+                                    <th style="background-color: #f1f5f9; padding: 6px 5px; font-size: 9px; text-align: center;">{{ translate('Total') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -325,7 +325,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" style="padding: 10px; text-align: center; font-size: 9px;">{{ translate('no_data_found') }}</td>
+                                        <td colspan="4" style="padding: 10px; text-align: center; font-size: 9px;">{{ translate('no_Data_found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -341,15 +341,15 @@
                         <table style="width: 100%; border-collapse: collapse; margin: 0;">
                             <tbody>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('retail') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('Retail') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;"><strong>{{ $summary['batteries_by_type']['retail'] }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('wholesale') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('Wholesale') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;"><strong>{{ $summary['batteries_by_type']['wholesale'] }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; font-weight: 700;">{{ translate('total') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; font-weight: 700;">{{ translate('Total') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; font-weight: 700;">{{ $summary['batteries_by_type']['total'] }}</td>
                                 </tr>
                             </tbody>
@@ -365,15 +365,15 @@
                         <table style="width: 100%; border-collapse: collapse; margin: 0;">
                             <tbody>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('retail') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('Retail') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;"><strong>{{ $summary['customers_by_type']['retail'] }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('wholesale') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #e5e7eb;">{{ translate('Wholesale') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;"><strong>{{ $summary['customers_by_type']['wholesale'] }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 8px 10px; font-size: 10px; font-weight: 700;">{{ translate('total') }}</td>
+                                    <td style="padding: 8px 10px; font-size: 10px; font-weight: 700;">{{ translate('Total') }}</td>
                                     <td style="padding: 8px 10px; font-size: 10px; text-align: right; font-weight: 700;">{{ $summary['customers_by_type']['total'] }}</td>
                                 </tr>
                             </tbody>

@@ -26,8 +26,8 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('Search orders') }}" value="{{ request('searchValue') }}">
-                                        <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                            placeholder="{{translate('search_by_department_name')}}" aria-label="{{ translate('search_orders') }}" value="{{ request('searchValue') }}">
+                                        <button type="submit" class="btn btn--primary">{{translate('Search')}}</button>
                                     </div>
                                 </form>
                             </div>
@@ -40,7 +40,7 @@
                                 </div>
                                 <a href="{{route('admin.department.add')}}" type="button" class="btn btn--primary text-nowrap">
                                     <i class="tio-add"></i>
-                                    {{translate('add_Department')}}
+                                    {{translate('Add_Department')}}
                                 </a>
                             </div>
                         </div>
@@ -52,12 +52,12 @@
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
                                 <th>{{translate('SL')}}</th>
-                                <th>{{translate('name')}}</th>                                  
+                                <th>{{translate('Name')}}</th>                                  
                                 <th>{{translate('User')}}</th>
                                 <th>{{translate('Email')}}</th>
-                                <th>{{translate('status')}}</th>
+                                <th>{{translate('Status')}}</th>
                                 
-                                <th class="text-center">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -103,7 +103,7 @@
                                         <div class="d-flex justify-content-center gap-2">
                                             <a href="{{route('admin.department.update',[$dept['id']])}}"
                                                class="btn btn-outline--primary btn-sm square-btn"
-                                               title="{{translate('edit')}}">
+                                               title="{{translate('Edit')}}">
                                                 <i class="tio-edit"></i>
                                             </a>
                                         </div>

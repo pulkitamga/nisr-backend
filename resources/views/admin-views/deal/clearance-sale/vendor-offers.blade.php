@@ -12,7 +12,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{ dynamicAsset(path: 'public/assets/back-end/img/note.png') }}" alt="">
-                {{ translate('clearance_sale') }}
+                {{ translate('Clearance_Sale') }}
             </h2>
         </div>
 
@@ -89,12 +89,12 @@
                             class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100 text-start">
                             <thead class="thead-light thead-50 text-capitalize">
                             <tr>
-                                <th>{{ translate('sl') }}</th>
+                                <th>{{ translate('SL') }}</th>
                                 <th>{{translate('shop_info')}}</th>
                                 <th>{{ translate('valid_until') }}</th>
-                                <th class="text-center">{{ translate('total_products') }}</th>
-                                <th class="text-center">{{ translate('status') }}</th>
-                                <th class="text-center">{{ translate('action') }}</th>
+                                <th class="text-center">{{ translate('total_Products') }}</th>
+                                <th class="text-center">{{ translate('Status') }}</th>
+                                <th class="text-center">{{ translate('Action') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -111,7 +111,7 @@
                                                     </h6>
                                                     <div class="fs-13 title-color opacity--70 border-between wrap">
                                                         <span class="parent">
-                                                             <span class="opacity--70">({{$vendor->review_count}} {{ translate('review') }})</span>
+                                                             <span class="opacity--70">({{$vendor->review_count}} {{ translate('Review') }})</span>
                                                          </span>
                                                         <span class="parent">
                                                              <span class="opacity--70"><i class="tio-star text-F5A200"></i>{{number_format($vendor['average_rating'],1)}}</span>
@@ -139,8 +139,8 @@
                                                                data-toggle-id="vendor-status{{ $vendor['id'] }}"
                                                                data-on-image="clearance-sale-on.png"
                                                                data-off-image="clearance-sale-off.png"
-                                                               data-on-title="{{ translate('Want_to_show').' '.$vendor?->shop?->name.' '.translate('clearance_offer_in_homepage') }}"
-                                                               data-off-title="{{ translate('Want_to_hide').' '.$vendor?->shop?->name.' '.translate('clearance_offer_in_homepage') }}"
+                                                               data-on-title="{{ translate('Want_to_Show').' '.$vendor?->shop?->name.' '.translate('clearance_offer_in_homepage') }}"
+                                                               data-off-title="{{ translate('Want_to_Hide').' '.$vendor?->shop?->name.' '.translate('clearance_offer_in_homepage') }}"
                                                                data-on-message="<p>{{ translate('if_enabled_this_product_will_be_available_on_the_website_and_customer_app') }}</p>"
                                                                data-off-message="<p>{{ translate('if_disabled_this_product_will_be_hidden_from_the_website_and_customer_app') }}</p>">
                                                         <span class="switcher_control"></span>

@@ -9,7 +9,7 @@
     $sections = [
     'hero' => translate('hero_section'),
     'who_we_are' => translate('who_we_are'),
-    'products' => translate('products'),
+    'products' => translate('Products'),
     'mission' => translate('mission'),
     'timeline' => translate('timeline'),
     'dealers' => translate('dealers'),
@@ -52,7 +52,7 @@
                             <a href="{{ route('admin.content-management.about-us.create', ['section' => $current]) }}"
                                 class="btn btn--primary text-nowrap">
                                 <i class="tio-add"></i>
-                                <span class="text"> {{ translate('add_new') }}</span>
+                                <span class="text"> {{ translate('add_New') }}</span>
                             </a>
                         </div>
                     </div>
@@ -65,48 +65,48 @@
                     class="table table-hover table-borderless table-thead-bordered table-align-middle card-table w-100">
                     <thead class="thead-light text-capitalize">
                         <tr>
-                            <th>{{ translate('sl') }}</th>
+                            <th>{{ translate('SL') }}</th>
 
                             @switch($current)
                             @case('hero')
-                            <th>{{ translate('heading') }}</th>
-                            <th>{{ translate('subheading') }}</th>
-                            <th>{{ translate('image') }}</th>
+                            <th>{{ translate('Heading') }}</th>
+                            <th>{{ translate('Subheading') }}</th>
+                            <th>{{ translate('Image') }}</th>
                             @break
 
                             @case('who_we_are')
-                            <th>{{ translate('title') }}</th>
-                            <th>{{ translate('content') }}</th>
+                            <th>{{ translate('Title') }}</th>
+                            <th>{{ translate('Content') }}</th>
                             @break
 
                             @case('products')
-                            <th>{{ translate('title') }}</th>
-                            <th>{{ translate('description') }}</th>
-                            <th>{{ translate('image') }}</th>
+                            <th>{{ translate('Title') }}</th>
+                            <th>{{ translate('Description') }}</th>
+                            <th>{{ translate('Image') }}</th>
                             @break
 
                             @case('mission')
-                            <th>{{ translate('title') }}</th>
-                            <th>{{ translate('content') }}</th>
+                            <th>{{ translate('Title') }}</th>
+                            <th>{{ translate('Content') }}</th>
                             @break
 
                             @case('timeline')
-                            <th>{{ translate('year') }}</th>
-                            <th>{{ translate('title') }}</th>
-                            <th>{{ translate('description') }}</th>
-                            <th>{{ translate('image') }}</th>
+                            <th>{{ translate('Year') }}</th>
+                            <th>{{ translate('Title') }}</th>
+                            <th>{{ translate('Description') }}</th>
+                            <th>{{ translate('Image') }}</th>
                             @break
 
                             @case('dealers')
                             <th>{{ translate('dealer_name') }}</th>
-                            <th>{{ translate('location') }}</th>
-                            <th>{{ translate('description') }}</th>
-                            <th>{{ translate('image') }}</th>
+                            <th>{{ translate('Location') }}</th>
+                            <th>{{ translate('Description') }}</th>
+                            <th>{{ translate('Image') }}</th>
                             @break
                             @endswitch
 
-                            <th>{{ translate('status') }}</th>
-                            <th class="text-center">{{ translate('action') }}</th>
+                            <th>{{ translate('Status') }}</th>
+                            <th class="text-center">{{ translate('Action') }}</th>
                         </tr>
 
                     </thead>

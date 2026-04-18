@@ -22,37 +22,37 @@
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('date_range') }}</label>
                         <select class="form-control" name="date_type" id="crm-date-type">
-                            <option value="this_year">{{ translate('this_year') }}</option>
-                            <option value="this_month">{{ translate('this_month') }}</option>
-                            <option value="this_week">{{ translate('this_week') }}</option>
+                            <option value="this_year">{{ translate('this_Year') }}</option>
+                            <option value="this_month">{{ translate('this_Month') }}</option>
+                            <option value="this_week">{{ translate('this_Week') }}</option>
                             <option value="today">{{ translate('today') }}</option>
                             <option value="custom_date">{{ translate('custom_range') }}</option>
                         </select>
                     </div>
 
                     <div class="col-md-2 custom-date-range" id="crm-from-wrapper" style="display:none;">
-                        <label class="form-label mb-1">{{ translate('from') }}</label>
+                        <label class="form-label mb-1">{{ translate('From') }}</label>
                         <input type="date" class="form-control" id="crm-from" name="from">
                     </div>
 
                     <div class="col-md-2 custom-date-range" id="crm-to-wrapper" style="display:none;">
-                        <label class="form-label mb-1">{{ translate('to') }}</label>
+                        <label class="form-label mb-1">{{ translate('To') }}</label>
                         <input type="date" class="form-control" id="crm-to" name="to">
                     </div>
 
                     <div class="col-md-2">
                         <label class="form-label mb-1">{{ translate('sale_type') }}</label>
                         <select class="form-control" name="sale_type" id="crm-sale-type">
-                            <option value="">{{ translate('all') }}</option>
-                            <option value="retail">{{ translate('retail') }}</option>
-                            <option value="wholesale">{{ translate('wholesale') }}</option>
+                            <option value="">{{ translate('All') }}</option>
+                            <option value="retail">{{ translate('Retail') }}</option>
+                            <option value="wholesale">{{ translate('Wholesale') }}</option>
                         </select>
                     </div>
 
                     <div class="col-md-2">
-                        <label class="form-label mb-1">{{ translate('employee') }}</label>
+                        <label class="form-label mb-1">{{ translate('Employee') }}</label>
                         <select class="js-select2-custom form-control" name="agent_id" id="crm-agent-id">
-                            <option value="">{{ translate('all') }}</option>
+                            <option value="">{{ translate('All') }}</option>
                             @foreach ($agents as $agent)
                                 <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                             @endforeach
@@ -61,8 +61,8 @@
                     </div>
 
                     <div class="col-12 d-flex flex-wrap gap-2 mt-2">
-                        <button type="submit" id="crm-load-btn" class="btn btn--primary">{{ translate('filter') }}</button>
-                        <button type="button" id="crm-reset-btn" class="btn btn-outline-secondary">{{ translate('reset') }}</button>
+                        <button type="submit" id="crm-load-btn" class="btn btn--primary">{{ translate('Filter') }}</button>
+                        <button type="button" id="crm-reset-btn" class="btn btn-outline-secondary">{{ translate('Reset') }}</button>
                         <button type="button" id="crm-export-excel" class="btn btn-outline-success">
                             <i class="tio-download-to me-1"></i>{{ translate('excel') }}
                         </button>
@@ -128,14 +128,14 @@
                             <th class="text-end">{{ translate('wholesale_sales') }}</th>
                             <th class="text-end">{{ translate('total_sales') }}</th>
                             <th class="text-end">{{ translate('retail_orders') }}</th>
-                            <th class="text-end">{{ translate('wholesale_orders') }}</th>
-                            <th class="text-end">{{ translate('total_orders') }}</th>
+                            <th class="text-end">{{ translate('wholesale_Orders') }}</th>
+                            <th class="text-end">{{ translate('total_Orders') }}</th>
                             <th class="text-end">{{ translate('total_quantity') }}</th>
                         </tr>
                     </thead>
                     <tbody id="crm-sales-table-body">
                         <tr>
-                            <td colspan="8" class="text-center py-4">{{ translate('loading') }}...</td>
+                            <td colspan="8" class="text-center py-4">{{ translate('Loading') }}...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -163,10 +163,10 @@
             let crmChart = null;
 
             const text = {
-                loading: @json(translate('loading')),
-                filter: @json(translate('filter')),
+                loading: @json(translate('Loading')),
+                filter: @json(translate('Filter')),
                 failedToLoad: @json(translate('failed_to_load_report_data')),
-                noData: @json(translate('no_data_found')),
+                noData: @json(translate('no_Data_found')),
             };
 
             const fmt = (value) => Number(value || 0).toLocaleString(undefined, {

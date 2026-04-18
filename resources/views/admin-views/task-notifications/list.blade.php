@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', translate('notifications'))
+@section('title', translate('Notifications'))
 
 @section('content')
 <div class="content container-fluid">
@@ -19,11 +19,11 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>{{ translate('SL') }}</th>
-                                    <th>{{ translate('title') }}</th>
-                                    <th>{{ translate('message') }}</th>
-                                    <th>{{ translate('type') }}</th>
+                                    <th>{{ translate('Title') }}</th>
+                                    <th>{{ translate('Message') }}</th>
+                                    <th>{{ translate('Type') }}</th>
                                     <th>{{ translate('received_at') }}</th>
-                                    <th class="text-center">{{ translate('action') }}</th>
+                                    <th class="text-center">{{ translate('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -42,7 +42,7 @@
                                     <td>{{ $n->created_at->diffForHumans() }}</td>
                                     <td class="text-center">
                                         <a href="{{ route('admin.notifications.view', $n->id) }}"
-                                           class="btn btn-outline-info btn-sm" title="{{ translate('view') }}">
+                                           class="btn btn-outline-info btn-sm" title="{{ translate('View') }}">
                                             <i class="tio-open-in-new"></i>
                                         </a>
                                     </td>

@@ -38,7 +38,7 @@
                         <button id="{{env('APP_MODE')!='demo'? 'generateAndDownloadSitemap' : '' }}" data-route="{{ route('admin.seo-settings.sitemap-generate-download') }}"
                            class="btn btn--primary px-5 d-flex gap-2 align-items-center {{env('APP_MODE')!='demo'? '' : 'call-demo' }}">
                             <span class="spinner-border extra-small-spinner-border d--none" role="status" id="{{env('APP_MODE')!='demo'? 'generateAndDownloadSitemapSpinner' : '' }}">
-                                <span class="sr-only">{{translate('loading').'...'}}</span>
+                                <span class="sr-only">{{translate('Loading').'...'}}</span>
                             </span>
                             <span>{{ translate('Generate_&_Download') }}</span>
                         </button>
@@ -62,10 +62,10 @@
                             <th class="w-95px border-0">
                                 {{ translate('SL') }}
                             </th>
-                            <th class="w-45px border-0">{{ translate('name') }}</th>
+                            <th class="w-45px border-0">{{ translate('Name') }}</th>
                             <th class="w-200px text-center border-0">{{ translate('file_Size') }}</th>
-                            <th class="w-200px text-center border-0">{{ translate('date') }}</th>
-                            <th class="text-center w-60px border-0">{{ translate('action') }}</th>
+                            <th class="w-200px text-center border-0">{{ translate('DATE') }}</th>
+                            <th class="text-center w-60px border-0">{{ translate('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

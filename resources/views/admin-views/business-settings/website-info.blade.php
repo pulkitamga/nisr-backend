@@ -22,7 +22,7 @@
                     class="dropdown-menu dropdown-menu-end bg-aliceblue border border-color-primary-light p-4 dropdown-w-lg">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/note.png')}}" alt="">
-                        <h5 class="text-primary mb-0">{{translate('note')}}</h5>
+                        <h5 class="text-primary mb-0">{{translate('Note')}}</h5>
                     </div>
                     <p class="title-color font-weight-medium mb-0">{{ translate('please_click_save_information_button_below_to_save_all_the_changes') }}</p>
                 </div>
@@ -48,13 +48,13 @@
                                 <p class="mb-0">
                                     {{ translate('Your maintenance mode is activated') }}
                                     @if($selectedMaintenanceDuration['maintenance_duration'] != 'until_change')
-                                        {{ translate('from') }} <strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> {{ __('to') }} <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
+                                        {{ translate('From') }} <strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> {{ __('To') }} <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
                                     @endif
                                 </p>
                                 <a class="btn btn-outline-primary btn-sm edit square-btn maintenance-mode-show" href="#"><i class="tio-edit"></i></a>
                             </div>
                         @else
-                            <p class="m-0">*{{ translate('By turning on maintenance mode Control your all system & function') }}</p>
+                            <p class="m-0">*{{ translate('by_turning_on_maintenance_mode_control_your_all_system_&_function') }}</p>
                         @endif
 
                         @if($businessSetting['maintenance_mode'] && count($maintenanceSystemSetup) > 0)
@@ -136,7 +136,7 @@
                 <div class="card-header">
                     <h5 class="mb-0 text-capitalize d-flex gap-1">
                         <i class="tio-user-big"></i>
-                        {{translate('company_information')}}
+                        {{translate('Company_information')}}
                     </h5>
                 </div>
                 <div class="card-body">
@@ -202,7 +202,7 @@
                         </div>
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
-                                <label class="title-color d-flex">{{translate('phone')}}</label>
+                                <label class="title-color d-flex">{{translate('Phone')}}</label>
                                 <input class="form-control" type="text" name="company_phone"
                                        value="{{ $businessSetting['company_phone'] }}"
                                        placeholder="{{translate('01xxxxxxxx')}}">
@@ -211,7 +211,7 @@
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
                                 <label
-                                    class="title-color d-flex">{{translate('email')}}</label>
+                                    class="title-color d-flex">{{translate('Email')}}</label>
                                 <input class="form-control" type="text" name="company_email"
                                        value="{{ $businessSetting['company_email'] }}"
                                        placeholder="{{translate('company@gmail.com')}}">
@@ -221,7 +221,7 @@
                         @php $countryCode = getWebConfig(name: 'country_code'); @endphp
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
-                                <label class="title-color d-flex">{{translate('country')}} </label>
+                                <label class="title-color d-flex">{{translate('Country')}} </label>
                                 <select id="country" name="country_code" class="form-control js-select2-custom">
                                     @foreach(COUNTRIES as $country)
                                         <option value="{{$country['code']}}" {{ $countryCode?($countryCode==$country['code']?'selected':''):'' }} >
@@ -333,7 +333,7 @@
                     <div class="row align-items-end">
                         <div class="col-sm-6 col-lg-4">
                             <div class="form-group">
-                                <label class="title-color d-flex" for="currency">{{translate('currency')}} </label>
+                                <label class="title-color d-flex" for="currency">{{translate('Currency')}} </label>
                                 <select name="currency_id" class="form-control js-select2-custom">
                                     @foreach ($CurrencyList as $item)
                                         <option
@@ -436,7 +436,7 @@
                                                     </label>
                                                     <input class="form-control" type="text" name="company_copyright_text[]"
                                                            value="{{ $businessSetting['company_copyright_text_translations'][$lang] ?? '' }}"
-                                                           placeholder="{{translate('company_copyright_text')}}"
+                                                           placeholder="{{translate('Company_Copyright_Text')}}"
                                                         {{ $lang == $defaultLanguage ? 'required' : '' }}>
                                                 </div>
                                             </div>
@@ -450,7 +450,7 @@
                             <div class="form-group">
                                 <label
                                     class="input-label text-capitalize">{{translate('digit_after_decimal_point')}}
-                                    ( {{translate('ex').':'. '0.00'}})</label>
+                                    ( {{translate('Ex').':'. '0.00'}})</label>
                                 <input type="number" value="{{ $businessSetting['decimal_point_settings'] }}"
                                        name="decimal_point_settings" class="form-control" min="0"
                                        placeholder="{{translate('4')}}">
@@ -549,7 +549,7 @@
 
                                 <input type="url" name="app_store_download_url" class="form-control"
                                        value="{{ $appStoreDownload['link'] ?? '' }}"
-                                       placeholder="{{translate('ex').':'.'https://www.apple.com/app-store/'}}">
+                                       placeholder="{{translate('Ex').':'.'https://www.apple.com/app-store/'}}">
                             </div>
                         </div>
                         <div class="col-lg-6">
@@ -663,7 +663,7 @@
                                        class="custom-file-input image-input" data-image-id="view-website-logo"
                                        accept=".webp, .jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                 <label class="custom-file-label text-capitalize"
-                                       for="website-logo">{{translate('choose_file')}}</label>
+                                       for="website-logo">{{translate('choose_File')}}</label>
                             </div>
                         </div>
                     </div>
@@ -688,7 +688,7 @@
                                        class="custom-file-input image-input" data-image-id="view-website-footer-logo"
                                        accept=".webp, .jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                 <label class="custom-file-label text-capitalize"
-                                       for="website-footer-logo">{{translate('choose_file')}}</label>
+                                       for="website-footer-logo">{{translate('choose_File')}}</label>
                             </div>
                         </div>
                     </div>
@@ -736,7 +736,7 @@
                                        class="custom-file-input image-input" data-image-id="view-loader-icon"
                                        accept=".webp, .jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                 <label class="custom-file-label text-capitalize"
-                                       for="loader-icon">{{translate('choose_file')}}</label>
+                                       for="loader-icon">{{translate('choose_File')}}</label>
                             </div>
                         </div>
                     </div>
@@ -760,7 +760,7 @@
                                        class="custom-file-input image-input" data-image-id="view-app-logo"
                                        accept=".webp, .jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
                                 <label class="custom-file-label text-capitalize"
-                                       for="app-logo">{{translate('choose_file')}}</label>
+                                       for="app-logo">{{translate('choose_File')}}</label>
                             </div>
                         </div>
                     </div>

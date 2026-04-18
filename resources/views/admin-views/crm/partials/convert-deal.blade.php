@@ -15,7 +15,7 @@
                     <input type="hidden" name="lead_id" id="lead_id">
 
                     <div class="mb-3">
-                        <label>{{ translate('Party Type') }}</label>
+                        <label>{{ translate('Party_Type') }}</label>
                         <select class="form-control" name="party_type" id="party_type">
                             <option value="company">{{ translate('Wholesale (Company)') }}</option>
                             <option value="contact">{{ translate('Retail (Contact)') }}</option>

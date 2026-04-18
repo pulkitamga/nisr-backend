@@ -41,12 +41,12 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 <div class="form-group language-input-group {{ $lang != $activeLanguage ? 'd-none' : '' }}"
                     id="{{ $lang }}-form">
                     <div class="form-group">
-                        <label>{{ translate('title') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Title') }} ({{ strtoupper($lang) }})</label>
                         <input type="text" name="title[]" class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>{{ translate('content') }} ({{ strtoupper($lang) }})</label>
+                        <label>{{ translate('Content') }} ({{ strtoupper($lang) }})</label>
                         <textarea name="content[]" rows="5" class="form-control"></textarea>
                     </div>
 
@@ -55,7 +55,7 @@ if (!in_array($defaultLanguage, $language ?? [], true)) {
                 @endforeach
 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn--primary">{{ translate('submit') }}</button>
+                    <button type="submit" class="btn btn--primary">{{ translate('Submit') }}</button>
                 </div>
             </form>
         </div>

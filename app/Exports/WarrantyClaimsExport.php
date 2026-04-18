@@ -121,7 +121,7 @@ class WarrantyClaimsExport implements FromQuery, WithHeadings, WithMapping, Shou
 
     public function headings(): array
     {
-        return [translate('SL'), translate('claim_number'), translate('serial'), translate('status'), translate('customer'), translate('product'), translate('submitted_at'), translate('sla_due'), translate('branch')];
+        return [translate('SL'), translate('claim_number'), translate('serial'), translate('Status'), translate('Customer'), translate('Product'), translate('submitted_at'), translate('sla_due'), translate('Branch')];
     }
 
     public function map($claim): array

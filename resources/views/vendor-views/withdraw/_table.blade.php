@@ -5,10 +5,10 @@
         <thead class="thead-light thead-50 text-capitalize">
         <tr>
             <th>{{translate('SL')}}</th>
-            <th>{{translate('amount')}}</th>
-            <th>{{translate('request_time')}}</th>
-            <th>{{translate('status')}}</th>
-            <th class="text-center">{{translate('action')}}</th>
+            <th>{{translate('Amount')}}</th>
+            <th>{{translate('request_Time')}}</th>
+            <th>{{translate('Status')}}</th>
+            <th class="text-center">{{translate('Action')}}</th>
         </tr>
         </thead>
         <tbody>
@@ -22,11 +22,11 @@
                     <td>{{date("F jS, Y", strtotime($withdrawRequest->created_at))}}</td>
                     <td>
                         @if($withdrawRequest->approved==0)
-                            <label class="badge badge-soft--primary">{{translate('pending')}}</label>
+                            <label class="badge badge-soft--primary">{{translate('Pending')}}</label>
                         @elseif($withdrawRequest->approved==1)
-                            <label class="badge badge-soft-success">{{translate('approved')}}</label>
+                            <label class="badge badge-soft-success">{{translate('Approved')}}</label>
                         @else
-                            <label class="badge badge-soft-danger">{{translate('denied')}}</label>
+                            <label class="badge badge-soft-danger">{{translate('Denied')}}</label>
                         @endif
                     </td>
                     <td class="text-center">
@@ -34,11 +34,11 @@
                             <button id="{{route('vendor.business-settings.withdraw.close', [$withdrawRequest['id']])}}"
                                     data-action="{{ route('vendor.business-settings.withdraw.close', [$withdrawRequest['id']]) }}"
                                     class="btn btn--primary btn-sm close-request">
-                                {{translate('close')}}
+                                {{translate('Close')}}
                             </button>
                         @else
                             <span class="btn btn--primary btn-sm disabled">
-                                {{translate('close')}}
+                                {{translate('Close')}}
                             </span>
                         @endif
                     </td>
