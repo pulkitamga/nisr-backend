@@ -5901,4 +5901,11 @@ return [
 	'youtube_video_link' => 'رابط فيديو يوتيوب',
 	'zip' => 'الرمز البريدي',
 	'zone_list' => 'قائمة المناطق',
+	'unit_label_pc' => 'قطعة',
+	'unit_label_kg' => 'كيلوجرام',
+	'unit_label_gms' => 'جرام',
+	'unit_label_ltrs' => 'لتر',
+	'unit_label_pair' => 'زوج',
+	'unit_label_oz' => 'أونصة',
+	'unit_label_lb' => 'رطل',
 ];

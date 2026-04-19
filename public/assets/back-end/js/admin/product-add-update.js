@@ -73,7 +73,7 @@ const supportedProductImageExtensions = [
     "tif",
     "tiff",
 ];
-const maxProductImageFileSizeInBytes = 20 * 1024 * 1024;
+const maxProductImageFileSizeInBytes = 2 * 1024 * 1024;
 
 function getProductLanguageForms() {
     return Array.from(document.querySelectorAll(".form-system-language-form"));

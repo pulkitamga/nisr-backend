@@ -87,6 +87,12 @@ class VehicleTranslationLocaleTest extends TestCase
         $this->assertSame('كورولا', $loadedModel->name);
         $this->assertSame('تويوتا', getVehicleMakeLabel('Toyota'));
         $this->assertSame('كورولا', getVehicleModelLabel('Corolla'));
-        $this->assertSame('وحدة', getUnitLabel('pc'));
+        $this->assertSame('قطعة', getUnitLabel('pc'));
+        $this->assertSame('كيلوجرام', getUnitLabel('kg'));
+
+        App::setLocale('en');
+
+        $this->assertSame('Piece', getUnitLabel('pc'));
+        $this->assertSame('Kilogram', getUnitLabel('kg'));
     }
 }

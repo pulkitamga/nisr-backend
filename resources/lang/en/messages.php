@@ -5889,4 +5889,11 @@ return [
 	'youtube_video_link' => 'Youtube video link',
 	'zip' => 'Zip',
 	'zone_list' => 'Zone list',
+	'unit_label_pc' => 'piece',
+	'unit_label_kg' => 'kilogram',
+	'unit_label_gms' => 'gram',
+	'unit_label_ltrs' => 'liter',
+	'unit_label_pair' => 'pair',
+	'unit_label_oz' => 'ounce',
+	'unit_label_lb' => 'pound',
 ];

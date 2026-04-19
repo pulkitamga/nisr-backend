@@ -1098,7 +1098,7 @@
     <span id="system-currency-code" data-value="{{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}"></span>
     <span id="system-session-direction" data-value="{{ Session::get('direction') }}"></span>
 
-    <span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') }}"></span>
+    <span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.' }}"></span>
 @endsection
 
 @push('script')

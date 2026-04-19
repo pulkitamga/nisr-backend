@@ -813,7 +813,7 @@
                                 <p class="text-muted mt-2 fz-12">
                                     {{ translate('image_format') }} : {{ "Jpg, png, jpeg, webp, gif, bmp, tif, tiff" }}
                                     <br>
-                                    {{ translate('image_size') }} : {{ translate('Max') }} {{ "20 MB" }}
+                                    {{ translate('image_size') }} : {{ translate('Max') }} {{ "2 MB" }}
                                 </p>
                             </div>
                         </div>
@@ -1038,7 +1038,7 @@
 <span id="image-path-of-product-upload-icon-two" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg') }}"></span>
 <span id="message-enter-choice-values" data-text="{{ translate('enter_choice_values') }}"></span>
 <span id="message-upload-image" data-text="{{ translate('Upload_Image') }}"></span>
-<span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.' }}"></span>
+<span id="message-file-size-too-big" data-text="{{ translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.' }}"></span>
 <span id="message-are-you-sure" data-text="{{ translate('Are_you_sure') }}"></span>
 <span id="message-yes-word" data-text="{{ translate('Yes') }}"></span>
 <span id="message-no-word" data-text="{{ translate('No') }}"></span>

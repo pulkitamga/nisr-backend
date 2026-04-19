@@ -121,6 +121,8 @@ class ProductAddRequest extends Request
     */
     public function rules(): array
     {
+        $allowedUnits = implode(',', units());
+
         $rules = [
 
             'name' => 'required_if:product_type,physical',
@@ -129,7 +131,7 @@ class ProductAddRequest extends Request
             'product_type' => 'required',
             'digital_product_type' => 'required_if' . ':' . 'product_type' . ',' . 'digital',
             // 'digital_file_ready' => 'required_if' . ':' . 'digital_product_type' . ',==,' . 'ready_product' . '|' . 'mimes' . ':jpg,jpeg,png,gif,zip,pdf',
-            'unit' => 'required_if' . ':' . 'product_type' . ',' . 'physical',
+            'unit' => 'required_if' . ':' . 'product_type' . ',' . 'physical' . '|' . 'in:' . $allowedUnits,
             'tax' => 'required' . '|' . 'min' . ':0',
             'tax_model' => 'required',
             'unit_price' =>  'required_if' . ':' . 'product_type' . ',' . 'physical',
@@ -152,9 +154,9 @@ class ProductAddRequest extends Request
             'included_km_mobile' => 'required_if:product_type,services|numeric|min:0',
             'travel_fee_per_km' => 'required_if:product_type,services|numeric|min:0',
             'labor_hours' => 'required_if:product_type,services|numeric|min:0',
-            'image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
-            'images.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
-            'meta_image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
+            'image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
+            'images.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
+            'meta_image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
         ];
 
         if (!isset($this['existing_thumbnail'])) {
@@ -169,14 +171,15 @@ class ProductAddRequest extends Request
         return [
             'image' . '.' . 'required' => translate('product_thumbnail_is_required!'),
             'image.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'images.*.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'images.*.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'images.*.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'meta_image.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'meta_image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'meta_image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'branch_id' . '.' . 'required' => translate('branch_is_required!'),
             'category_id' . '.' . 'required' => translate('category_is_required!'),
             'unit' . '.' . 'required_if' => translate('unit_is_required!'),
+            'unit' . '.' . 'in' => translate('The_selected_unit_is_invalid') . '!',
             'code.required_if' => translate('product_code_is_required_for_physical_products'),
             'code.max' => translate('please_ensure_your_code_does_not_exceed_20_characters'),
             'code.min' => translate('code_with_a_minimum_length_requirement_of_6_characters'),

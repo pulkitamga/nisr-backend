@@ -124,6 +124,7 @@ class ProductUpdateRequest extends FormRequest
     public function rules(): array
     {
         $product = $this->productRepo->getFirstWhere(['id' => $this->route('id')]);
+        $allowedUnits = implode(',', units());
 
         return [
             'name' => 'required_if:product_type,physical',
@@ -131,7 +132,7 @@ class ProductUpdateRequest extends FormRequest
             'product_type' => 'required',
             'digital_product_type' => 'required_if:product_type,digital',
             // 'digital_file_ready' => 'mimes:jpg,jpeg,png,gif,zip,pdf',
-            'unit' => 'required_if:product_type,physical',
+            'unit' => 'required_if:product_type,physical|in:' . $allowedUnits,
             'tax' => 'required|min:0',
             'tax_model' => 'required',
             'unit_price' => 'required_if:product_type,physical|numeric',
@@ -152,9 +153,9 @@ class ProductUpdateRequest extends FormRequest
             'included_km_mobile' => 'required_if:product_type,services|numeric|min:0',
             'travel_fee_per_km' => 'required_if:product_type,services|numeric|min:0',
             'labor_hours' => 'required_if:product_type,services|numeric|min:0',
-            'image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
-            'images.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
-            'meta_image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:20480'],
+            'image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
+            'images.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
+            'meta_image' => ['file', 'mimes:jpg,jpeg,png,webp,gif,bmp,tif,tiff', 'max:2048'],
 
             'code' => ['nullable',
                 Rule::requiredIf($this->product_type === 'physical'),
@@ -172,12 +173,13 @@ class ProductUpdateRequest extends FormRequest
             'name.required' => 'Product name is required!',
             'category_id.required' => 'category  is required!',
             'unit.required_if' => 'Unit  is required!',
+            'unit.in' => translate('The_selected_unit_is_invalid') . '!',
             'image.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'images.*.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'images.*.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'images.*.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'meta_image.mimes' => translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
-            'meta_image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 20 MB.',
+            'meta_image.max' => translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             'code.max' => translate('please_ensure_your_code_does_not_exceed_20_characters'),
             'code.min' => translate('code_with_a_minimum_length_requirement_of_6_characters'),
             'minimum_order_qty.required' => 'Minimum order quantity is required!',

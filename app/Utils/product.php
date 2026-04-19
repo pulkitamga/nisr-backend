@@ -143,7 +143,8 @@ if (!function_exists('getUnitLabel')) {
             return '';
         }
 
-        $translationKey = 'unit_option_' . $unit;
+        $normalizedUnit = strtolower($unit);
+        $translationKey = 'unit_label_' . $normalizedUnit;
         $translatedValue = translate($translationKey);
 
         return $translatedValue !== $translationKey ? $translatedValue : $unit;

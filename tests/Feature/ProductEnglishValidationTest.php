@@ -7,10 +7,12 @@ use App\Http\Requests\ProductAddRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ProductEnglishValidationTest extends TestCase
@@ -401,11 +403,11 @@ class ProductEnglishValidationTest extends TestCase
     public function test_add_request_accepts_supported_product_image_formats(): void
     {
         $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload(), [], [
-            'image' => UploadedFile::fake()->create('thumbnail.webp', 1024, 'image/webp'),
+            'image' => UploadedFile::fake()->create('thumbnail.webp', 2048, 'image/webp'),
             'images' => [
-                UploadedFile::fake()->create('gallery.tiff', 1024, 'image/tiff'),
+                UploadedFile::fake()->create('gallery.tiff', 2048, 'image/tiff'),
             ],
-            'meta_image' => UploadedFile::fake()->create('meta.bmp', 1024, 'image/bmp'),
+            'meta_image' => UploadedFile::fake()->create('meta.bmp', 2048, 'image/bmp'),
         ]);
 
         $validator = $this->validateFormRequest($request);
@@ -431,16 +433,63 @@ class ProductEnglishValidationTest extends TestCase
     public function test_add_request_rejects_oversized_product_images_with_clear_message(): void
     {
         $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload(), [], [
-            'image' => UploadedFile::fake()->create('thumbnail.webp', 25000, 'image/webp'),
+            'image' => UploadedFile::fake()->create('thumbnail.webp', 2500, 'image/webp'),
         ]);
 
         $validator = $this->validateFormRequest($request);
 
         $this->assertTrue($validator->fails());
         $this->assertSame(
-            translate('file_size_too_big') . '. ' . translate('max') . ' 20 MB.',
+            translate('file_size_too_big') . '. ' . translate('Max') . ' 2 MB.',
             $validator->errors()->first('image')
         );
+    }
+
+    public function test_add_request_rejects_invalid_unit_values(): void
+    {
+        $request = ProductAddRequest::create('/admin/products/store', 'POST', $this->validPayload([
+            'unit' => 'box',
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('The_selected_unit_is_invalid') . '!',
+            $validator->errors()->first('unit')
+        );
+    }
+
+    public function test_add_request_returns_json_validation_errors_for_ajax_requests(): void
+    {
+        $request = ProductAddRequest::create(
+            '/admin/products/store',
+            'POST',
+            $this->validPayload(),
+            [],
+            ['image' => UploadedFile::fake()->create('thumbnail.txt', 10, 'text/plain')],
+            [
+                'HTTP_X-Requested-With' => 'XMLHttpRequest',
+                'HTTP_ACCEPT' => 'application/json',
+            ]
+        );
+
+        $validator = $this->validateFormRequest($request);
+
+        try {
+            $this->invokeFailedValidation($request, $validator);
+            $this->fail('Expected an AJAX validation response.');
+        } catch (HttpResponseException $exception) {
+            $payload = $exception->getResponse()->getData(true);
+
+            $this->assertSame('image', $payload['errors'][0]['error_code'] ?? null);
+            $this->assertSame(
+                translate('The_image_type_must_be') . '.jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff, .webp',
+                $payload['errors'][0]['message'] ?? null
+            );
+        } catch (ValidationException $exception) {
+            $this->fail('Expected HttpResponseException, got ValidationException.');
+        }
     }
 
     public function test_update_request_normalizes_all_service_scalar_fields_before_validation(): void
@@ -482,6 +531,81 @@ class ProductEnglishValidationTest extends TestCase
         $this->assertSame('20', $request->input('included_km_mobile'));
         $this->assertSame('1', $request->input('travel_fee_per_km'));
         $this->assertSame('0.5', $request->input('labor_hours'));
+    }
+
+    public function test_update_request_returns_json_validation_errors_for_ajax_requests(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validPayload([
+            'video_url' => 'still-not-a-valid-url',
+        ]));
+        $request->headers->set('X-Requested-With', 'XMLHttpRequest');
+        $request->headers->set('Accept', 'application/json');
+
+        $validator = $this->validateFormRequest($request);
+
+        try {
+            $this->invokeFailedValidation($request, $validator);
+            $this->fail('Expected an AJAX validation response.');
+        } catch (HttpResponseException $exception) {
+            $payload = $exception->getResponse()->getData(true);
+
+            $this->assertSame('video_url', $payload['errors'][0]['error_code'] ?? null);
+            $this->assertSame(
+                translate('please_enter_a_valid_video_url') . '!',
+                $payload['errors'][0]['message'] ?? null
+            );
+        } catch (ValidationException $exception) {
+            $this->fail('Expected HttpResponseException, got ValidationException.');
+        }
+    }
+
+    public function test_update_request_rejects_invalid_unit_values(): void
+    {
+        $productRepository = $this->mock(ProductRepositoryInterface::class);
+        $product = new class extends Model {
+            protected $table = 'products';
+            public $timestamps = false;
+            protected $guarded = [];
+        };
+        $product->forceFill([
+            'id' => 8,
+            'images' => '["product.webp"]',
+            'color_image' => null,
+        ]);
+        $product->setRelation('digitalVariation', collect());
+
+        $productRepository->shouldReceive('getFirstWhere')
+            ->andReturn($product);
+
+        $request = new ProductUpdateRequest($productRepository);
+        $request->initialize($this->validPayload([
+            'unit' => 'box',
+        ]));
+
+        $validator = $this->validateFormRequest($request);
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            translate('The_selected_unit_is_invalid') . '!',
+            $validator->errors()->first('unit')
+        );
     }
 
     private function validPayload(array $overrides = []): array
@@ -549,5 +673,12 @@ class ProductEnglishValidationTest extends TestCase
         $validator->fails();
 
         return $validator;
+    }
+
+    private function invokeFailedValidation(ProductAddRequest|ProductUpdateRequest $request, \Illuminate\Contracts\Validation\Validator $validator): void
+    {
+        $reflection = new \ReflectionMethod($request, 'failedValidation');
+        $reflection->setAccessible(true);
+        $reflection->invoke($request, $validator);
     }
 }
